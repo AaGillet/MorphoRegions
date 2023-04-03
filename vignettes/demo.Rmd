@@ -1,0 +1,212 @@
+---
+title: "vignette_regions_new"
+author: "Noah Greifer"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data("dolphin")
+
+#Process measurements data
+dolphin_data <- process_measurements(dolphin, pos = 1)
+```
+
+```{r}
+#Compute PCOs
+dolphin_pco <- svdPCO(dolphin_data, "gower")
+
+#Plot PCOs
+plot(dolphin_pco, 1:2)
+plot(dolphin_pco, 1, 2)
+```
+
+```{r}
+#Dalculate number of PCOs to use in subsequent analyses
+(PCOs <- PCOselect(dolphin_pco, "manual", scores = 3))
+(PCOs <- PCOselect(dolphin_pco, "variance", cutoff = .05))
+(PCOs <- PCOselect(dolphin_pco, "boot"))
+plot(PCOs)
+```
+
+
+```{r}
+#PCO loadings
+loadings <- PCOload(dolphin_pco, scores = 1:3)
+loadings
+plot(loadings)
+```
+
+```{r}
+#Performance for all models across all breakpoint combos
+regionresults <- calcregions(dolphin_pco, scores = 1:3, noregions = 3,
+                             minvert = 3, cont = TRUE, exhaus = TRUE,
+                             cl = NULL, verbose = TRUE)
+regionresults
+summary(regionresults)
+```
+
+```{r}
+#Adding additional models to existing results
+regionresults <- addregions(regionresults, noregions = 4:5,
+                            exhaus = TRUE, cl = NULL,
+                            verbose = TRUE)
+regionresults
+summary(regionresults)
+```
+
+```{r}
+#Selected best model per number of regions
+models <- modelselect(regionresults)
+models
+```
+
+```{r}
+#Calculate fit statistics of models
+supp <- modelsupport(models)
+supp
+```
+
+```{r}
+#Calculate model performance (R2) of best model
+modelperf(dolphin_pco, scores = 1:3, modelsupport = supp,
+                      criterion = "bic", model = 1)
+
+#Plot best model fit
+plotsegreg(dolphin_pco, scores = 1, modelsupport = supp,
+            criterion = "bic", model = 1)
+```
+
+```{r}
+#Calculate variability of optimal breakpoints
+bpvar <- calcBPvar(regionresults, noregions = 5, pct = 1, criterion = "aic")
+bpvar
+```
+
+```{r}
+#Calculate number of PCOs to use based on results
+regionresults <- calcregions(dolphin_pco, scores = 1:10, noregions = 5,
+                             minvert = 3, cont = TRUE, exhaus = TRUE)
+(PCOs <- PCOselect(dolphin_pco, "max", results = regionresults))
+summary(PCOs, plot = TRUE)
+```
+
+```{r}
+#Fit a single breakpoints model
+regionsmodel <- calcmodel(dolphin_pco, scores = 1:3,
+                          bps = c(17, 26, 40), cont = TRUE)
+
+regionsmodel
+
+#Evaluate performance (R2) on that model
+modelperf(regionsmodel)
+
+#Plot model results:
+plotsegreg(regionsmodel, scores = 1)
+
+#Can also evaluate model directly
+modelperf(dolphin_pco, scores = 1:3, 
+          bps = c(17, 26, 40), cont = TRUE)
+
+#Can also plot model directly
+plotsegreg(dolphin_pco, scores = 1, 
+            bps = c(17, 26, 40), cont = TRUE)
+
+```
+
+```{r, fig.height=1}
+#Plot vertebral map using arbitrary breakpoints
+plotvertmap(dolphin_pco, name = "Dolphin",
+            bps = c(17,25,35))
+
+#Plot vertebral map using best BPs from modelsupport(), removing
+#missing vertebrae and adding vertebrae numbers
+plotvertmap(dolphin_pco, name = "Dolphin",
+            modelsupport = supp, criterion = "bic", model = 1,
+            drop.na = TRUE, text = TRUE)
+
+#Plot vertebral map using best BPs from modelsupport(), removing
+#missing vertebrae and adding vertebrae numbers, plotted as percent
+plotvertmap(dolphin_pco, name = "Dolphin", type = "percent",
+            modelsupport = supp, criterion = "bic", model = 1,
+            drop.na = TRUE, text = TRUE)
+
+#Plot vertebral map using best BPs from modelsupport(), plotted
+#as percent centrum length
+plotvertmap(dolphin_pco, name = "Dolphin", type = "percent",
+            modelsupport = supp, criterion = "bic", model = 1,
+            drop.na = TRUE,
+            centraL = dolphin$Lc)
+
+#Plot vertebral map using weighted BPs and SDs from BPvar(), removing
+#missing vertebrae and adding vertebrae numbers
+plotvertmap(dolphin_pco, name = "Dolphin",
+            bpvar = bpvar,
+            drop.na = TRUE, text = TRUE)
+
+#Plot vertebral map using given BPs and SDs; SD bars do not overlap,
+#numbers move out of the way
+plotvertmap(dolphin_pco, name = "Dolphin",
+            bps = c(12, 17, 20, 30),
+            bp.sd = c(3, 3, 2.5, 1.5),
+            drop.na = TRUE, text = TRUE)
+
+#Plot vertebral map adding colors for traditional regions
+blockcols <- list(PreCaudal = c("#BF812D","#8C510A","#543005"),
+                  Caudal = c("#C7EAE5","#80CDC1","#35978F","#01665E"),
+                  Fluke = c("#236E30","#9CCD9F"))
+
+#Using best BPs from modelsupport()
+plotvertmap(dolphin_pco, name = "Dolphin",
+            modelsupport = supp, criterion = "bic", model = 1,
+            reg.lim = c(17, 25, 40),
+            block.cols = blockcols, block.lim = c(25, 40),
+            text = TRUE)
+
+#Using weighted BPs and SDs from calcBPvar()
+plotvertmap(dolphin_pco, name = "Dolphin",
+            bpvar = bpvar,
+            reg.lim = c(17, 25, 40),
+            block.cols = blockcols, block.lim = c(25, 40),
+            text = TRUE)
+```
+
+```{r}
+#Subsample PCOs
+dolphin_pco_sub <- subsample(dolphin_pco, sample = .7)
+
+plotvertmap(dolphin_pco_sub, name = "Dolphin",
+            text = TRUE)
+```
+
+```{r}
+#Simulate data
+sim <- simregions(nvert = 40, nregions = 4, nvar = 4, r2 = .9,
+                  minvert = 3, cont = TRUE)
+plot(sim, scores = 1:2)
+
+simresults <- calcregions(sim, scores = 1:4, noregions = 6)
+simresults
+summary(simresults)
+
+(simmodels <- modelselect(simresults))
+
+(simsupport <- modelsupport(simmodels))
+
+modelperf(sim, modelsupport = simsupport,
+          criterion = "aic", model = 1)
+
+#Plot best model fit
+plotsegreg(sim, scores = 1, modelsupport = simsupport,
+            criterion = "aic", model = 1)
+
+(simbpvar <- calcBPvar(simresults, noregions = 4, pct = 1,
+                   criterion = "aic"))
+```
+

@@ -1,0 +1,56 @@
+---
+title: "Notes"
+author: "Noah Greifer"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+* Storage of attributes makes many arguments to functions obsolete.
+
+* New function `PCOselect()` to provide a unified interface to selecting the number of PCOs, subsuming `PCOcutoff()` and `PCOmax()`, which are now internal functions.
+
+* New function `process_measurements()` to process original dataset by filling in missing values and scaling variables. Subsumes `Missingval()`.
+
+* `plot.regions_pco()` replaces `axesplot()` and can produce PCO vs. vertebra plot (similar to `plotsegreg()` but without fitted lines).
+
+* `modelperf()` replaces `multivarrsq()`.
+
+* New function `subsample()` for sampling a subset of observations to use.
+
+* Some arguments from `plotvertmap()` are removed because they are automated or redundant. `plotType` renamed to `type`. `type = "length"` no longer used; automatically triggered by specification of `centraL`.
+
+* `plot.regions_pco_select()` replaces `eigenplot()`
+
+* `summary.regions_pco_select()` and `plot.summary.regions_pco_select()` replace `plotpcoreg()`. Some features of the plot have been changed (variance explained goes from 0 to 100, `geom_line()` used instead of `geom_smooth()`, cumulative/single denoted by both color and shape).
+
+* Need more exampels for `plotvertmap()` with `alligator` dataset
+
+### New classes
+* `regions_data` - output of `process_measurements()`; no methods
+* `regions_pco` - output of `svdPCO()`; `print()` method, `plot()` method, `modelperf()` method
+* `regions_pco_load` - output of `PCOload()`; `print()` method, `plot()` method
+* `regions_pco_select` - output of `PCOselect()`; `print()` method, `plot()` method (for `method = "boot"` only), `summary()` method (for `method = "max"` only; itself has a `plot()` method)
+* `regions_results` - output of `calcregions()` and `addregions()`; `print()` method, `summary()` method
+* `regions_modelselect` - output of `modelselect()`; `print()` method
+* `regions_modelsupport` - output of `modelsupport()`; `print()` method
+* `regions_perf` - output of `modelperf()`; `print()` method
+* `regions_BPvar` - output of `calcBPvar()`; `print()` method
+* `regions_results_single` - output of `calcmodel()`; `print()` method, `plot()` method (alias for `plotsegreg()`), `modelperf()` method
+
+### Status
+
+<!-- calcBPvar - done! -->
+<!-- calcmodel - done -->
+<!-- calcregions + addregions - done! -->
+<!-- modelperf - done! -->
+<!-- modelselect - done! -->
+<!-- modelsupport - done! -->
+<!-- PCOload - done! -->
+<!-- PCOselect - done! -->
+<!-- plot.regions_PCO - done -->
+<!-- plotsegreg - done -->
+<!-- plotvertmap - done! -->
+<!-- process_measurements - done! -->
+<!-- simregions - needs examples -->
+<!-- subsample - done! -->
+<!-- svdPCO - done! -->

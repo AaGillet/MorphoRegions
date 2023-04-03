@@ -1,0 +1,675 @@
+---
+title: "Regions2.0 Tutorial"
+author: "Amandine Gillet"
+date: "24/01/2023"
+output:
+  html_document:
+    toc: true
+    theme: united
+---
+
+<style>
+p.caption {
+  font-size: 0.8em;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Package description
+
+The `regions` package is built to computationally identify regions (morphological, functional, etc.) in serially homologous structures (such as the backbone).
+
+The idea is to find "breakpoints" where variables differ along the serially homologous structure based on segmented linear regressions and use maximum-likelihood methods to identify the best model without *a priori* on the position of the breakpoint(s). 
+
+
+
+
+
+```{r images, fig.show = "hold", out.width = "30%", fig.align = "default", fig.cap="regions allows to find breaks in serially homologous structures by fitting all possible break positions for a given number of breaks and then repeating the method on increasingly complex models.",echo=F}
+
+knitr::include_graphics("images/Regions_image2.jpg")
+
+knitr::include_graphics("images/Gif_segreg_1bp_25delay.gif")
+
+knitr::include_graphics("images/Gif_segreg_50delay.gif")
+
+```
+
+<br>
+
+
+The user needs to define a number of regions up to which they want the analysis to be run (e.g., up to 5 regions). The analysis will then start fitting models from the simplest (1 region, so 0 breakpoint) to the most complex (here, 5 regions, so 4 breakpoints). For each given number of regions, the analysis will fit all possible models (all possible breakpoint position) and will keep the best model (lowest residual sum of squares, RSS). It will then compare all the best models (the best model of each number of region) among them and will select the best one based on AIC and/or BIC.
+
+
+*Methods and code are based on [Jones et al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126) which was inspired by previous work from [Head & Polly (2015)](https://www.nature.com/articles/nature14042).*
+
+
+*Note: this tutorial is based on Katrina's [tutorial for v.1](https://www.katrinaejones.com/_files/ugd/7af18e_1640f89aea8a432b9d8bf6ddf748e3ae.pdf) of regions package. V.2 of the package relies on some v.1 functions.*
+
+
+The general concept of the package is still the same as v.1. However v.2 was re-written mostly to improve computational methods (reduced time and memory required) due to the challenge of working with cetaceans with high vertebral counts and number of regions. The v.2 also introduces a few new functions and plotting methods.
+
+
+
+## 1. Getting started
+
+### A. Installing and loading package
+
+v.1 of regions is available on Katrina's github page:
+
+```{r Install_v.1, eval=F}
+devtools::install_github("katrinajones/regions", build_vignettes=T)
+```
+
+And needs to be loaded since v.2 relies on some functions from v.1:
+
+```{r Load_v.1, message=F}
+library(regions)
+```
+
+
+Loading R code with functions for v.2:
+
+```{r Load_v.2}
+source('region_code_AG-clean-for-CRAN.R')
+```
+
+
+
+### B. Loading example data
+
+Each example data is a dataframe containing morphological measurements of vertebrae of a given specimen. Each row corresponds to a vertebra along the backbone. Rows must be in the same order as the vertebrae in the spine. Each column corresponds to a given morphological measurement (variable) and the first column correspond the number of each vertebra in the backbone.
+
+
+Loading example data from v.1 package:
+This dataframe contains vertebral measurements of 22 vertebrae (22 rows) (starting at the 3^rd^ vertebra) from an alligator. 19 morphological measurements were taken on each vertebra (columns 2 to 20).
+
+```{r Load_alligator}
+data("alligator")
+dim(alligator)
+head(alligator)
+```
+
+
+Loading example data that could also be included in v.2 package:
+This dataframe contains vertebral measurements of 40 vertebrae from a small cetacean (Gange river dolphin), starting at the 8^th^ vertebra (1^st^ thoracic) up to the last vertebra (47). 16 measurements were taken on each vertebra (columns 2 to 17).
+
+```{r Load_dolphin}
+dolphin <- read.table("Dolphin.txt", header=T)
+dim(dolphin)
+head(dolphin)
+```
+
+
+## 2. Running the analysis
+
+### A. Preparing the data
+
+*Mostly copied from Katrina's [tutorial for v.1](https://www.katrinaejones.com/_files/ugd/7af18e_1640f89aea8a432b9d8bf6ddf748e3ae.pdf)*
+
+
+We first need to extract the positional info of each segment (vertebra):
+
+```{r Format_dolphin}
+Xpos <- dolphin[,1]
+nvert <- length(Xpos)
+Xpos
+```
+
+We also need to have a dataframe with measurement values only (so excluding positional info in the 1^st^ column):
+
+```{r Format_dolphin2}
+data <- dolphin[,-1]
+head(data)
+```
+
+If the data contains some missing values, these can be filled using the `Missingval` function from v.1 (can only fill up to 2 consecutive missing values):
+
+```{r Fill_missing}
+data <- Missingval(data)
+```
+
+
+Then, it is recommended to scale data prior to analysis, to examine patterns instead of magnitude:
+
+```{r Scale}
+data_scaled <- scale(data)
+head(data_scaled)
+```
+
+
+### B. Ordinating data
+
+*Copied from Katrina's [tutorial for v.1](https://www.katrinaejones.com/_files/ugd/7af18e_1640f89aea8a432b9d8bf6ddf748e3ae.pdf)*
+
+To incorporate a wide variety of data types, and potential missing data, you can use a distance-based data ordination, though the analysis should work equally well on PCA where data are appropriate. Principal coordinates analysis (PCO) is used to create axes which maximize the variation. The implementation employed in `svdPCO` uses a distance matrix generated by `cluster::daisy`. It differs from other implementations of PCO (e.g., based on `CMDscale`) as it uses a singular value decomposition (i.e., `svd`) instead of the more generalized `eigen`, thereby avoiding negative eigenvalues. 
+
+Three types of distance metric can be used: euclidean, manhatten, or gower. Euclidean should only be used where all variables are similar (e.g., linear measures on the same scale), and is most similar to a PCA. Gower is good for combining different types of continuous data (e.g., angles and linear). Missing data is allowed, as long as there is some overlap in represented variables. For more information see `?(daisy)`.
+
+
+```{r Run_pco}
+pco.gower <- svdPCO(data_scaled,"gower")
+PCOscores <- pco.gower$scores
+PCOscores[,1:5]
+```
+
+Get variance & eigenvalues of each PCO axis:
+
+```{r Get_variance}
+variance <- round(pco.gower$eigen.val/sum(pco.gower$eigen.val)*100,5)
+eig <- cbind(eigenvalues=round(pco.gower$eigen.val,5), variance)
+rownames(eig) <- paste("PCO", 1:nrow(eig), sep=".")
+dim(eig)
+head(eig,15)
+```
+
+See PCO plot and position of each element (vertebra) in the morphospace:
+
+```{r Plot_PCO}
+axesplot(PCOscores, 1,2, Xpos)
+```
+
+Estimate the loading of variables on the three first PCOs. PCO1 is highly correlated with most variables except Hch and Wch which are correlated to PCO2.
+
+```{r PCO_loadings}
+pco.loadAG(data=data_scaled,PCOscores=PCOscores[,1:3])
+```
+
+
+
+### C. Reducing the number of variables
+
+*Mostly copied from Katrina's [tutorial for v.1](https://www.katrinaejones.com/_files/ugd/7af18e_1640f89aea8a432b9d8bf6ddf748e3ae.pdf)*
+
+
+Because most dataset contains a lot of variable, some of which contains significant noise, it is generally useful to reduce this number and keep only a few PCO scores. 
+
+v.1 of regions package implemented a few different methods to do so:
+
+
+**1. Manually select the number of PCs:**
+
+```{r SelectPCO.1}
+nopcos <- 5
+scores <- as.data.frame(PCOscores[,1:nopcos])
+```
+
+**2. Bootstrapping:**
+
+Bootstrapping can help to select the number of PCOs containing significant information compared to random noise. 
+
+`PCOcutoff` function (from v.1) randomizes the variables for each unit and estimates the mean eigenvalue distribution of this random data. One can select the PCO’s to include in the analysis as those with an eigenvalue (% variance explained) greater than the mean eigenvalue of the random data for that PCO. Note that variables must be scaled prior to analysis for this bootstrapping approach to be meaningful.
+
+
+```{r SelectPCO.2}
+#bootstrapped with 100 iterations
+pco.boot <- PCOcutoff(data_scaled,100, "gower")
+nopcos <- pco.boot$sigpco#Select significant axes
+scores <- as.data.frame(PCOscores[,1:nopcos])
+nopcos
+```
+
+```{r SelectPCO.2b}
+#Plot the eigenvalues
+eigenplot(pco.boot$eigen.true, pco.boot$eigen.boot)
+```
+
+**3. Variance cutoff:**
+
+Select only the PCOs representing more than a given percent of variance (in this example, more than 5%).
+
+*Note: this is the method used for the rest of this tutorial*
+
+```{r SelectPCO.3}
+varcutoff <- 5
+nopcos <- length(which(pco.gower$eigen.val/sum(pco.gower$eigen.val)>(varcutoff/100)))
+scores <- as.data.frame(PCOscores[,1:nopcos])
+nopcos
+```
+
+**4. Maximizing regionscores:**
+
+Select the number of PCO’s which gives the maximum possible region score using `PCOmax` (function from v.1). If you are concerned that excluding PCOs may be masking regionalization signal, you can optimize the PCO selection to find the maximum number of regions.
+
+*Note: this method can only be applied after a first run of the region analysis (see next step) as its maximizes its output*
+
+
+```{r SelectPCO.4, eval=F}
+# Not run:
+nopcos <- PCOmaxAG(regiondata, nvert=nvert, cont=T)$pco.max
+```
+
+
+### D. Running the region analysis
+
+*From this point onwards, most functions used are from v.2 but some of them still relies on functions from v.1. Most functions from v.2 have 'AG' at the end of the function name to differentiate them from similar function of v.1.*
+
+
+Running the analysis on dolphin scaled data using PCOs 1 and 2 (PCOs conrresponding to >5% variance, and also best number of PCOs based on bootstrapping). Here, we first run the analysis on **up to 5 regions**.
+The `calcregionsAG` function will fit all models and calculate their RSS from 1 region (0 breakpoint) up to the specified number of regions (here, 5).
+
+```{r calcreg_fast, message=F}
+nreg <- 5
+cont <- T
+regionresults <- calcregionsAG(Xvar=Xpos, Yvar=scores, noregions=nreg, minvert=3, cont=cont, exhaus=F, par=T, numCores=3, verbose=T)
+```
+
+There are multiple arguments to specify in the `calcregionsAG` function:
+
+* `Xvar`: vector with positional vertebra info (i.e., vertebral number)
+* `Yvar`: dataframe containing PCOscores (each row=1 vertebra, each column=1 PCO)
+* `noregions`: maximal number of regions to test (eg, if noregions=9, will test all options from 1 to 9 regions)
+* `minvert`: minimal number of vertebrae/region, if not provided, default is 3 (i.e., breakpoints separated by less than 3 vertebrae in a same model will be excluded)
+* `cont`: TRUE/FALSE - choose if want to use continuous (TRUE) or discontinuous segmentation fitting, default to TRUE. Continuous fitting forces the subsequent slopes of the regression to be in continuity of each other (i.e., the slope of the 2^nd^ region must start where the slope of the 1^st^ one ended), the discontinuous fitting allows some 'space' between the end and beginning of each consecutive slopes.
+* `exhaus`: TRUE/FALSE - choose if want to use an exhaustive search of all possible breakpoints (TRUE) or non-exhaustive (FALSE), default to F. Note that it will automatically use the exhaustive search for 1 and 2 region analyses (i.e., 0 or 1 breakpoint)
+* `par`: TRUE/FALSE - choose if want to use parallel computing. *Note: at the moment the defaults it set to TRUE and should be changed to FALSE but not working for now!!*
+* `numCores`: if par=TRUE, starting from 3 regions, code is run in parallel using the `parallel`package. Chose the number of cores wants to use to parallelisation (good could be half of total numCores of computer). If no number of cores provided, default is 2.
+* `verbose`: TRUE/FALSE - choose if print progress of analysis, default to TRUE
+
+
+In the example above we ran the analysis with up to 5 regions, asking for a minimum of 3 vertebrae per region, using continuous fitting (i.e., forcing subsequent fitted lines to be in continuity of each other). To speed up to analysis, we ran it in a non-exhaustive way which only test the best breakpoint positions based on the previous model (i.e., when testing for 3 regions, instead of testing all possible combinations of 2 breakpoints, it will only test combinations including the best breakpoints of models with 2 regions), it will also only save (return) the results of the best fitting models (those falling below the threshold of the minimum RSS value + half of the SD of all RSS). The analysis was also ran on parallel using 3 cores.
+
+The ouput of the function contains 2 elements:
+
+1. `results`: a datatable containing, for each saved model (each row), the position of breakpoint(s), the total RSS value of that model, and the RSS values of the fitting for each PCO individually.
+1. `stats`: a dataframe where each rows contains summary output of a given number of regions tested, with: the number of regions, the number of model tested, the number of model saved (will be equal to the number of model tested if `exhaus==T`), the computational method (i.e., exhaustive or not), the method with which the number of models saved has been chosen (all models for exhaustive search or model within cutoff of SD(RSS)/2 for non-exhaustive search), the list of the best breakpoint positions (separated by '|') which were used for the non-exhaustive search.
+
+
+```{r output}
+regionresults
+```
+
+The `results` element needs to be extracted to be used for model selection in the next steps:
+
+```{r extract_regiondata}
+  stat_res <- regionresults$stats
+  stats <- transform(stat_res, Nregions=as.numeric(Nregions), Nmodel_possible=as.numeric(Nmodel_possible), Nmodel_tested=as.numeric(Nmodel_tested), Nmodel_saved=as.numeric(Nmodel_saved))
+  regiondata <- regionresults$results
+```
+ 
+
+<br>
+
+As a comparison we can run the same analysis but using an **exhaustive search**:
+
+We can see that the computation time increases for more complex models (i.e., 5 regions). This example contains relatively few vertebrae and few regions, but the non-exhaustive search becomes highly time consuming when increasing the number of vertebrae and number of regions tested.
+
+
+
+```{r run_exhaus, message=F}
+regionresults_exhau <- calcregionsAG(Xvar=Xpos, Yvar=scores, noregions=nreg, cont=cont, exhaus=T, minvert=3, numCores=3)
+```
+
+
+The `results` element of the output contains more rows (22810 instead of 996) as all possible models were tested and saved in the output.
+
+The `stats` output also shows that more models were tested for each number of regions (23751 instead of 11648 for 5 regions) and all the models were saved. Since it is an exhaustive search, all breakpoint positions were tested and there are no best breakpoints listed in the dataframe.
+
+```{r print_exhaus, message=F}
+regionresults_exhau
+```
+
+
+<br>
+
+Now that we ran the region analysis we can see what is the minimum number of PCOs required to maximize the region score using the `PCOmaxAG` function. It returns the optimal number of PCOs calculated using AICc and BIC and also returns the respective region score obtained for each number of PCOs using AICc and BIC.
+
+
+```{r}
+PCOmaxAG(regiondata, nvert=nvert, cont=cont)
+```
+
+
+In this case the `regiondata` object was obtained using only the PCOs and `PCOmaxAG` returned 2 PCOs as the optimal number but it didn't test a higher number of PCOs. So if we run the `calregionsAG` on a higher number of PCOs, we can appreciate better how `PCOmaxAG` works.
+
+```{r regioncalc_10PCOS}
+regionresults.10pcos <- calcregionsAG(Xvar=Xpos, Yvar=PCOscores[,1:10], noregions=nreg, minvert=3, cont=cont, exhaus=F, par=T, numCores=3, verbose=T)
+regiondata.10pcos <- regionresults.10pcos$results
+PCOmaxAG(regiondata.10pcos, nvert=nvert,cont=cont)
+```
+
+It finds that 4 PCOs is the best number of PCOs to include to maximize the region score both if using AICc or BIC to calculate model probability.
+
+The region score with regard to the number of PCOs included can also be plotted using the function `plotpcoregAG`. The orange dots correspond to region scores for cumulated PCOs, purple dots to region scores of each individual PCO, and the grey line corresponds to the cumulated percentage of variance explained by PCOs.
+
+```{r plot.RS-PCO, message=F}
+plotpcoregAG(eigenvals=pco.gower$eigen.val, nvert=nvert, regiondata=regiondata.10pcos, cont=cont, title="Test 10 PCOs")
+```
+
+
+
+### E. Selecting the best model
+
+The next step consist in identifying the best model (i.e., best number of region and position of each breakpoint).
+
+**The first step** consists in selecting the best model for each given number of region by minimizing the RSS. This is done using the function `modelselectAG`. This function requires the `results`element from the `calcregionsAG` function output.
+
+```{r modelselect}
+models <- modelselectAG(regiondata=regiondata)
+models
+```
+
+We can see the best model (with the position of the breakpoints) for each given number of region. For example, for 3 regions, the best breakpoints are 23 and 29 meaning the first region comprises vertebrae 8 (the first vertebra of our dataset) to 23 *included*, the second region comprises vertebrae 24 to 29 included, and the third region comprises vertebrae 30 to 47 (the last vertebra).
+
+<br>
+
+**The second step** consists in selecting the best number of regions by selecting the best model among the ones identified at the previous step. This is done with the `model_supportAG` function. 
+This function requires the output from the `modelselectAG` function, as well as the number of vertebrae included in the analysis (here 40), and the fitting method, either continuous (TRUE) or discontinuous (FALSE) as the number of parameters evaluated in each model depends on these variables.
+
+```{r}
+support <- model_supportAG(models, nvert=length(Xpos), cont=cont)
+support
+```
+
+The best model is identified using two different criterion: the AICc (elements: `Model_support` and `Region_score`) and the BIC (elements: `Model_support_BIC` and `Region_score_BIC`), the user can then choose which one they want to use for interpretation of the results.
+
+The `Model_support` and `Model_support_BIC` elements consist in a dataframe where models are ordered from the best to the worst. In this specific case, both methods identified 5 regions as the best model with a 99% weight.
+
+The `Region_score` and `Region_score_BIC` elements provide the region score of the specimen. The region score correspond to the sum of the number of regions multiplied by their AICc or BIC weight. _Example: for the BIC of this specimen, the region score is: 1 * 7.01^-54^ + 2 * 3.10^-30^ + 3 * 4.13^-15^ + 4 * 6.41^-6^ + 5 * 0.99 = 4.99_. This score is especially useful for specimens for which 2 different models have almost similar weight as it allows to quantify this uncertainty.
+
+
+
+### F. Evaluating goodness of fit with R^2^
+
+It is possible to evaluate the goodness of fit of the best models by calculating the R^2^ of the fit on each individual PCO and the multivariate R^2^ on all the PCOs used in the analysis. It requires either the `Model_support` value from the output of `model_supportAG` or a vector with the position of breakpoints of the model we want to test.
+
+```{r multivarRsq}
+# Providing the Model_support object:
+multivarrsqAG(Xvar=Xpos, Yvar=scores, cont=cont, modelsupport=support$Model_support)
+
+# Providing a vector with the position of breakpoints:
+multivarrsqAG(Xvar=Xpos, Yvar=scores, cont=cont, bps=c(23,27,34,40))
+
+```
+
+
+
+### G. Finding breakpoint position variability
+
+In the previous steps, we selected a single best model, however, for a given number of regions (here, 5 since it's our best model), it is frequent that a few models (with different position for the breakpoints) are almost equally good. The `clacBPvar` allows to calculate the mean and standard deviation of the position of each breakpoint across a given number of models while accounting for the goodness of fit of each position. 
+
+Here, we look at the breakpoint position variability for a 5 regions models (our best number of regions), using the top 5% of all possible 5 regions models. The total number of possible models for a given hypothesis (depending on the number of regions, number of vertebrae, minimum number of vertebrae/region) is provided in the `stats` value from the `calcregionsAG` output.
+
+```{r calcBPvar}
+nmodels <- stats[stats$Nregions==5,"Nmodel_possible"]
+BPvar <- calcBPvar(regiondata=regiondata, nreg=5, nmodel=nmodels, pct=5, nvert=length(Xpos), cont=cont)
+```
+*Note:* When using a non-exhaustive search, it is possible that the total number of models tested (and returned in the `results` value of `calcregionsAg` output) is lower than the percentage of model requested for calculating breakpoint variability. In such case, a warning message is returned and the variability is calculated on all the models provided.
+
+
+```{r showBPvar}
+BPvar
+```
+
+The `WeightedBp` value returns the weighted mean and SD of each breakpoint. Here, the weighted mean values of breakpoint position are quite similar to our single best model for 5 regions (which has breakpoints at 23, 27, 34, and 40) with a weighted SD of roughly 0.5 for each breakpoint. 
+The `BestModels` value returns a data.table with all the models included in the weighted meand and SD calculation and provides the weighted score (column `AICweight`)and cumulated weighted score (column `CumWeight`) of each model. Here, The first five best models account for more than 50% of the total cumulated score of the 424 tested models. 
+
+
+
+ <br>
+
+## 3. Visualizing outputs
+
+### A. Plot segmented linear regressions
+
+This plot shows the vertebral position on the X axis and the PCO score of the given PCO axis on the Y axis. The segmented linear regression corresponding to the given model is also shown in addition to the position of the breakpoints of the given model. The PCO axis to plot is chosen with the `pcono` argument. The model to plot can be specified by providing either the `Model_support` (or `Model_support_BIC`) object and the number of the model we want to plot (1 = best model, 2 = 2^nd^ best, etc. Default set to 1) with the `modelsupport` and `model` arguments, or by directly providing the breakpoint position with the `BPs` argument. 
+
+```{r plot_segreg}
+# Plot regressions best model on PCO1:
+plotsegregAG(Xpos, pcono=1, data=pco.gower$scores, modelsupport=support$Model_support_BIC, model=1, cont=T)
+
+# Plot regressions best model on PCO2:
+plotsegregAG(Xpos, pcono=2, data=pco.gower$scores, modelsupport=support$Model_support_BIC, model=1, cont=T)
+
+# Plot regressions of a model with 3 breakpoints at 17, 25, and 35:
+plotsegregAG(Xpos, pcono=2, data=pco.gower$scores, BPs=c(17,25,35), cont=T)
+
+# Plot the same model but without forcing the linear segments to be continuous of each other:
+plotsegregAG(Xpos, pcono=2, data=pco.gower$scores, BPs=c(17,25,35), cont=F, title="PCO2 - Discontinuous fit")
+```
+
+Additional plotting options (X and Y axes limits, type and color of points, color and thickness of the regression, color and thickness of the vertical lines corresponding to breakpoint position) are available via additional arguments of the function.
+
+<br>
+
+### B. Plot vertebral map
+
+The vertebral map (`plotvertmap` function) is a plot where each rectangle correspond to a vertebra and is colored according to the region to which it belongs. The function was coded to incorporate many plotting options (maybe too much?). The basic information to provide is: the `name` of specimen/species (or other) that we plot, the vector with the vertebral positions (`Xvar`), the model to plot, either by providing the `Model_support`object with the `modelsupport` argument or by directly providing a vector with breakpoint position with the argument `BPs`. If the `Model_support` object is provided, the model to plot can be chosen either by its goodness of fit using the `model` argument (1 = best model, 2 = 2^nd^ best, etc.) or by the number of regions it contains using the `model.nreg` argument (1 = 1 region, 2 = 2 regions, etc.). The `plotType` defining how the size and position of each rectangle is calculated must also be provided as either *count*, *percent*, or *length*.
+
+
+Plotting the best model from the BIC Model_support object:
+```{r plot_vertmap, fig.height=1, warning=F}
+plotvertmap(name="Dolphin", Xvar=Xpos, modelsupport=support$Model_support_BIC, model=1, plotType="count")
+
+
+```
+
+Plotting a model by providing a vector of breakpoints:
+```{r plot_vertmap2, fig.height=1, warning=F}
+plotvertmap(name="Dolphin", Xvar=Xpos, BPs=c(17,25,35), plotType="count")
+
+```
+
+
+It is also possible to exclude vertebrae not included in the analysis from the plot (in this case cervical vertebrae 1 to 7), with the `drop.na` argument. This is also useful for analyses ran on a subsample of vertebrae:
+
+```{r plot_vertmap3, fig.height=1, warning=F}
+plotvertmap(name="Dolphin", Xvar=Xpos, modelsupport=support$Model_support_BIC, model=1, drop.na=T, plotType="count")
+```
+
+
+
+Plotting a model with X axis as the percentage of total number of vertebrae for the specimen. This can be useful if what to compare two species/specimens with different vertebral count. *Note* that when no model number is specified, the best model will be plotted by default:
+
+```{r plot_vertmap4, fig.height=1, warning=F}
+plotvertmap(name="Dolphin", Xvar=Xpos, modelsupport=support$Model_support_BIC, plotType="percent", drop.na=T)
+```
+
+
+If the anteroposterior length of each vertebra is known, it is also possible to plot each vertebra of the vertebral map with its proportional length using the argument `centraL` (which must be provided if *length* is selected as `plotType`).Example here with the centrum length of each vertebra provided as Lc in our original dataset.
+
+```{r plot_vertmap5, fig.height=1, warning=F}
+Lc <- dolphin$Lc
+plotvertmap(name="Dolphin", Xvar=Xpos, modelsupport=support$Model_support_BIC, plotType="length", centraL=Lc, drop.na=T)
+```
+
+We can also add the SD of breakpoint position using the `bp.sd` argument. This can be done with any of the `plotType` options, BPs and SD should always be provided as values corresponding to count (as returned by the `calcBPvar` function), the function then adapts it to correspond to the plotting type . Example by plotting regions following the weighted mean breakpoint position and their weighted SD:
+
+```{r plot_vertmap6, fig.height=1, warning=F}
+bps <- unlist(BPvar$WeightedBp["wMean",])
+sds <- unlist(BPvar$WeightedBp["wSD",])
+plotvertmap(name="Dolphin", Xvar=Xpos, BPs=bps, bp.sd=sds, plotType="count", drop.na=T)
+
+
+```
+
+It is also possible to show other limits (i.e., anatomical limits) using the `reglimits` argument. For instance, including the limit between the thoracic, lumbar, caudal, and fluke traditional regions of the dolphin (respectively at 17, 25, and 40). By default the plotting color of the limit will be in black, but can be changed with the `lim.col` argument.
+
+```{r plot_vertmap7, fig.height=1, warning=F}
+plotvertmap(name="Dolphin", Xvar=Xpos, BPs=bps, bp.sd=sds, plotType="count", drop.na=T, reglimits=c(17,25,40), lim.col="red")
+```
+
+
+The colors of the regions can be changed using the `cols` argument which should be a vector of equal or higher length than the number of regions plotted. Alternatively, it is also possible to force regions in a same predefined "block" to be colored with similar shades using the `col.by.block`, `blocklim`, and `cols` arguments. For instance, coloring regions in the precaudal (i.e., thoracic + lumbar) traditional region in shades of brown, those in the caudal region in shades of blue, and the regions in the fluke in green:
+
+```{r plot_vertmap8, fig.height=1, warning=F}
+colsBlock <- list(PreCaudal=c("#BF812D","#8C510A","#543005"),Caudal=c("#C7EAE5","#80CDC1","#35978F","#01665E"), Fluke=c("#236E30","#9CCD9F"))
+plotvertmap(name="Dolphin", Xvar=Xpos, BPs=bps, bp.sd=sds, plotType="count", drop.na=T, reglimits=c(17,25,40), lim.col="red", col.by.block=T, cols=colsBlock, blocklim=c(25,40))
+
+```
+
+
+<br>
+
+## 4. Additional functionalities
+
+### A. Adding more regions to the model
+
+In the previous example, the best number of regions is 5, which corresponds to the maximum number of regions tested. It would then be interesting to test a higher number of regions to see if 5 regions is actually the best models or if more complex models are even better. Since region calculations can be computationally heavy, the v.2 of the package allows to add more complex models to the results of the previously run analysis, hence avoiding to fit again models with 1 to 5 regions. 
+
+This is done with the `addregionsAG` function. It requires the positional information (vertebral numbers), PCO scores, results from the previous analysis (either the whole result table or the number of previous regions tested if the table is too heavy), the new maximal number of regions to fit, as well as similar parameters as for the `calcregionsAG` function. If we want to run an exhaustive search, we also need to provide the best BPs from the last analysis. Let's add a model with 6 regions:
+
+```{r add_regions}
+# Extracting best BPs from 5 regions analysis:
+prev.nbp <- max(stats$Nregions)-1
+bpkeep <- unlist(stats[stats$Nregions==(prev.nbp+1),grep("Best_BPs", colnames(stats))])
+bpkeep
+# Running the analysis to add a 6th region:
+regionresults6 <- addregionsAG(Xvar=Xpos, Yvar=scores, prevreg=regiondata, bpkeep=bpkeep, noregions=6, minvert=3, cont=T, exhaus=F, par=T, numCores=3, verbose=T)
+
+regionresults6
+```
+
+It returns an output with the similar structure as the `calcregionsAG` function, however, the `stats` element only contains results for the newly tested number of regions. We then need to combine these new results with previous results.
+
+
+
+
+```{r}
+# Extract outputs from new analysis:
+stat_res6 <- regionresults6$stats
+regiondata6 <- regionresults6$results
+
+# Format results of previous analysis to match format of new results (add new Breakpoint column):
+BPadd <- (length(grep("Best_BPs",colnames(stats)))+1):(length(grep("Best_BPs",colnames(stat_res6))))
+newcols <- as.data.frame(matrix("NA",ncol=length(BPadd), nrow=nrow(stats)))	# Create matrix of 0 for new BPs
+colnames(newcols) <- paste0("Best_BPs", BPadd)		# Set colnames for new BPs
+
+# Bind previous and new results:
+stats6 <- cbind(stats, newcols)
+stats6 <- rbind(stats6, stat_res6)
+stats6 <- transform(stats6, Nregions=as.numeric(Nregions), Nmodel_possible=as.numeric(Nmodel_possible), Nmodel_tested=as.numeric(Nmodel_tested), Nmodel_saved=as.numeric(Nmodel_saved))
+stats6
+```
+
+We can then find the best model including results from the added model (6 regions) using `modelselectAG` and `model_supportAG`:
+
+```{r}
+# Best model for each given number of regions:
+models6 <- modelselectAG(regiondata=regiondata6)
+support6 <- model_supportAG(models6, nvert=length(Xpos), cont=T)
+support6
+```
+
+Testing models with a 6^th^ region was indeed a good idea since it is a better fit than 5 regions. The best breakpoint positions are 19 (i.e., break between vertebrae 19 and 20), 24, 27, 34, and 40.
+
+<br>
+
+*Remark:*
+
+Alternatively, an additional region can be added by specifying the previous number of regions fitted instead of providing the output of the previous fitting using the argument `prevnoregions`.
+
+```{r, eval=F}
+# Not run:
+addregionsAG(Xvar=Xpos, Yvar=scores, prevnoregions=5, bpkeep=bpkeep, noregions=6, minvert=3, cont=T, exhaus=F, par=T, numCores=3, verbose=T)
+
+```
+
+Additionally, more than one additional region can be added. Example with adding two regions (6 and 7 regions):
+
+```{r, eval=F}
+# Not run:
+addregionsAG(Xvar=Xpos, Yvar=scores, prevreg=regiondata, bpkeep=bpkeep, noregions=7, minvert=3, cont=T, exhaus=F, par=T, numCores=3, verbose=T)
+
+```
+
+
+### B. Running analysis on subsampled vertebrae
+
+For specimens/species with really high vertebral count, it can be more interesting to run the analysis on a reduced number of vertebrae: the analysis will be faster, and it seems that AICc and BIC tend to overestimate the number of regions on high vertebral count specimens. All the functions have been implemented to support subsampling (i.e., positional information with missing vertebrae). I advise to still run the ordination (PCO) on all vertebrae, then subsample positional information and PCO scores for a given number of vertebrae. 
+
+For instance, subsampling vertebrae every 5% of the backbone: 
+```{r subsampling}
+rownames(scores) <- Xpos
+Xpos_sub <- unique(round(seq(from=min(Xpos), to=max(Xpos), by=((max(Xpos)-min(Xpos))/100*5))))
+scores_sub <- scores[rownames(scores) %in% Xpos_sub,]
+Xpos_sub;scores_sub
+```
+
+Now, running the analysis:
+
+```{r}
+regionresults_sub <- calcregionsAG(Xvar=Xpos_sub, Yvar=scores_sub, noregions=nreg, minvert=3, cont=cont, exhaus=T, par=T, numCores=3, verbose=T)
+stat_sub <- regionresults_sub$stats
+regiondata_sub <- regionresults_sub$results
+
+# Selecting the best model:
+models_sub <- modelselectAG(regiondata=regiondata_sub)
+support_sub <- model_supportAG(models_sub, nvert=length(Xpos_sub), cont=cont)
+support_sub
+```
+
+**Visualizing output:**
+
+When plotting the segmented regression, the missing vertebrae will automatically be excluded from the graph, but the position of each vertebra included in the analysis is respected.
+
+```{r plot_sub}
+plotsegregAG(Xpos_sub, pcono=1, data=scores_sub, modelsupport=support_sub$Model_support_BIC, model=1, cont=T)
+```
+
+When plotting the vertebral map, the missing vertebrae can either be included (default) and will appear in grey, or can be excluded with  `drop.na=T`.
+
+```{r plot_sub2, fig.height=1, warning=F}
+# Missing vertebrae included:
+plotvertmap(name="Dolphin_sub", Xvar=Xpos_sub, modelsupport=support_sub$Model_support_BIC, model=1, plotType="percent", drop.na=F)
+```
+```{r plot_sub3, fig.height=1, warning=F}
+# Missing vertebrae excluded:
+plotvertmap(name="Dolphin_sub", Xvar=Xpos_sub, modelsupport=support_sub$Model_support_BIC, model=1, plotType="percent", drop.na=T)
+```
+
+<br>
+
+### C. Fitting a single predefined model
+
+It is possible to test the goodness of fit of a single model with predifined breakpoints using the function `calcmodel`. Example with testing a model with 6 breakpoints at 15, 20, 25, 30, 35, 40.
+
+```{r calcmodel}
+model1 <- calcmodel(Xvar=Xpos, data=scores, BPs=c(15, 20, 25, 30, 35, 40), cont=T)
+model1
+```
+
+And getting the R^2^ values for that model:
+
+```{r R2_calcmodel}
+multivarrsqAG(Xpos, scores, bps=c(15, 20, 25, 30, 35, 40),cont=T)
+```
+
+<br>
+
+### D. Simulating data
+
+The `sim_region` function allows to simulate data for a given number of vertebrae and number of regions. Example with simulating data for a backbone of 60 vertebrae with 4 regions, a minimum of 3 vertebrae per region, following a continuous fit, for a single PCO (possibility to do a multivariate simulation too). The amount of residual error of points around the slopes can be defined with the `ersd` parameter.
+
+```{r sim_regions, warning=F}
+set.seed(18)
+sim1 <- sim_region(nvert=50, noregions=4, minvert=3, cont=T, nvar=1, ersd=0.25)
+sim1
+```
+
+It returns the positional info (`Xvar`), the PCO scores (`y`), the breakpoint position (`br`) and the slope and intercept of each linear segment (`slope` and `int`).
+
+`Xvar` and `y` can than be implemented in the region analysis to see how the analysis performs.
+
+```{r regions_sim}
+regions_sim <- calcregionsAG(Xvar=sim1$Xvar, Yvar=sim1$y, noregions=5, cont=T, exhaus=F, par=T, numCores=3)
+regiondata_sim <- regions_sim$results
+models_sim <- modelselectAG(regiondata_sim)
+support_sim <- model_supportAG(models_sim, nvert=length(sim1$Xvar), cont=T)
+support_sim
+```
+
+The analysis finds the best model to be the 4-regions models (despite testing up to 5 regions) with breakpoints at 3, 30, and 37. The simulated model had breakpoint at 3, 30, and **36**. So the analysis performed quite well.
+
+
+
+
+<br>
+
