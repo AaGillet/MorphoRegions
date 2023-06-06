@@ -120,3 +120,8 @@
              error = function(e) FALSE)
     }, logical(1L))
 }
+
+#To pass CRAN checks:
+utils::globalVariables(c("L.beg", "L.end", "L.pct.beg", "L.pct.end", "PCO",
+                         "Region", "beg", "bp", "featuren", "ind", "ind.beg",
+                         "ind.end", "pct.beg", "pct.end", "value", "vname"))

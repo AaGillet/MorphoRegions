@@ -19,7 +19,9 @@ Imports:
     chk (>= 0.8.1),
     pbapply (>= 1.7-0)
 Suggests:
-    knitr, rmarkdown
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
+LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
