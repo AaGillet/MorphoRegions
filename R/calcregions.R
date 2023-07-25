@@ -3,7 +3,7 @@
 #' `calcregions()` enumerates all possible combinations of breakpoints to fit multivariate segmented regression models. `addregions()` adds models with additional numbers of regions to the resulting output object.
 #'
 #' @param pco a `regions_pco` object; the output of a call to [svdPCO()].
-#' @param scores `numeric`; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., `1:4` to use the first four scores).
+#' @param scores `numeric`; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., `1:4` to use the first four scores). Can also be the ouput of a call to [PCOselect()].
 #' @param noregions `numeric`; for `calcregions()`, the maximum number of regions for which models are fit (e.g, 4 to request models with 1 to 4 regions); for `addregions()`, a vector containing the number of regions to add (e.g., 5:6 to request models with 5 and 6 regions).
 #' @param minvert `numeric`; the minimum number of vertebrae allowed in each region. Default is 3.
 #' @param cont `logical`; whether to fit models that are continuous (`TRUE`) or discontinuous (`FALSE`) at the breakpoints. Default is `TRUE`.
@@ -36,9 +36,10 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
     chk::chk_whole_numeric(scores)
     chk::chk_range(scores, c(1, ncol(pco[["scores"]])))
 
-    subset <- attr(attr(pco, "data"), "subset")
-    Xvar <- attr(attr(pco, "data"), "pos")[subset]
-    Yvar <- pco[["scores"]][subset,scores, drop = FALSE]
+    # subset <- attr(attr(pco, "data"), "subset")
+    # Xvar <- attr(attr(pco, "data"), "pos")[subset]
+    Xvar <- .get_pos(attr(pco, "data"))
+    Yvar <- pco[["scores"]][, scores, drop = FALSE]
   }
   else if (inherits(pco, "regions_sim")) {
     if (missing(scores)) {
@@ -50,7 +51,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
     }
 
     Xvar <- pco[["Xvar"]]
-    Yvar <- pco[["Yvar"]][,scores, drop = FALSE]
+    Yvar <- pco[["Yvar"]][, scores, drop = FALSE]
   }
   else {
     chk::err("`pco` must be a `regions_pco` or `regions_sim` object")
@@ -65,6 +66,11 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
   chk::chk_flag(cont)
   chk::chk_flag(exhaus)
   chk::chk_flag(verbose)
+
+  # Re-order data
+  o <- order(Xvar)
+  Xvar <- Xvar[o]
+  Yvar <- Yvar[o, , drop = FALSE]
 
   ncombs <- vapply(seq_len(noregions), function(i) {
     .ncombos(Xvar, minvert, i - 1)
@@ -137,7 +143,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
     out <- .addregions_internal(out, noregion, exhaus = exhaus, cl = cl, verbose = verbose)
   }
 
-  return(out)
+  out
 }
 
 #' @export
@@ -174,12 +180,13 @@ addregions <- function(regions_results, noregions, exhaus = FALSE, cl = NULL, ve
     regions_results <- .addregions_internal(regions_results, n, exhaus, cl, verbose)
   }
 
-  return(regions_results)
+  regions_results
 }
 
 #' @exportS3Method print regions_results
 print.regions_results <- function(x, ...) {
   cat("A `regions_results` object\n")
+  cat(" - number of PCOs used:", ncol(attr(x, "scores")), "\n")
   cat(" - number of regions:", paste(sort(unique(x$stats[["Nregions"]])), collapse = ", "), "\n")
   cat(" - model type:", if (attr(x, "cont")) "continuous" else "discontinuous", "\n")
   cat(" - min vertebrae per region:", attr(x, "minvert"), "\n")
@@ -209,7 +216,6 @@ print.summary.regions_results <- function(x, ...) {
 }
 
 .addregions_internal <- function(regions_results, noregions, exhaus = FALSE, cl = NULL, verbose = TRUE) {
-  #noregions should be >= 2; for 1 region, calcregions() should be used
 
   minvert <- attr(regions_results, "minvert")
 
@@ -230,14 +236,13 @@ print.summary.regions_results <- function(x, ...) {
 
     lines <- .lm.fit(x = x, y = Yvar)
     RSS <- sum(lines$residuals^2)
-    if (noPC > 1) {
-      rsq <- colSums(lines$residuals^2)
-    }
-    else {
-      rsq <- RSS
+
+    rsq <- {
+      if (noPC > 1) colSums(lines$residuals^2)
+      else RSS
     }
 
-    return(c((length(BPs) + 1), BPs, RSS, rsq))
+    c((length(BPs) + 1), BPs, RSS, rsq)
   }
 
   if (nbp == 0) {
@@ -249,11 +254,10 @@ print.summary.regions_results <- function(x, ...) {
     lines <- .lm.fit(x = cbind(1, Xvar), y = Yvar)
 
     RSS <- sum(lines$residuals^2)
-    if (noPC > 1) {
-      rsq <- colSums(lines$residuals^2)
-    }
-    else {
-      rsq <- RSS
+
+    rsq <- {
+      if (noPC > 1) colSums(lines$residuals^2)
+      else RSS
     }
 
     res <- as.data.frame(rbind(c(nbp + 1, NA_real_, RSS, rsq)))
@@ -522,7 +526,7 @@ print.summary.regions_results <- function(x, ...) {
   rownames(regions_results$results) <- NULL
   rownames(regions_results$stats) <- NULL
 
-  return(regions_results)
+ regions_results
 }
 
 # Returns number of combos possible
@@ -603,30 +607,28 @@ print.summary.regions_results <- function(x, ...) {
   combos <- combos[seq_len(k),, drop = FALSE]
   combos[] <- vert[combos]
 
-  return(combos)
+  combos
 }
 
 .design_matrix <- function(Xvar, BPs, cont) {
   ## Shoukd we use BPs + .5?
   if (length(BPs) == 0) {
-    x <- cbind(1, Xvar)
+    cbind(1, Xvar)
   }
   else if (cont) {
     # Continuous fit
-    x <- do.call("cbind", c(list(1, Xvar),
-                            lapply(BPs, function(b) pmax(0, Xvar - b))))
+    do.call("cbind", c(list(1, Xvar),
+                       lapply(BPs, function(b) pmax(0, Xvar - b))))
   }
   else {
     # Discontinuous fit
-    x <- do.call("cbind", c(list(1 * (Xvar <= BPs[1]),
-                                 Xvar * (Xvar <= BPs[1])),
-                            lapply(seq_along(BPs)[-1], function(i) {
-                              cbind(1 * (Xvar > BPs[i - 1] & Xvar <= BPs[i]),
-                                    Xvar * (Xvar > BPs[i - 1] & Xvar <= BPs[i]))
-                            }),
-                            list(1 * (Xvar > BPs[length(BPs)]),
-                                 Xvar * (Xvar > BPs[length(BPs)]))))
+    do.call("cbind", c(list(1 * (Xvar <= BPs[1]),
+                            Xvar * (Xvar <= BPs[1])),
+                       lapply(seq_along(BPs)[-1], function(i) {
+                         cbind(1 * (Xvar > BPs[i - 1] & Xvar <= BPs[i]),
+                               Xvar * (Xvar > BPs[i - 1] & Xvar <= BPs[i]))
+                       }),
+                       list(1 * (Xvar > BPs[length(BPs)]),
+                            Xvar * (Xvar > BPs[length(BPs)]))))
   }
-
-  return(x)
 }

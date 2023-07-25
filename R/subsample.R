@@ -3,7 +3,7 @@
 #' `subsample()` creates a smaller version of the original dataset by sampling its rows. Because PCOs should be computed on the full dataset and most other functions take in `regions_pco` objects, `subsample()` requires a `regions_pco` object as its input.
 #'
 #' @param pco a `regions_pco` object; the output of a call to [svdPCO()].
-#' @param sample `numeric`; either the number or proportion of vertbrae to remain the sampled dataset. If `NULL`, the original dataset is returned.
+#' @param sample `numeric`; either the number or proportion of vertebrae to remain the sampled dataset. If `NULL`, the original dataset is returned.
 #' @param type string; the type of subsampling to do, either `"seq"` for sampling in sequence or `"random"` for random sampling. Default is `"seq"`. Abbreviations allowed.
 #'
 #' @returns A `regions_pco` object, a subset of the original supplied to `pco`. The original dataset is stored as an attribute, which itself contains the subsampling indices.
@@ -18,7 +18,12 @@ subsample <- function(pco, sample = NULL, type = "seq") {
 
   chk::chk_is(pco, "regions_pco")
 
-  pos <- attr(attr(pco, "data"), "pos")
+  if (nrow(attr(pco, "data")) != length(attr(attr(pco, "data"), "subset"))) {
+    chk::err("`subsample()` cannot be used on a `regions_pco` object after using `subsample()` or `subset(., drop = FALSE)` on it.")
+  }
+
+  dat <- attr(pco, "data")
+  pos <- dat[[attr(dat, "pos_ind")]]
 
   chk::chk_number(sample)
   chk::chk_gt(sample, 0)
@@ -41,5 +46,5 @@ subsample <- function(pco, sample = NULL, type = "seq") {
 
   attr(attr(pco, "data"), "subset") <- sampled_pos_ind
 
-  return(pco)
+  pco
 }

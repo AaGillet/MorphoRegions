@@ -33,7 +33,8 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
     }
   }
 
-  pos <- attr(attr(x, "data"), "pos")
+  pos <- .get_pos(attr(x, "data"))
+  # pos <- attr(attr(x, "data"), "pos")
 
   if (is.null(pco_x)) {
     chk::chk_whole_numeric(pco_y)

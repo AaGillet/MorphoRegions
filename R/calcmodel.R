@@ -7,7 +7,7 @@
 #' @param bps `numeric`; the indices of the breakpoints to use in fitting the model. To request a model with no breakpoints, set to `NA`.
 #' @param cont `logical`; whether to fit a model that is continuous (`TRUE`) or discontinuous (`FALSE`) at the breakpoints. Default is `TRUE`. Ignored when `bps` is `NA`.
 #'
-#' @returns A `regions_results_single` objects, which contains the results of the model (breakpoints and RSS of each PCO and overall) and model support statistics.
+#' @returns A `regions_results_single` object, which contains the results of the model (breakpoints and RSS of each PCO and overall) and model support statistics.
 #'
 #' @seealso [calcregions()] and [addregions()] for computing all possible models instead of just a single one; [plotsegreg()], for which the `plot` method is an alias, for plotting the fitted regression lines; [modelsupport()] for interpreting the model support statistics.
 #'
@@ -27,9 +27,10 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
     chk::chk_whole_numeric(scores)
     chk::chk_range(scores, c(1, ncol(x[["scores"]])))
 
-    subset <- attr(attr(x, "data"), "subset")
-    Xvar <- attr(attr(x, "data"), "pos")[subset]
-    Yvar <- x[["scores"]][subset, scores, drop = FALSE]
+    # subset <- attr(attr(x, "data"), "subset")
+    # Xvar <- attr(attr(x, "data"), "pos")[subset]
+    Xvar <- .get_pos(attr(x, "data"))
+    Yvar <- x[["scores"]][, scores, drop = FALSE]
   }
   else {
     chk::err("`x` must be a `regions_pco` or `regions_sim` object")
@@ -48,6 +49,11 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
     chk::chk_flag(cont)
   }
 
+  # Re-order data
+  o <- order(Xvar)
+  Xvar <- Xvar[o]
+  Yvar <- Yvar[o, , drop = FALSE]
+
   BPs <- sort(.drop_na(bps))
   nbp <- length(BPs)
 
@@ -64,11 +70,10 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
   lines <- .lm.fit(x = x, y = Yvar)
 
   RSS <- sum(lines$residuals^2)
-  if (noPC > 1) {
-    rsq <- colSums(lines$residuals^2)
-  }
-  else {
-    rsq <- RSS
+
+  rsq <- {
+    if (noPC > 1) colSums(lines$residuals^2)
+    else RSS
   }
 
   res <- as.data.frame(matrix(c(nbp + 1, BPs, RSS, rsq), nrow = 1,
@@ -87,7 +92,7 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
 
   class(out) <- "regions_results_single"
 
-  return(out)
+  out
 }
 
 #' @exportS3Method print regions_results_single

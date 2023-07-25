@@ -35,9 +35,10 @@ plotsegreg.regions_pco <- function(x, scores, modelsupport = NULL, criterion = "
   chk::chk_range(scores, c(1, ncol(x[["scores"]])))
   scores <- sort(scores)
 
-  subset <- attr(attr(x, "data"), "subset")
-  Xvar <- attr(attr(x, "data"), "pos")[subset]
-  Yvar <- x[["scores"]][subset, scores, drop = FALSE]
+  # subset <- attr(attr(x, "data"), "subset")
+  # Xvar <- attr(attr(x, "data"), "pos")[subset]
+  Xvar <- .get_pos(attr(x, "data"))
+  Yvar <- x[["scores"]][, scores, drop = FALSE]
 
   if (!is.null(bps)) {
     if (!is.null(modelsupport)) {

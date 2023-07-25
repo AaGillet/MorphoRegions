@@ -60,7 +60,7 @@ plotvertmap <- function(x, type = "count",
       chk::err("`x` must inherit from class 'regions_pco', 'regions_data', or 'regions_sim")
     }
 
-    Xvar <- attr(x, "pos")
+    Xvar <- x[[attr(x, "pos_ind")]]
     subset <- attr(x, "subset")
   }
 
@@ -161,41 +161,23 @@ plotvertmap <- function(x, type = "count",
   }
 
   # Vertebrae names for plot:
-  vertmap <- data.frame(vname = Xvar.all)
+  # vertmap <- data.frame(vname = Xvar.all)
+
 
   if (!is.null(centraL)) {
-    vertmap$centraL <- 0
+    vertmap <- data.frame(vname = Xvar,
+                          centraL = 0)
+
     if (is.numeric(centraL)) {
-      if (length(centraL) == length(Xvar.all)) {
+      if (length(centraL) == length(Xvar)) {
         vertmap$centraL <- centraL
       }
-      else if (length(centraL) == length(Xvar)) {
-        vertmap$centraL[Xvar] <- centraL
-      }
       else if (length(centraL) == length(subset)) {
-        vertmap$centraL[Xvar[subset]] <- centraL
+        vertmap$centraL[subset] <- centraL
       }
       else {
-        if (length(Xvar.all) == length(Xvar)) {
-          if (length(Xvar.all) == length(Xvar.all[subset])) {
-            chk::err(sprintf("`centraL` must have length equal to the total number of vertebrae (in this case, %s)",
-                             length(Xvar.all)))
-          }
-          else {
-            chk::err(sprintf("`centraL` must have length equal to the total number of vertebrae (in this case, %s) or the number of vertebrae after subsampling (in this case, %s)",
-                             length(Xvar.all), length(Xvar.all[subset])))
-          }
-        }
-        else {
-          if (length(Xvar) == length(Xvar[subset])) {
-            chk::err(sprintf("`centraL` must have length equal to the number of included vertebrae (in this case, %s) or the total number of vertebrae (in this case, %s)",
-                             length(Xvar), length(Xvar.all)))
-          }
-          else {
-            chk::err(sprintf("`centraL` must have length equal to the number of included vertebrae (in this case, %s), the number of vertebrae after subsampling (in this case, %s), or the total number of vertebrae (in this case, %s)",
-                             length(Xvar), length(Xvar[subset]), length(Xvar.all)))
-          }
-        }
+        chk::err(sprintf("`centraL` must have length equal to the number of included vertebrae (in this case, %s) or the number of vertebrae after subsampling (in this case, %s))",
+                         length(Xvar), length(Xvar[subset]), length(Xvar.all)))
       }
 
       chk::chk_not_any_na(vertmap$centraL, "`centraL`")
@@ -208,11 +190,22 @@ plotvertmap <- function(x, type = "count",
       if (!centraL %in% colnames(x)) {
         chk::err("the value supplied to `centraL` is not the name of a variable in the dataset")
       }
-      vertmap$centraL[Xvar] <- x[[centraL]]
+      vertmap$centraL <- x[[centraL]]
 
       chk::chk_not_any_na(vertmap$centraL, "the variable named in `centraL`")
       chk::chk_gte(vertmap$centraL, 0, "the variable named in `centraL`")
     }
+
+    vertmap <- merge(data.frame(vname = Xvar.all),
+                     vertmap, by = "vname", sort = FALSE,
+                     all.x = TRUE)
+
+    vertmap$centraL[is.na(vertmap$centraL)] <- 0
+
+    vertmap <- vertmap[order(vertmap$vname),]
+  }
+  else {
+    vertmap <- data.frame(vname = Xvar.all)
   }
 
   regions <- paste0("Region", seq_len(nreg))

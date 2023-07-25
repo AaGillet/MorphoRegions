@@ -37,9 +37,10 @@ modelperf.regions_pco <- function(x, scores,
   chk::chk_whole_numeric(scores)
   chk::chk_range(scores, c(1, ncol(x[["scores"]])))
 
-  subset <- attr(attr(x, "data"), "subset")
-  Xvar <- attr(attr(x, "data"), "pos")[subset]
-  Yvar <- x[["scores"]][subset, scores, drop = FALSE]
+  # subset <- attr(attr(x, "data"), "subset")
+  # Xvar <- attr(attr(x, "data"), "pos")[subset]
+  Xvar <- .get_pos(attr(x, "data"))
+  Yvar <- x[["scores"]][, scores, drop = FALSE]
 
   if (!is.null(bps)) {
     if (chk::vld_atomic(bps) && all(is.na(bps))) {
@@ -208,5 +209,6 @@ print.regions_perf <- function(x, digits = 3, ...) {
   attr(out, "cont") <- cont
 
   class(out) <- "regions_perf"
-  return(out)
+
+  out
 }
