@@ -7,6 +7,7 @@
   chk::chk_string(arg, arg_name)
 
   i <- pmatch(arg, choices, nomatch = 0L, duplicates.ok = TRUE)
+
   if (all(i == 0L)) {
     if (length(choices) == 2L) {
       chk::err("`", arg_name, "` should be one of ", paste(dQuote(choices, FALSE), collapse = " or "))
@@ -88,9 +89,9 @@
   }
 }
 
+#When given a vector of strings, creates a string of the form "a and b"
+#or "a, b, and c"
 .word_list <- function(word.list = NULL, and.or = "and") {
-  #When given a vector of strings, creates a string of the form "a and b"
-  #or "a, b, and c"
 
   word.list <- word.list[!word.list %in% c(NA_character_, "")]
   L <- length(word.list)
@@ -119,6 +120,15 @@
     tryCatch(is.matrix(grDevices::col2rgb(z)),
              error = function(e) FALSE)
     }, logical(1L))
+}
+
+# Extracts vertebra positions for remaining observations from a
+# regions_data dataset
+.get_pos <- function(data) {
+  pos_ind <- attr(data, "pos_ind")
+  subset <- attr(data, "subset")
+
+  data[[pos_ind]][subset]
 }
 
 #To pass CRAN checks:
