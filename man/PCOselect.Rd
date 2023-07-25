@@ -47,7 +47,7 @@ PCOselect(
 \item{plot}{\code{logical}; whether to plot the summary. Default is \code{FALSE}.}
 }
 \value{
-For \code{PCOselect()}, a \code{regions_pco_select} object, which contains information about the PCO scores chosen by the specified method. For \code{method = "manual"}, this is the value supplied to \code{scores}. When \code{method = "boot"}, the bootstrap results are stored in the \code{"boot"} attribute. When \code{method = "max"}, the \code{regions_results} object passed to \code{regions} and other information about the quality of fit for each number of PCOs are stored in the \code{"pcomax"} attribute.
+For \code{PCOselect()}, a \code{regions_pco_select} object, which is a numeric vector containing the indices of the chosen PCOs, with attributes containing information about the PCO scores chosen by the specified method. When \code{method = "boot"}, the bootstrap results are stored in the \code{"boot"} attribute. When \code{method = "max"}, the \code{regions_results} object passed to \code{regions} and other information about the quality of fit for each number of PCOs are stored in the \code{"pcomax"} attribute.
 
 The \code{plot()} methods each return a \code{ggplot} object that can manipulated using \code{ggplot2} syntax. The \code{summary()} method returns a data.frame of results; when \code{plot = TRUE}, this is returned invisibly and the plot is printed.
 }

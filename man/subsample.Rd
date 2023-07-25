@@ -9,7 +9,7 @@ subsample(pco, sample = NULL, type = "seq")
 \arguments{
 \item{pco}{a \code{regions_pco} object; the output of a call to \code{\link[=svdPCO]{svdPCO()}}.}
 
-\item{sample}{\code{numeric}; either the number or proportion of vertbrae to remain the sampled dataset. If \code{NULL}, the original dataset is returned.}
+\item{sample}{\code{numeric}; either the number or proportion of vertebrae to remain the sampled dataset. If \code{NULL}, the original dataset is returned.}
 
 \item{type}{string; the type of subsampling to do, either \code{"seq"} for sampling in sequence or \code{"random"} for random sampling. Default is \code{"seq"}. Abbreviations allowed.}
 }

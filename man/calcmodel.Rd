@@ -16,7 +16,7 @@ calcmodel(x, scores, bps, cont = TRUE)
 \item{cont}{\code{logical}; whether to fit a model that is continuous (\code{TRUE}) or discontinuous (\code{FALSE}) at the breakpoints. Default is \code{TRUE}. Ignored when \code{bps} is \code{NA}.}
 }
 \value{
-A \code{regions_results_single} objects, which contains the results of the model (breakpoints and RSS of each PCO and overall) and model support statistics.
+A \code{regions_results_single} object, which contains the results of the model (breakpoints and RSS of each PCO and overall) and model support statistics.
 }
 \description{
 \code{calcmodel()} fits a multivariate segmented regression model using the supplied PCOs and breakpoints.

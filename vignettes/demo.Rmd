@@ -12,9 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(regions)
+library(regions2)
 data("dolphin")
-
+# dolphin <- dolphin[sample(1:40, 40),]
 #Process measurements data
 dolphin_data <- process_measurements(dolphin, pos = 1)
 ```
