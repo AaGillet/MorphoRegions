@@ -14,7 +14,7 @@
 #' @param plot `logical`; whether to plot the summary. Default is `FALSE`.
 #' @param \dots ignored.
 #'
-#' @return For `PCOselect()`, a `regions_pco_select` object, which contains information about the PCO scores chosen by the specified method. For `method = "manual"`, this is the value supplied to `scores`. When `method = "boot"`, the bootstrap results are stored in the `"boot"` attribute. When `method = "max"`, the `regions_results` object passed to `regions` and other information about the quality of fit for each number of PCOs are stored in the `"pcomax"` attribute.
+#' @return For `PCOselect()`, a `regions_pco_select` object, which is a numeric vector containing the indices of the chosen PCOs, with attributes containing information about the PCO scores chosen by the specified method. When `method = "boot"`, the bootstrap results are stored in the `"boot"` attribute. When `method = "max"`, the `regions_results` object passed to `regions` and other information about the quality of fit for each number of PCOs are stored in the `"pcomax"` attribute.
 #'
 #' The `plot()` methods each return a `ggplot` object that can manipulated using `ggplot2` syntax. The `summary()` method returns a data.frame of results; when `plot = TRUE`, this is returned invisibly and the plot is printed.
 #'
@@ -101,7 +101,7 @@ PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps
 
   class(out) <- c("regions_pco_select", class(out))
 
-  return(out)
+  out
 }
 
 #' @exportS3Method print regions_pco_select
@@ -250,6 +250,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   eigen.true <- prop.table(pco$eigen.val)
 
   data <- attr(pco, "data")
+  data <- data[-attr(data, "pos_ind")]
   metric <- attr(pco, "metric")
 
   #Scale data
@@ -275,7 +276,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
     pco <- .svdPCO_internal(dist, val.only = TRUE)
 
     #calculate as percentage variance
-    return(prop.table(pco$eigen.val))
+    prop.table(pco$eigen.val)
   }))
 
   eigen.mean <- rowMeans(eigen.boot)  #calculate mean and SD of bootstrapped values
@@ -286,8 +287,11 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   #split the dataset at the zeros, and calculate number of pcos in the first string
   sigpco <- length(split(diff, cumsum(diff == 0))$"0")
 
-  return(list(eigen.true = eigen.true, eigen.mean = eigen.mean, eigen.sd = eigen.sd, sigpco = sigpco,
-              eigen.boot = eigen.boot))
+  list(eigen.true = eigen.true,
+       eigen.mean = eigen.mean,
+       eigen.sd = eigen.sd,
+       sigpco = sigpco,
+       eigen.boot = eigen.boot)
 
 }
 
@@ -314,7 +318,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   pco.max.AICc <- which.max(pco.no.test[["RS_AICc"]])
   pco.max.BIC <- which.max(pco.no.test[["RS_BIC"]])
 
-  return(list(pco.max.AICc = pco.max.AICc,
-              pco.max.BIC = pco.max.BIC,
-              pco.dist = pco.no.test))
+  list(pco.max.AICc = pco.max.AICc,
+       pco.max.BIC = pco.max.BIC,
+       pco.dist = pco.no.test)
 }
