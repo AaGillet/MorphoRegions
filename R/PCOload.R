@@ -31,6 +31,7 @@ PCOload <- function(x, scores) {
   }
 
   data <- attr(x, "data")
+  data <- data[-attr(data, "pos_ind")]
   vert.size <- rowMeans(data)
   data <- cbind(data, vert.size)
 
