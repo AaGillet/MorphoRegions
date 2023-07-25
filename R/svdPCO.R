@@ -29,6 +29,7 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
 
   #Store original dataset
   x0 <- x
+  x <- x[-attr(x, "pos_ind")]
 
   if (scale) {
     for (i in names(x)) {
@@ -46,7 +47,7 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
 
   class(out) <- "regions_pco"
 
-  return(out)
+  out
 }
 
 .svdPCO_internal <- function(dist, val.only = FALSE) {
@@ -83,9 +84,8 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
 
   colnames(eigen.vect) <- paste0("PCO.", seq_len(ncol(eigen.vect)))
 
-  out <- list(scores = eigen.vect, eigen.val = eigen.val)
-
-  return(out)
+  list(scores = eigen.vect,
+       eigen.val = eigen.val)
 }
 
 #' @exportS3Method print regions_pco
