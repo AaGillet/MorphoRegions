@@ -5,7 +5,7 @@
 #' @param x a `regions_pco` object, the output of a call to [svdPCO()].
 #' @param subset a `logical` vector with length equal to the number of rows of the original dataset passed to `process_measurements()` before `svdPCO()`. The vector is evaluated in the environment of the original dataset.
 #' @param drop `logical`. When `TRUE`  (the default), the observations not in the subset are removed from the dataset. When `FALSE`, all observations remain, but the indices of the subsetted observations are stored. This only affects how `plotvertmap()` displays observations when subsetting changes the range of the vertebra indices. See Examples.
-#' @param dots ignored.
+#' @param ... ignored.
 #'
 #' @returns A `regions_pco` object subsetted according to the argument passed to `subset`.
 #'

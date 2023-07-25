@@ -13,7 +13,7 @@
 
 \item{drop}{\code{logical}. When \code{TRUE}  (the default), the observations not in the subset are removed from the dataset. When \code{FALSE}, all observations remain, but the indices of the subsetted observations are stored. This only affects how \code{plotvertmap()} displays observations when subsetting changes the range of the vertebra indices. See Examples.}
 
-\item{dots}{ignored.}
+\item{...}{ignored.}
 }
 \value{
 A \code{regions_pco} object subsetted according to the argument passed to \code{subset}.
