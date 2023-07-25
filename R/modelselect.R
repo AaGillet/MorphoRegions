@@ -44,7 +44,7 @@ modelselect <- function(results, scores = NULL) {
 
   class(models) <- c("regions_modelselect", class(models))
 
-  return(models)
+  models
 }
 
 #' @exportS3Method print regions_modelselect
@@ -65,5 +65,5 @@ print.regions_modelselect <- function(x, digits = 3, ...) {
 
   print(x, row.names = FALSE)
 
-  invisible(x)
+  invisible(x0)
 }

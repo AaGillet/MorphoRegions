@@ -88,7 +88,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
 
   class(out) <- "regions_BPvar"
 
-  return(out)
+  out
   # WeightedBP = matrix with row1 = weighted means and row2 = weighted SD
   # BestModels = top pct % models ordered from best to worst with corresponding AIC weight and cumulative weight
 }

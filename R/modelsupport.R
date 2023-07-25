@@ -64,7 +64,8 @@ modelsupport <- function(models) {
   attr(out, "cont") <- cont
 
   class(out) <- "regions_modelsupport"
-  return(out)
+
+  out
 }
 
 #' @exportS3Method print regions_modelsupport
