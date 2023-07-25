@@ -5,28 +5,30 @@
 #' @param data a dataset containing a column of vertebra indices and measurements for each vertebra.
 #' @param pos the name or index of the variable in `data` containing the vertebra indices. Default is to use the first column.
 #' @param measurements the names or indices of the variables in `data` containing the relevant vertebra measurements. If unspecified, will use all variables other than that specified in `pos`.
+#' @param fillNA `logical`; whether to fill in missing values using a simple linear imputation. Default is `TRUE`. See Details.
 #'
 #' @returns A `regions_data` object, which is a data.frame with attributes containing metadata. The vertebra index variable is removed from the data and stored as an attribute.
 #'
 #' @details
-#' When missing values are present, `process_measurements()` fills them in using the mean of the surrounding non-missing values (i.e., a linear interpolation) if the sequence of missing values is no greater than 2 in length. Otherwise, missing values are left as they are.
+#' When missing values are present and `fillNA` is set to `TRUE`, `process_measurements()` fills them in using the mean of the surrounding non-missing values (i.e., a linear interpolation) if the sequence of missing values is no greater than 2 in length. Otherwise, missing values are left as they are.
 #'
 #' @seealso [svdPCO()] for computing principal coordinate axes from processed vertebra data.
 #'
 #' @example man/examples/example-process_measurements.R
 
 #' @export
-process_measurements <- function(data, pos = 1L, measurements = NULL) {
+process_measurements <- function(data, pos = 1L, measurements = NULL, fillNA = TRUE) {
   if (is.matrix(data)) data <- as.data.frame(data)
 
   chk::chk_data(data)
   chk::chk_scalar(pos)
+  chk::chk_flag(fillNA)
 
   if (chk::vld_whole_number(pos) && chk::vld_gte(pos, 1) && chk::vld_lte(pos, ncol(data))) {
-    pos <- as.integer(pos)
+    pos <- names(data)[as.integer(pos)]
   }
   else if (chk::vld_string(pos) && chk::vld_subset(pos, names(data))) {
-    pos <- match(pos, names(data))
+    pos <- pos
   }
   else {
     chk::err("`pos` must be a single value indicating the column in `data` containing the vertebra positions")
@@ -34,46 +36,44 @@ process_measurements <- function(data, pos = 1L, measurements = NULL) {
 
   pos_var <- data[[pos]]
 
-  if (!is.numeric(pos_var)) {
-    chk::err("`pos` must refer to a numeric variable identifying vertebra positions")
+  if (!chk::vld_whole_numeric(pos_var)) {
+    chk::err("`pos` must refer to a variable of whole numbers identifying vertebra positions")
   }
 
   if (!is.null(measurements)) {
     if (chk::vld_whole_numeric(measurements) && chk::vld_subset(measurements, seq_len(ncol(data)))) {
-      measurements <- as.integer(measurements)
+      measurements <- names(data)[as.integer(measurements)]
     }
     else if (chk::vld_character(measurements) && chk::vld_subset(measurements, names(data))) {
-      measurements <- match(measurements, names(data))
+      measurements <- measurements
     }
     else {
       chk::err("if supplied, `measurements` must indicate the columns in `data` containing the measurement values")
     }
+
+    if (pos %in% measurements) {
+      chk::err("`pos` and `measurements` cannot overlap")
+    }
   }
   else {
-    measurements <- seq_len(ncol(data))[-pos]
+    measurements <- setdiff(names(data), pos)
   }
 
-  if (pos %in% measurements) {
-    chk::err("`pos` and `measurements` cannot overlap")
-  }
+  data <- data[names(data) %in% c(pos, measurements)]
 
-  data <- data[measurements]
-
-  if (any(!vapply(data, is.numeric, logical(1L)))) {
+  if (any(!vapply(data[measurements], is.numeric, logical(1L)))) {
     chk::err("all measurements must be numeric")
   }
 
-  ord <- order(pos_var)
-  data <- data[ord,]
-  pos_var <- pos_var[ord]
+  attr(data, "pos_ind") <- match(pos, names(data))
 
-  data <- .missingval(data)
-
-  if (anyNA(data)) {
-    chk::wrn("missing values remain in the dataset because there were sequences of missing values greater than 2 in length")
+  if (fillNA) {
+    data <- .missingval(data)
+    if (anyNA(data)) {
+      chk::wrn("missing values remain in the dataset because there were sequences of missing values greater than 2 in length")
+    }
   }
 
-  attr(data, "pos") <- pos_var
   attr(data, "subset") <- seq_len(nrow(data))
   class(data) <- c("regions_data", class(data))
 
@@ -81,11 +81,12 @@ process_measurements <- function(data, pos = 1L, measurements = NULL) {
 }
 
 .missingval <- function(data) {
-  if (anyNA(data)) {
+  pos_ind <- attr(data, "pos_ind")
+  if (anyNA(data[-pos_ind])) {
 
     ###find strings of NAs with 2 or less missing
-    for (i in which(vapply(data, anyNA, logical(1L)))) { #for each variable with NA
-      dat <- data[[i]]
+    for (i in which(vapply(data[-pos_ind], anyNA, logical(1L)))) { #for each variable with NA
+      dat <- data[-pos_ind][[i]]
 
       miss.par <- which(is.na(dat)) #find which ones are missing
       seqs <- split(miss.par, cumsum(c(1, diff(miss.par) != 1))) #split them into sequences
@@ -103,8 +104,9 @@ process_measurements <- function(data, pos = 1L, measurements = NULL) {
         dat[fill] <- val #fill in the missing
       }
 
-      data[[i]] <- dat
+      data[-pos_ind][[i]] <- dat
     }
   }
-  return(data)
+
+  data
 }
