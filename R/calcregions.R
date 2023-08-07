@@ -8,6 +8,7 @@
 #' @param minvert `numeric`; the minimum number of vertebrae allowed in each region. Default is 3.
 #' @param cont `logical`; whether to fit models that are continuous (`TRUE`) or discontinuous (`FALSE`) at the breakpoints. Default is `TRUE`.
 #' @param exhaus `logical`; whether to fit all possible models (`TRUE`) or use heuristics to reduce the number of models fit (`FALSE`). Default is `TRUE`. See Details. Setting to `FALSE` can reduce the size of the resulting object.
+#' @param omitbp an optional vector of vertebrae to be omitted from the list of possible breakpoints, e.g., if it is known that two adjacent vertebrae belong to the same region.
 #' @param cl a cluster object created by [parallel::makeCluster()], an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations, or `"future"` to use a future backend. `NULL` (the default) refers to sequential evaluation (no parallelization). See [pbapply::pbapply()] for details.
 #' @param verbose `logical`; whether to print information about the fitting process, including a progress bar. Default is `TRUE`.
 #' @param regions_results,object a `regions_results` object; the output of a call to `calcregions()` or `addregions()`.
@@ -29,7 +30,7 @@
 
 #' @export
 calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
-                        exhaus = TRUE, cl = NULL, verbose = TRUE) {
+                        exhaus = TRUE, omitbp = NULL, cl = NULL, verbose = TRUE) {
   # Argument checks
   if (inherits(pco, "regions_pco")) {
     chk::chk_not_missing(scores, "`scores`")
@@ -66,6 +67,9 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
   chk::chk_flag(cont)
   chk::chk_flag(exhaus)
   chk::chk_flag(verbose)
+
+  if (!is.null(omitbp))
+    chk::chk_numeric(omitbp)
 
   # Re-order data
   o <- order(Xvar)
@@ -135,6 +139,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
   attr(out, "scores") <- Yvar
   attr(out, "cont") <- cont
   attr(out, "minvert") <- minvert
+  attr(out, "omitbp") <- omitbp
   attr(out, "pos") <- Xvar
 
   class(out) <- "regions_results"
@@ -190,8 +195,11 @@ print.regions_results <- function(x, ...) {
   cat(" - number of regions:", paste(sort(unique(x$stats[["Nregions"]])), collapse = ", "), "\n")
   cat(" - model type:", if (attr(x, "cont")) "continuous" else "discontinuous", "\n")
   cat(" - min vertebrae per region:", attr(x, "minvert"), "\n")
+  if (!is.null(attr(x, "omitbp"))) {
+    cat(" - omitted breakpoints:", paste(attr(x, "omitbp"), collapse = ", "), "\n")
+  }
   cat(" - total models saved:", nrow(x$results), "\n")
-  cat("Use `summary()` to examine summaries of the fitting process.")
+  cat("Use `summary()` to examine summaries of the fitting process.\n")
 
   invisible(x)
 }
@@ -223,6 +231,8 @@ print.summary.regions_results <- function(x, ...) {
 
   Xvar <- attr(regions_results, "pos")
   Yvar <- attr(regions_results, "scores")
+
+  omitbp <- attr(regions_results, "omitbp")
 
   nbp <- noregions - 1
 
@@ -287,7 +297,7 @@ print.summary.regions_results <- function(x, ...) {
     }
 
     # Get all possible combinations for 1 breakpoint:
-    goodcomb <- .combosR(Xvar, minvert, nbp)
+    goodcomb <- .combosR(Xvar, minvert, nbp, omitbp = omitbp)
 
     # Run fitting on good combinations:
     res <- as.data.frame(do.call("rbind", pbapply::pbapply(goodcomb, 1, fregions, Xvar = Xvar,
@@ -338,7 +348,7 @@ print.summary.regions_results <- function(x, ...) {
 
     if (ncombi <= max_rows) {
 
-      goodcomb <- .combosR(Xvar, minvert, nbp)
+      goodcomb <- .combosR(Xvar, minvert, nbp, omitbp = omitbp)
 
       nmodel_possible <- nrow(goodcomb)
 
@@ -391,7 +401,7 @@ print.summary.regions_results <- function(x, ...) {
         # Only returns next max_rows rows of combos, using last_combo as
         # starting place
         goodcomb <- .combosR(Xvar, minvert, nbp, ncombos = max_rows,
-                             last_combo = last_combo)
+                             last_combo = last_combo, omitbp = omitbp)
 
         last_combo <- goodcomb[nrow(goodcomb),]
         nmodel_possible <- nmodel_possible + nrow(goodcomb)
@@ -541,8 +551,8 @@ print.summary.regions_results <- function(x, ...) {
   prod(p - 1 + 1:nbp)/prod(1:nbp)
 }
 
-#R translation of combosC()
-.combosR <- function(vert, m, nbp, ncombos = Inf, last_combo = NULL) {
+# Returns matrix of all combos that don't include omitbp
+.combosR <- function(vert, m, nbp, ncombos = Inf, last_combo = NULL, omitbp = NULL) {
   n <- length(vert)
 
   y <- seq_len(n)
@@ -583,10 +593,16 @@ print.summary.regions_results <- function(x, ...) {
     }
   }
 
-  for (k in seq_len(nrow(combos))) {
-    reset <- rep(FALSE, nbp)
+  reset <- rep(FALSE, nbp)
+  k <- 1
 
-    combos[k, ] <- y[counters]
+  while (k <= nrow(combos) && counters[1] <= maxes[1]) {
+    reset[] <- FALSE
+
+    if (is.null(omitbp) || !any(vert[y[counters]] %in% omitbp)) {
+      combos[k, ] <- y[counters]
+      k <- k + 1
+    }
 
     counters[nbp] <- counters[nbp] + 1
 
@@ -601,10 +617,9 @@ print.summary.regions_results <- function(x, ...) {
         counters[i] <- counters[i - 1] + m
       }
     }
-    if (counters[1] > maxes[1]) break
   }
 
-  combos <- combos[seq_len(k),, drop = FALSE]
+  combos <- combos[seq_len(k - 1),, drop = FALSE]
   combos[] <- vert[combos]
 
   combos

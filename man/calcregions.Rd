@@ -13,6 +13,7 @@ calcregions(
   minvert = 3,
   cont = TRUE,
   exhaus = TRUE,
+  omitbp = NULL,
   cl = NULL,
   verbose = TRUE
 )
@@ -39,6 +40,8 @@ addregions(
 \item{cont}{\code{logical}; whether to fit models that are continuous (\code{TRUE}) or discontinuous (\code{FALSE}) at the breakpoints. Default is \code{TRUE}.}
 
 \item{exhaus}{\code{logical}; whether to fit all possible models (\code{TRUE}) or use heuristics to reduce the number of models fit (\code{FALSE}). Default is \code{TRUE}. See Details. Setting to \code{FALSE} can reduce the size of the resulting object.}
+
+\item{omitbp}{an optional vector of vertebrae to be omitted from the list of possible breakpoints, e.g., if it is known that two adjacent vertebrae belong to the same region.}
 
 \item{cl}{a cluster object created by \code{\link[parallel:makeCluster]{parallel::makeCluster()}}, an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations, or \code{"future"} to use a future backend. \code{NULL} (the default) refers to sequential evaluation (no parallelization). See \code{\link[pbapply:pbapply]{pbapply::pbapply()}} for details.}
 
@@ -100,6 +103,20 @@ regionresults <- addregions(regionresults,
 regionresults
 
 summary(regionresults)
+
+# Fit segmented regression models for 1 to 5 regions
+# using PCOs 1 to 4 and a discontinuous model with a
+# exhaustive search, excluding breakpoints at vertebrae
+# 10 and 15
+regionresults <- calcregions(alligator_PCO,
+                             scores = 1:4,
+                             noregions = 5,
+                             minvert = 3,
+                             cont = FALSE,
+                             omitbp = c(10, 15),
+                             verbose = FALSE)
+
+regionresults
 }
 \seealso{
 \code{\link[=calcmodel]{calcmodel()}} to fit a segmented regression model for a single set of breakpoints; \code{\link[=modelselect]{modelselect()}} to select the best model for each number of regions based on RSS; \code{\link[=modelsupport]{modelsupport()}} to compute statistics the describe the support of the best models; \code{\link[=calcBPvar]{calcBPvar()}} to compute the variability in the optimal breakpoints.

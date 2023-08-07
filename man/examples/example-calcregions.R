@@ -32,3 +32,19 @@ regionresults <- addregions(regionresults,
 regionresults
 
 summary(regionresults)
+
+# Fit segmented regression models for 1 to 5 regions
+# using PCOs 1 to 4 and a discontinuous model with a
+# exhaustive search, excluding breakpoints at vertebrae
+# 10 and 15
+regionresults <- calcregions(alligator_PCO,
+                             scores = 1:4,
+                             noregions = 5,
+                             minvert = 3,
+                             cont = FALSE,
+                             omitbp = c(10, 15),
+                             verbose = FALSE)
+
+regionresults
+
+summary(regionresults)
