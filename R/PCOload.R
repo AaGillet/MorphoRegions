@@ -30,8 +30,7 @@ PCOload <- function(x, scores) {
     chk::chk_range(scores, c(1, ncol(pco_scores)))
   }
 
-  data <- attr(x, "data")
-  data <- data[-attr(data, "pos_ind")]
+  data <- .get_data_without_pos(x)
   vert.size <- rowMeans(data)
   data <- cbind(data, vert.size)
 
@@ -70,9 +69,9 @@ plot.regions_pco_load <- function(x, ...) {
                     idvar = "feature", v.names = "value",
                     timevar = "PCO")
 
-  ggplot(d_long) +
-    geom_tile(aes(x = PCO, y = featuren, fill = value)) +
-    labs(y = NULL, fill = "Loading") +
+  ggplot() +
+    geom_tile(aes(x = d_long$PCO, y = d_long$featuren, fill = d_long$value)) +
+    labs(y = NULL, x = "PCO", fill = "Loading") +
     scale_x_continuous(position = "top") +
     scale_y_continuous(labels = rev(rownames(d)),
                        breaks = sort(unique(d$featuren)),
