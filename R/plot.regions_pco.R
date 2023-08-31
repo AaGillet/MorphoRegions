@@ -33,8 +33,8 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
     }
   }
 
-  pos <- .get_pos(attr(x, "data"))
-  # pos <- attr(attr(x, "data"), "pos")
+  pos <- .get_pos(x)
+  specimen <- attr(x, "specimen")
 
   if (is.null(pco_x)) {
     chk::chk_whole_numeric(pco_y)
@@ -46,7 +46,7 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
 
     # Plot PCO against vertebrae using plotsegreg() machinery
     return(.plotreg_internal(Xvar = pos, Yvar = Yvar, lines = FALSE,
-                             scores = pco_y))
+                             scores = pco_y, specimen = specimen))
   }
 
   chk::chk_whole_numeric(pco_y)
@@ -61,11 +61,16 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
   chk::chk_range(pco_x, c(1, ncol(x[["scores"]])))
 
   Xvar <- x[["scores"]][, pco_x]
-  ggplot() + geom_text(aes(x = Xvar,
-                           y = Yvar,
-                           label = pos), ...) +
+  ggplot(mapping = aes(x = Xvar,
+                       y = Yvar,
+                       label = pos,
+                       color = if (nlevels(specimen) > 1) specimen)) +
+    geom_text(...) +
+    geom_point(alpha = 0) +
     theme_bw() +
+    guides(color = guide_legend(override.aes = aes(label = "", alpha = 1))) +
     labs(title = "Principal coordinates analysis",
          x = paste("PCO", pco_x),
-         y = paste("PCO", pco_y))
+         y = paste("PCO", pco_y),
+         color = NULL)
 }

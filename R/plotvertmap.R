@@ -11,7 +11,7 @@
 #' @param bpvar an optional `regions_BPvar` object; the output of a call to [calcBPvar()]. One of `bps`, `modelsupport`, or `bpvar` should be specified to display regions breakpoints. See Details.
 #' @param bp.sd an optional vector of the standard deviations of the breakpoints (e.g., as calculated by [calcBPvar()]). When `bpvar` is supplied, the weighted standard deviations are used.
 #' @param sd.col when `bp.sd` is specified, the color of the mark on plot indicating the standard deviations. Default is black.
-#' @param drop.na `logical`; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertbrae from the plot (`TRUE`) or retain them and label them as missing (i.e., lacking a region) (`FALSE`). Default is `FALSE` to retain them.
+#' @param dropNA `logical`; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertbrae from the plot (`TRUE`) or retain them and label them as missing (i.e., lacking a region) (`FALSE`). Default is `FALSE` to retain them.
 #' @param text `logical`; whether to print the verbtra index on each vertebra. Default is `FALSE`.
 #' @param name an optional string containing a label used on the left side of the plot.
 #' @param centraL an optional numeric vector containing centrum length for each vertebra, which is used to change the size of the plotted vertebrae, or a string containing the name of the variable in the original dataset containing centrum length. Should be of length equal to the number of included vertebrae (i.e., the length of the original dataset). Any vertebrae with centrum length of 0 will be omitted.
@@ -43,28 +43,26 @@ plotvertmap <- function(x, type = "count",
                         bps = NULL,
                         modelsupport = NULL, criterion = "aic", model = 1,
                         bpvar = NULL, bp.sd = NULL, sd.col = "black",
-                        drop.na = FALSE, text = FALSE, name = NULL,
+                        dropNA = FALSE, text = FALSE, name = NULL,
                         centraL = NULL,
                         reg.lim = NULL, lim.col = "black",
                         block.cols = NULL, block.lim = NULL) {
 
-  if (inherits(x, "regions_sim")) {
+  if (inherits(x, "regions_pco") || inherits(x, "regions_data")) {
+    Xvar <- .get_pos(x, subset = FALSE)
+    eligible_vertebrae <- .get_eligible_vertebrae(x)
+    unique_vert <- .get_eligible_vertebrae(x, subset = FALSE)
+  }
+  else if (inherits(x, "regions_sim")) {
     Xvar <- x$Xvar
-    subset <- seq_along(Xvar)
+    eligible_vertebrae <- sort(unique(Xvar))
+    unique_vert <- eligible_vertebrae
   }
   else {
-    if (inherits(x, "regions_pco")) {
-      x <- attr(x, "data")
-    }
-    else if (!inherits(x, "regions_data")) {
-      chk::err("`x` must inherit from class 'regions_pco', 'regions_data', or 'regions_sim")
-    }
-
-    Xvar <- x[[attr(x, "pos_ind")]]
-    subset <- attr(x, "subset")
+    chk::err("`x` must inherit from class 'regions_pco', 'regions_data', or 'regions_sim")
   }
 
-  chk::chk_flag(drop.na)
+  chk::chk_flag(dropNA)
 
   chk::chk_string(type)
   type <- tolower(type)
@@ -82,7 +80,7 @@ plotvertmap <- function(x, type = "count",
     }
     else {
       chk::chk_numeric(bps)
-      chk::chk_range(bps, range(Xvar))
+      chk::chk_range(bps, range(unique_vert))
     }
 
     BPs <- sort(.drop_na(bps))
@@ -129,9 +127,6 @@ plotvertmap <- function(x, type = "count",
 
   nreg <- length(BPs) + 1
 
-  max.pos <- max(Xvar)
-  Xvar.all <- seq_len(max.pos)
-
   col.by.block <- !is.null(block.lim)
   if (col.by.block) {
     chk::chk_numeric(block.lim)
@@ -160,24 +155,47 @@ plotvertmap <- function(x, type = "count",
     }
   }
 
-  # Vertebrae names for plot:
-  # vertmap <- data.frame(vname = Xvar.all)
+  max.pos <- .last(unique_vert)
+  vert.all <- seq_len(max.pos)
 
+  vertmap <- data.frame(vname = vert.all)
 
   if (!is.null(centraL)) {
-    vertmap <- data.frame(vname = Xvar,
-                          centraL = 0)
+    vertmap$centraL <- 0
+
+    if (!inherits(x, "regions_sim"))
+      data_combined <- .get_data_without_pos(x, subset = FALSE)
 
     if (is.numeric(centraL)) {
-      if (length(centraL) == length(Xvar)) {
+      if (length(centraL) == nrow(data_combined)) {
+        for (i in unique_vert) {
+          vertmap$centraL[vert.all == i] <- mean(centraL[Xvar == i], na.rm = TRUE)
+        }
+      }
+      else if (length(centraL) == max.pos) {
         vertmap$centraL <- centraL
       }
-      else if (length(centraL) == length(subset)) {
-        vertmap$centraL[subset] <- centraL
+      else if (length(centraL) == length(unique_vert)) {
+        vertmap$centraL[match(vert.all, unique_vert)] <- centraL
+      }
+      else if (length(centraL) == length(eligible_vertebrae)) {
+        vertmap$centraL[match(vert.all, eligible_vertebrae)] <- centraL
       }
       else {
-        chk::err(sprintf("`centraL` must have length equal to the number of included vertebrae (in this case, %s) or the number of vertebrae after subsampling (in this case, %s))",
-                         length(Xvar), length(Xvar[subset]), length(Xvar.all)))
+        chk::err(sprintf("`centraL` must have length equal to %s",
+                         .word_list(c(
+                           sprintf("the total number of vertebrae (in this case, %s)",
+                                   max.pos),
+                           if (max.pos != length(unique_vert))
+                             sprintf("the number of unique vertebrae present in the original dataset (in thise case, %s)",
+                                     length(unique_vert)),
+                           if (length(unique_vert) != length(eligible_vertebrae))
+                             sprintf("the number of available vertebrae (in this case, %s)",
+                                     length(eligible_vertebrae)),
+                           if (!inherits(x, "regions_sim") && length(unique_vert) != nrow(data_combined))
+                             sprintf("the number of observations across all specimens (in this case, %s)",
+                                     nrow(data_combined))
+                         ), "or")))
       }
 
       chk::chk_not_any_na(vertmap$centraL, "`centraL`")
@@ -187,25 +205,19 @@ plotvertmap <- function(x, type = "count",
       if (inherits(x, "regions_sim")) {
         chk::err("when `x` is a 'regions_sim' object, `centraL` cannot be specified as a string")
       }
-      if (!centraL %in% colnames(x)) {
+
+      if (!centraL %in% names(data_combined)) {
         chk::err("the value supplied to `centraL` is not the name of a variable in the dataset")
       }
-      vertmap$centraL <- x[[centraL]]
+
+      # Compute mean centrum length across specimens for each vertebra
+      for (i in unique_vert) {
+        vertmap$centraL[vertmap$vname == i] <- mean(data_combined[[centraL]][Xvar == i], na.rm = TRUE)
+      }
 
       chk::chk_not_any_na(vertmap$centraL, "the variable named in `centraL`")
       chk::chk_gte(vertmap$centraL, 0, "the variable named in `centraL`")
     }
-
-    vertmap <- merge(data.frame(vname = Xvar.all),
-                     vertmap, by = "vname", sort = FALSE,
-                     all.x = TRUE)
-
-    vertmap$centraL[is.na(vertmap$centraL)] <- 0
-
-    vertmap <- vertmap[order(vertmap$vname),]
-  }
-  else {
-    vertmap <- data.frame(vname = Xvar.all)
   }
 
   regions <- paste0("Region", seq_len(nreg))
@@ -214,12 +226,12 @@ plotvertmap <- function(x, type = "count",
   vertmap$reg <- regions[1]
   # Add other regions
   for (i in seq_along(BPs)) {
-    vertmap$reg[Xvar.all > BPs[i]] <- regions[i + 1]
+    vertmap$reg[vert.all > BPs[i]] <- regions[i + 1]
   }
 
   # Assign vertebrae not in data value of "Missing"
-  vertmap$reg[!Xvar.all %in% Xvar[subset]] <- "Missing"
-  if (drop.na) {
+  vertmap$reg[!vert.all %in% eligible_vertebrae] <- "Missing"
+  if (dropNA) {
     # Drop vertebrae not in data
     vertmap <- vertmap[vertmap$reg != "Missing",, drop = FALSE]
   }
@@ -325,24 +337,24 @@ plotvertmap <- function(x, type = "count",
     if (is.null(centraL)) {
       if (type == "count") {
         reg.lim <- vapply(reg.lim, function(m) {
-          vertmap$ind.end[max(which(vertmap$vname <= m))]
+          vertmap$ind.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
       }
       else if (type == "percent") {
         reg.lim <- vapply(reg.lim, function(m) {
-          vertmap$pct.end[max(which(vertmap$vname <= m))]
+          vertmap$pct.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
       }
     }
     else {
       if (type == "count") {
         reg.lim <- vapply(reg.lim, function(m) {
-          vertmap$L.end[max(which(vertmap$vname <= m))]
+          vertmap$L.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
       }
       else if (type == "percent") {
         reg.lim <- vapply(reg.lim, function(m) {
-          vertmap$L.pct.end[max(which(vertmap$vname <= m))]
+          vertmap$L.pct.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
       }
     }
@@ -362,7 +374,7 @@ plotvertmap <- function(x, type = "count",
     chk::chk_gte(bp.sd, 0)
 
     bp.inds <- vapply(BPs, function(b) {
-      vertmap$ind[max(which(vertmap$vname <= b))]
+      vertmap$ind[.last(which(vertmap$vname <= b))]
     }, numeric(1L))
 
     if (is.null(centraL)) {
@@ -497,58 +509,72 @@ plotvertmap <- function(x, type = "count",
   colors <- c(Missing = "grey", colors)		# Add color for missing vertebrae
 
   # Initialize plot
-  p <- ggplot(vertmap)
+  p <- ggplot()
 
   if (is.null(centraL)) {
     if (type == "count") {
       p <- p +
-        geom_rect(aes(xmin = ind.beg, xmax = ind.end,
-                      ymin = 1, ymax = 2, fill = Region),
+        geom_rect(aes(xmin = vertmap$ind.beg,
+                      xmax = vertmap$ind.end,
+                      ymin = 1, ymax = 2,
+                      fill = vertmap$Region),
                   color = border.col) +
         labs(y = name, x = "Vertebral count")
 
       if (text) {
         # Add vertebral number on each colored square
-        p <- p + geom_text(aes(x = ind, y = text.y, label = vname),
-                           data = vertmap)
+        p <- p + geom_text(aes(x = vertmap$ind,
+                               y = text.y,
+                               label = vertmap$vname))
       }
     }
     else if (type == "percent") {
       p <- p +
-        geom_rect(aes(xmin = pct.beg, xmax = pct.end,
-                      ymin = 1, ymax = 2, fill = Region),
+        geom_rect(aes(xmin = vertmap$pct.beg,
+                      xmax = vertmap$pct.end,
+                      ymin = 1, ymax = 2,
+                      fill = vertmap$Region),
                   color = border.col) +
         labs(y = name, x = "% Vertebral count")
 
       if (text) {
-        p <- p + geom_text(aes(x = (pct.beg + pct.end)/2, y = text.y, label = vname),
-                           data = vertmap)
+        p <- p + geom_text(aes(x = (vertmap$pct.beg + vertmap$pct.end)/2,
+                               y = text.y,
+                               label = vertmap$vname))
       }
     }
   }
   else {
     if (type == "count") {
       p <- p +
-        geom_rect(aes(xmin = L.beg, xmax = L.end,
-                      ymin = 1, ymax = 2, fill = Region),
+        geom_rect(aes(xmin = vertmap$L.beg,
+                      xmax = vertmap$L.end,
+                      ymin = 1, ymax = 2,
+                      fill = vertmap$Region),
                   color = border.col) +
         labs(y = name, x = "Centrum position")
 
       if (text) {
-        p <- p + geom_text(aes(x = (L.beg + L.end)/2, y = text.y, label = vname),
-                           data = vertmap[vertmap$centraL > 0,])
+        vertmap_ <- vertmap[vertmap$centraL > 0,]
+        p <- p + geom_text(aes(x = (vertmap_$L.beg + vertmap_$L.end)/2,
+                               y = text.y,
+                               label = vertmap_$vname))
       }
     }
     else if (type == "percent") {
       p <- p +
-        geom_rect(aes(xmin = L.pct.beg, xmax = L.pct.end,
-                      ymin = 1, ymax = 2, fill = Region),
+        geom_rect(aes(xmin = vertmap$L.pct.beg,
+                      xmax = vertmap$L.pct.end,
+                      ymin = 1, ymax = 2,
+                      fill = vertmap$Region),
                   color = border.col) +
         labs(y = name, x = "% Total centrum length")
 
       if (text) {
-        p <- p + geom_text(aes(x = (L.pct.beg + L.pct.end)/2, y = text.y, label = vname),
-                           data = vertmap[vertmap$centraL > 0,])
+        vertmap_ <- vertmap[vertmap$centraL > 0,]
+        p <- p + geom_text(aes(x = (vertmap_$L.pct.beg + vertmap_$L.pct.end)/2,
+                               y = text.y,
+                               label = vertmap_$vname))
       }
     }
   }
@@ -560,7 +586,10 @@ plotvertmap <- function(x, type = "count",
 
   if (!is.null(bp.sd)) {
     # Add horizontal line for BPs standard deviation
-    p <- p + geom_pointrange(data = bp.sd, aes(xmin = beg, xmax = end, y = y, x = bp),
+    p <- p + geom_pointrange(aes(xmin = bp.sd$beg,
+                                 xmax = bp.sd$end,
+                                 y = bp.sd$y,
+                                 x = bp.sd$bp),
                              lwd = 1, col = sd.col, shape = "diamond", size = .8)
   }
 
@@ -577,5 +606,5 @@ plotvertmap <- function(x, type = "count",
           legend.position = "none",
           plot.margin = unit(c(0, 10, 0, 0), "pt"))
 
-  return(p)
+  p
 }

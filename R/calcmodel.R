@@ -15,22 +15,22 @@
 
 #' @export
 calcmodel <- function(x, scores, bps, cont = TRUE) {
-  if (inherits(x, "regions_sim")) {
+  if (inherits(x, "regions_pco")) {
+    chk::chk_not_missing(scores, "`scores`")
+    chk::chk_whole_numeric(scores)
+    chk::chk_range(scores, c(1, ncol(x[["scores"]])))
+
+    Xvar <- .get_pos(x)
+    Yvar <- x[["scores"]][, scores, drop = FALSE]
+    eligible_vertebrae <- .get_eligible_vertebrae(x)
+  }
+  else if (inherits(x, "regions_sim")) {
     if (missing(scores)) {
       scores <- seq_len(ncol(x[["Yvar"]]))
     }
     Xvar <- x[["Xvar"]]
     Yvar <- x[["Yvar"]][, scores, drop = FALSE]
-  }
-  else if (inherits(x, "regions_pco")) {
-    chk::chk_not_missing(scores, "`scores`")
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(x[["scores"]])))
-
-    # subset <- attr(attr(x, "data"), "subset")
-    # Xvar <- attr(attr(x, "data"), "pos")[subset]
-    Xvar <- .get_pos(attr(x, "data"))
-    Yvar <- x[["scores"]][, scores, drop = FALSE]
+    eligible_vertebrae <- sort(unique(Xvar))
   }
   else {
     chk::err("`x` must be a `regions_pco` or `regions_sim` object")
@@ -38,14 +38,13 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
 
   chk::chk_not_missing(bps, "`bps`")
 
-
   if (chk::vld_atomic(bps) && all(is.na(bps))) {
     bps <- NA_real_
     cont <- TRUE
   }
   else {
     chk::chk_numeric(bps)
-    chk::chk_range(bps, range(Xvar))
+    chk::chk_range(bps, range(eligible_vertebrae))
     chk::chk_flag(cont)
   }
 
@@ -64,15 +63,19 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
   colhead <- c("regions", paste0("breakpoint", seq_len(max(1, nbp))),
                "sumRSS", paste("RSS", 1:noPC, sep = "."))
 
+  #Calculate weights to ensure each vertebra counts equally
+  vert_tab <- tabulate(Xvar)
+  w <- 1/vert_tab[Xvar]
+
   #Fit the model
-  x <- .design_matrix(Xvar, BPs, cont)
+  x <- .design_matrix(Xvar, if (anyNA(BPs)) NULL else BPs, cont)
 
-  lines <- .lm.fit(x = x, y = Yvar)
+  lines <- .fast_lm(x = x, y = Yvar, w = w)
 
-  RSS <- sum(lines$residuals^2)
+  RSS <- sum(w * lines$residuals^2)
 
   rsq <- {
-    if (noPC > 1) colSums(lines$residuals^2)
+    if (noPC > 1) colSums(w * lines$residuals^2)
     else RSS
   }
 

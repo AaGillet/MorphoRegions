@@ -37,8 +37,12 @@ plotsegreg.regions_pco <- function(x, scores, modelsupport = NULL, criterion = "
 
   # subset <- attr(attr(x, "data"), "subset")
   # Xvar <- attr(attr(x, "data"), "pos")[subset]
-  Xvar <- .get_pos(attr(x, "data"))
+  Xvar <- .get_pos(x)
   Yvar <- x[["scores"]][, scores, drop = FALSE]
+
+  #Calculate weights to ensure each vertebra counts equally
+  vert_tab <- tabulate(Xvar)
+  w <- 1/vert_tab[Xvar]
 
   if (!is.null(bps)) {
     if (!is.null(modelsupport)) {
@@ -81,11 +85,11 @@ plotsegreg.regions_pco <- function(x, scores, modelsupport = NULL, criterion = "
     cont <- TRUE
   }
 
-  fit <- .lm.fit(x = .design_matrix(Xvar, BPs, cont), y = Yvar)
+  fit <- .fast_lm(x = .design_matrix(Xvar, BPs, cont), y = Yvar, w = w)
 
   yhat <- Yvar - fit$residuals
 
-  .plotreg_internal(Xvar, Yvar, yhat, BPs, lines = TRUE, scores = scores)
+  .plotreg_internal(Xvar, Yvar, yhat, BPs, lines = TRUE, scores = scores, weights = w)
 }
 
 #' @exportS3Method plotsegreg regions_sim
@@ -139,7 +143,7 @@ plotsegreg.regions_sim <- function(x, scores, modelsupport = NULL, criterion = "
     chk::err("`bps` or `modelsupport` argument must be provided")
   }
 
-  fit <- .lm.fit(x = .design_matrix(Xvar, BPs, cont), y = Yvar)
+  fit <- .fast_lm(x = .design_matrix(Xvar, BPs, cont), y = Yvar)
 
   yhat <- Yvar - fit$residuals
 
@@ -157,29 +161,50 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
   Xvar <- attr(x, "pos")
   Yvar <- attr(x, "scores")[, scores, drop = FALSE]
 
+  #Calculate weights to ensure each vertebra counts equally
+  vert_tab <- tabulate(Xvar)
+  w <- 1/vert_tab[Xvar]
+
   BPs <- unlist(x$results[startsWith(names(x$results), "breakpoint")])
   cont <- attr(x, "cont")
 
-  fit <- .lm.fit(x = .design_matrix(Xvar, BPs, cont), y = Yvar)
+  fit <- .fast_lm(x = .design_matrix(Xvar, BPs, cont), y = Yvar, w = w)
 
   yhat <- Yvar - fit$residuals
 
-  .plotreg_internal(Xvar, Yvar, yhat, BPs, lines = TRUE, scores = scores)
+  .plotreg_internal(Xvar, Yvar, yhat, BPs, lines = TRUE, scores = scores, weights = w)
 }
 
 .plotreg_internal <- function(Xvar, Yvar, yhat = NULL, BPs = NULL, lines = TRUE, scores = 1,
-                              linescolor = "darkturquoise", BPcolor = "coral") {
+                              linescolor = "darkturquoise", BPcolor = "coral", specimen = NULL,
+                              weights = NULL) {
 
   PCO <- factor(rep(paste("PCO", scores), each = length(Xvar)))
   Xvar <- rep(Xvar, ncol(Yvar))
+  use_specimen <- !is.null(specimen) && nlevels(specimen) > 1
+  if (use_specimen) {
+    specimen <- rep(specimen, ncol(Yvar))
+  }
+
+  if (is.null(weights)) weights <- rep(1, length(Xvar))
+  else weights <- rep(weights, ncol(Yvar))
 
   #Flatten scores/predicted values
   Yvar <- as.vector(Yvar)
   if (!is.null(yhat)) yhat <- as.vector(yhat)
 
-  p <- ggplot(data.frame(PCO, Xvar, Yvar)) +
-    geom_point(aes(x = Xvar, y = Yvar), shape = "circle",
-               size = 2, color = "darkgrey")
+  p <- ggplot(data.frame(PCO, Xvar, Yvar),
+              aes(x = Xvar)) +
+    {
+      if (use_specimen)
+        geom_point(aes(y = Yvar, color = specimen, size = weights),
+                   shape = "circle")
+     else
+       geom_point(aes(y = Yvar, size = weights),
+                  shape = "circle",
+                  color = "darkgray")
+    }
+
   if (length(BPs) > 0) {
     breakpoints <- BPs + .5
     p <- p +
@@ -190,12 +215,13 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
   }
 
   if (!is.null(yhat) && lines) {
-    p <- p + geom_line(aes(x = Xvar, y = yhat,
+    p <- p + geom_line(aes(y = yhat,
                            group = cut(Xvar, c(-Inf, breakpoints, Inf))),
                        show.legend = FALSE, color = linescolor)
   }
 
-  p + facet_wrap(~PCO, ncol = 1,
+  p + scale_size_area(max_size = 2, guide = NULL) +
+    facet_wrap(~PCO, ncol = 1,
                  scales = "free_y",
                  strip.position = "left") +
     theme_bw() +
@@ -203,5 +229,6 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
           strip.background = element_blank(),
           strip.text = element_text(size = 11)) +
     labs(x = "Vertebra Position",
-         y = NULL)
+         y = NULL,
+         color = NULL)
 }

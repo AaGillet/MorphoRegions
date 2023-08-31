@@ -30,6 +30,7 @@
 # with no progress bar.
 .lapply_selector <- function(..., cl = NULL) {
   if (is.null(cl)) {
+
     lapply(...)
   }
   else if (inherits(cl, "cluster")) {
@@ -45,7 +46,11 @@
 # Similar to rbind() or dplyr::bind_rows(), but specifically to append a df
 # to another with fewer columns
 .rbind_larger <- function(x, y) {
+
   if (is.data.frame(x) || is.data.frame(y)) {
+    if (is.null(x)) return(y)
+    if (is.null(y)) return(x)
+
     x <- as.data.frame(x)
     y <- as.data.frame(y)
 
@@ -58,10 +63,13 @@
       nam_not_in_d <- setdiff(nam, names(d))
       to_add <- as.data.frame(matrix(nrow = nrow(d), ncol = length(nam_not_in_d),
                                      dimnames = list(rownames(d), nam_not_in_d)))
-      return(cbind(d, to_add)[nam])
+      cbind(d, to_add)[nam]
     }
   }
   else if (is.matrix(x) && is.matrix(y)) {
+    if (is.null(x)) return(y)
+    if (is.null(y)) return(x)
+
     nam <- {
       if (ncol(x) > ncol(y)) names(x)
       else names(y)
@@ -71,7 +79,7 @@
       nam_not_in_d <- setdiff(nam, colnames(d))
       to_add <- matrix(nrow = nrow(d), ncol = length(nam_not_in_d),
                        dimnames = list(rownames(d), nam_not_in_d))
-      return(cbind(d, to_add)[, nam, drop = FALSE])
+      cbind(d, to_add)[, nam, drop = FALSE]
     }
   }
   else {
@@ -119,19 +127,101 @@
   vapply(x, function(z) {
     tryCatch(is.matrix(grDevices::col2rgb(z)),
              error = function(e) FALSE)
-    }, logical(1L))
+  }, logical(1L))
 }
 
 # Extracts vertebra positions for remaining observations from a
 # regions_data dataset
-.get_pos <- function(data) {
-  pos_ind <- attr(data, "pos_ind")
-  subset <- attr(data, "subset")
+.get_pos <- function(x, subset = TRUE) {
+  if (inherits(x, "regions_pco")) {
+    x <- attr(x, "data")
+  }
 
-  data[[pos_ind]][subset]
+  pos_ind <- attr(x, "pos_ind")
+
+  pos <- unlist(lapply(x, `[[`, pos_ind))
+
+  if (!subset) return(pos)
+
+  pos[pos %in% attr(x, "eligible_vertebrae")]
+}
+
+# Extracts measurements from
+# regions_data dataset
+.get_data_without_pos <- function(x, subset = TRUE) {
+  if (inherits(x, "regions_pco")) {
+    x <- attr(x, "data")
+  }
+
+  pos_ind <- attr(x, "pos_ind")
+
+  out <- do.call("rbind", x)[-pos_ind]
+
+  if (!subset) return(out)
+
+  out[.get_pos(x, FALSE) %in% .get_eligible_vertebrae(x),]
+}
+
+.get_eligible_vertebrae <- function(x, subset = TRUE) {
+  if (inherits(x, "regions_pco")) {
+    x <- attr(x, "data")
+  }
+
+  if (subset) return(attr(x, "eligible_vertebrae"))
+
+  pos <- .get_pos(x, subset = FALSE)
+
+  sort(unique(pos))
+}
+
+# Fast lm(), uses .lm.fit() but accommodates weights
+.fast_lm <- function(x, y, w = NULL) {
+  if (is.null(w)) return(.lm.fit(x, y))
+
+  w <- sqrt(w)
+  out <- .lm.fit(x * w, y * w)
+  out$residuals <- out$residuals / w
+
+  out
+}
+
+# Get last element in a vector
+.last <- function(x) {
+  x[length(x)]
+}
+
+# Test whether each row of matrix contains any elements in vec
+.any_mat_in <- function(m, vec) {
+  comp <- {
+    if (length(vec) > 1) function(x, y) {x %in% y}
+    else function(x, y) {x == y}
+  }
+  .rowSums(matrix(comp(m, vec), ncol = ncol(m)),
+           m = nrow(m), n = ncol(m)) > 0
+}
+
+# Test whether each row of matrix contains all elements in vec
+.all_mat_in <- function(m, vec) {
+  p <- ncol(m)
+
+  out <- .rowSums(matrix(m == vec[1], ncol = p),
+                  m = nrow(m), n = p) > 0
+
+  for (i in seq_along(vec)[-1]) {
+    out[out][.rowSums(matrix(m[out,] == vec[i], ncol = p),
+                      m = sum(out), n = p) == 0] <- FALSE
+  }
+
+  out
+}
+
+# Fast, minimal version of pmax() that takes in vector and scalar
+.pmax2 <- function(x, n = 0) {
+  x[x < n] <- n
+  x
 }
 
 #To pass CRAN checks:
-utils::globalVariables(c("L.beg", "L.end", "L.pct.beg", "L.pct.end", "PCO",
-                         "Region", "beg", "bp", "featuren", "ind", "ind.beg",
-                         "ind.end", "pct.beg", "pct.end", "value", "vname"))
+# utils::globalVariables(c("L.beg", "L.end", "L.pct.beg", "L.pct.end", "PCO",
+#                          "Region", "beg", "bp", "featuren", "ind", "ind.beg",
+#                          "ind.end", "pct.beg", "pct.end", "value", "vname"))

@@ -39,7 +39,7 @@ modelperf.regions_pco <- function(x, scores,
 
   # subset <- attr(attr(x, "data"), "subset")
   # Xvar <- attr(attr(x, "data"), "pos")[subset]
-  Xvar <- .get_pos(attr(x, "data"))
+  Xvar <- .get_pos(x)
   Yvar <- x[["scores"]][, scores, drop = FALSE]
 
   if (!is.null(bps)) {
@@ -178,14 +178,18 @@ print.regions_perf <- function(x, digits = 3, ...) {
 
 .modelperf_internal <- function(Xvar, Yvar, BPs, cont) {
 
+  #Calculate weights to ensure each vertebra counts equally
+  vert_tab <- tabulate(Xvar)
+  w <- 1/vert_tab[Xvar]
+
   totrsq <- do.call("rbind", lapply(seq_len(ncol(Yvar)), function(i) {
     x <- .design_matrix(Xvar, BPs, cont)
-    fit <- .lm.fit(x = x, y = Yvar)
+    fit <- .fast_lm(x = x, y = Yvar[,i], w = w)
 
     n <- length(Xvar)
     fitted <- Yvar[,i] - fit$residuals
-    mss <- sum((fitted - mean(fitted))^2)
-    rss <- sum(fit$residuals^2)
+    mss <- sum(w * (fitted - sum(w * fitted)/sum(w))^2)
+    rss <- sum(w * fit$residuals^2)
     rdf <- n - fit$rank
     r.squared <- mss/(mss + rss)
 
@@ -193,13 +197,13 @@ print.regions_perf <- function(x, digits = 3, ...) {
       r2.adj = 1 - (1 - r.squared) * ((n - 1)/rdf),
       SSres =  rss,
       df =     fit$rank + rdf - 1,
-      SStot =  sum(fit$effects[1:fit$rank]^2) + rss,
+      SStot =  mss + rss,
       dfe =    rdf)
   }))
   rownames(totrsq) <- paste0("PCO.", 1:ncol(Yvar))
 
   # Calculate R2 for all PCOs multivariately:
-  tot.rsq <- colSums(totrsq)
+  tot.rsq <- colSums(totrsq[, -(1:2), drop = FALSE])
   ord.tot.rsq <- unname(1 - tot.rsq["SSres"] / tot.rsq["SStot"])
   adj.tot.rsq <- unname(1 - (tot.rsq["SSres"] / tot.rsq["dfe"]) / (tot.rsq["SStot"] / tot.rsq["df"]))
 

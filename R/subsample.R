@@ -18,33 +18,34 @@ subsample <- function(pco, sample = NULL, type = "seq") {
 
   chk::chk_is(pco, "regions_pco")
 
-  if (nrow(attr(pco, "data")) != length(attr(attr(pco, "data"), "subset"))) {
-    chk::err("`subsample()` cannot be used on a `regions_pco` object after using `subsample()` or `subset(., drop = FALSE)` on it.")
+  pos <- .get_pos(pco)
+
+  if (!identical(pos, .get_pos(pco, subset = FALSE))) {
+    chk::err("`subsample()` cannot be used on a `regions_pco` object after using `subsample()` or `subset(., drop = FALSE)` on it")
   }
 
-  dat <- attr(pco, "data")
-  pos <- dat[[attr(dat, "pos_ind")]]
+  eligible_vertebrae <- .get_eligible_vertebrae(pco)
 
   chk::chk_number(sample)
   chk::chk_gt(sample, 0)
-  chk::chk_lte(sample, length(pos))
+  chk::chk_lte(sample, length(eligible_vertebrae))
 
   chk::chk_string(type)
   type <- tolower(type)
   type <- .match_arg(type, c("seq", "random"))
 
   if (sample <= 1) {
-    sample <- round(sample * length(pos))
+    sample <- round(sample * length(eligible_vertebrae))
   }
 
   sampled_pos_ind <- switch(type,
-                            "seq" = round(seq(1, length(pos), length.out = sample)),
-                            "random" = sample(seq_along(pos), sample))
+                            "seq" = round(seq(1, length(eligible_vertebrae), length.out = sample)),
+                            "random" = sample(seq_along(eligible_vertebrae), sample))
 
-  pco$scores <- pco$scores[sampled_pos_ind,, drop = FALSE]
-  pco$eigen.val <- pco$eigen.val[sampled_pos_ind]
+  pco$scores <- pco$scores[pos %in% eligible_vertebrae[sampled_pos_ind],, drop = FALSE]
+  pco$eigen.val <- pco$eigen.val[pos %in% eligible_vertebrae[sampled_pos_ind]]
 
-  attr(attr(pco, "data"), "subset") <- sampled_pos_ind
+  attr(attr(pco, "data"), "eligible_vertebrae") <- eligible_vertebrae[sampled_pos_ind]
 
   pco
 }

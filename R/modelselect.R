@@ -22,7 +22,7 @@ modelselect <- function(results, scores = NULL) {
 
   regiondata <- results$results
 
-  noregions <- nrow(results$stats)
+  noregions <- sort(unique(results$stats$Nregions))
 
   if (!is.null(scores)) {
     chk::chk_whole_numeric(scores)
@@ -34,7 +34,7 @@ modelselect <- function(results, scores = NULL) {
     regiondata[startsWith(names(regiondata), "RSS.") & !names(regiondata) %in% keep.pcos] <- NULL
   }
 
-  models <- do.call("rbind", lapply(seq_len(noregions), function(i) {
+  models <- do.call("rbind", lapply(noregions, function(i) {
     allmodels <- regiondata[regiondata$regions == i,, drop = FALSE]	#select only models with correct region no
     allmodels[which.min(allmodels$sumRSS),, drop = FALSE]
   }))

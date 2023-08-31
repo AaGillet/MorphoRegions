@@ -6,7 +6,7 @@
 #'
 #' @param x a `regions_data` object; the output of a call to [process_measurements()].
 #' @param metric string; the distance matrix calculation metric. Allowable options include those support by [cluster::daisy()], which are `"euclidean"`, `"manhattan"`, or `"gower"`. Default is `"gower"`. Abbreviations allowed.
-#' @param scale `logical`; whether to scale the variables prior to including them in the PCO estimation. Default is `TRUE`, which is especially advisable when using the bootstrap to select the number of PCOs to use in downstream analyses.
+#' @param scale `logical`; whether to scale the variables prior to including them in the PCO estimation. Default is `TRUE`, which is especially advisable when using the bootstrap to select the number of PCOs to use in downstream analyses. Passed to the `stand` argument of `cluster::daisy()`. Ignored if `metric = "gower"`.
 #'
 #' @return A `regions_pco` object, which contains eigenvectors in the `scores` component and eigenvalues in the `eigen.val` component. The original dataset is stored in the `data` attribute.
 #'
@@ -27,23 +27,23 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
   metric <- .match_arg(metric, eval(formals(cluster::daisy)[["metric"]]))
   chk::chk_flag(scale)
 
-  #Store original dataset
-  x0 <- x
-  x <- x[-attr(x, "pos_ind")]
+  dat <- .get_data_without_pos(x)
 
-  if (scale) {
-    for (i in names(x)) {
-      x[[i]] <- (x[[i]] - mean(x[[i]])) / sd(x[[i]])
-    }
+  if (metric != "gower" && !all(vapply(dat, is.numeric, logical(1L)))) {
+    chk::wrn(sprintf("`metric = \"%s\" cannot be used when non-numeric measurement variables are present. Setting `metric` to `\"gower\"`", metric))
   }
 
   #Set distance metric
-  dist <- cluster::daisy(x, metric = metric)
+  dist <- cluster::daisy(dat, metric = metric, stand = scale)
 
   out <- .svdPCO_internal(dist)
 
-  attr(out, "data") <- x0
+  attr(out, "data") <- x
   attr(out, "metric") <- metric
+  attr(out, "scale") <- scale
+  attr(out, "specimen") <- factor(rep(seq_along(x), unlist(lapply(x, nrow))),
+                                  labels = paste("Specimen", seq_along(x)),
+                                  levels = seq_along(x))
 
   class(out) <- "regions_pco"
 
