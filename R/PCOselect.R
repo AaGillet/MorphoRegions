@@ -9,6 +9,7 @@
 #' @param cutoff when `method = "variance"`, the cutoff for the variance explained by each PCO score.
 #' @param results when `method = "max"`, a `regions_results` object, the output of a call to [calcregions()].
 #' @param criterion when `method = "max"`, which criterion should be used to select the number of scores. Allowable options include `"aic"` and `"bic"`. Abbreviations allowed.
+#' @param verbose when `method = "boot"`, whether to display a progress bar. Default is `TRUE`.
 #' @param x for `plot.regions_pco_select()`, a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "boot"`. For `plot.summary.regions_pco_select()`, the output of a call to `summary.regions_pco_select()`.
 #' @param object a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "max"`.
 #' @param plot `logical`; whether to plot the summary. Default is `FALSE`.
@@ -42,7 +43,7 @@
 
 #' @export
 PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps = 500,
-                      results = NULL, criterion = "aic") {
+                      results = NULL, criterion = "aic", verbose = TRUE) {
   chk::chk_is(pco, "regions_pco")
 
   chk::chk_string(method)
@@ -59,8 +60,9 @@ PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps
   else if (method == "boot") {
     chk::chk_count(nreps)
     chk::chk_gte(nreps, 1)
+    chk::chk_flag(verbose)
 
-    boot <- .PCOboot(pco, nreps)
+    boot <- .PCOboot(pco, nreps, verbose)
     scores <- boot$sigpco
 
     info$nreps <- nreps
@@ -198,10 +200,6 @@ summary.regions_pco_select <- function(object, plot = FALSE, ...) {
 #' @exportS3Method plot summary.regions_pco_select
 #' @rdname PCOselect
 plot.summary.regions_pco_select <- function(x, ...) {
-  # pco.no.test.long <- tidyr::pivot_longer(x, cols = 2:5,
-  #                                         names_to = c("PCOtype","Testtype"),
-  #                                         names_sep = "\\.")
-
   pco.no.test.long <- reshape(x, direction = "long", idvar = "PCO", varying = list(c(2, 3), c(4,5)),
                               timevar = "PCOtype", times = c("Single PCO", "Cumulated PCOs"),
                               v.names = c("RS.AICc", "RS.BIC"))
@@ -215,10 +213,6 @@ plot.summary.regions_pco_select <- function(x, ...) {
     geom_point(data = pco.no.test.long, aes(x = .data$PCO, y = .data$value,
                                             color = .data$PCOtype, shape = .data$PCOtype)) +
     scale_color_manual(values = c("#fc8d62", "#8da0cb")) +
-    # geom_smooth(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
-    #             formula = y~x, method = "loess", se = FALSE, color = "darkgrey") +
-    # geom_point(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
-    #            color = "darkgrey") +
     geom_line(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
               color = "darkgrey", linewidth = 1) +
     scale_y_continuous(name = "Region score",
@@ -244,29 +238,31 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   invisible(x0)
 }
 
-.PCOboot <- function(pco, nreps = 500) {
+.PCOboot <- function(pco, nreps = 500, verbose = TRUE) {
+
+  if (!verbose) {
+    opb <- pbapply::pboptions(type = "none")
+    on.exit(pbapply::pboptions(opb))
+  }
+  else {
+    cat("Bootstrapping...\n")
+  }
 
   #calculate 'true' eigenvalues as percentage variance
   eigen.true <- prop.table(pco$eigen.val)
 
-  data <- attr(pco, "data")
-  data <- data[-attr(data, "pos_ind")]
+  data <- .get_data_without_pos(pco)
   metric <- attr(pco, "metric")
-
-  #Scale data
-  for (i in seq_len(ncol(data))) {
-    data[[i]] <- (data[[i]] - mean(data[[i]]))/sd(data[[i]])
-  }
 
   randdata <- data
 
-  eigen.boot <- do.call("cbind", lapply(seq_len(nreps), function(i) {
+  eigen.boot <- do.call("cbind", pbapply::pblapply(seq_len(nreps), function(i) {
     #Shuffle each row of the dataset
     for (j in seq_len(nrow(data))) {
       randdata[j,] <- sample(data[j,])
     }
 
-    dist <- cluster::daisy(randdata, metric = metric)
+    dist <- cluster::daisy(randdata, metric = metric, stand = attr(pco, "scale"))
 
     if (anyNA(dist)) {
       return(NULL)
