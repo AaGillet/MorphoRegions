@@ -14,7 +14,8 @@ PCOselect(
   cutoff = 0.05,
   nreps = 500,
   results = NULL,
-  criterion = "aic"
+  criterion = "aic",
+  verbose = TRUE
 )
 
 \method{plot}{regions_pco_select}(x, ...)
@@ -37,6 +38,8 @@ PCOselect(
 \item{results}{when \code{method = "max"}, a \code{regions_results} object, the output of a call to \code{\link[=calcregions]{calcregions()}}.}
 
 \item{criterion}{when \code{method = "max"}, which criterion should be used to select the number of scores. Allowable options include \code{"aic"} and \code{"bic"}. Abbreviations allowed.}
+
+\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE}.}
 
 \item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"}. For \code{plot.summary.regions_pco_select()}, the output of a call to \code{summary.regions_pco_select()}.}
 

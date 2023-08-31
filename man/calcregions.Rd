@@ -13,6 +13,7 @@ calcregions(
   minvert = 3,
   cont = TRUE,
   exhaus = TRUE,
+  includebp = NULL,
   omitbp = NULL,
   cl = NULL,
   verbose = TRUE
@@ -21,7 +22,7 @@ calcregions(
 addregions(
   regions_results,
   noregions,
-  exhaus = FALSE,
+  exhaus = TRUE,
   cl = NULL,
   verbose = TRUE
 )
@@ -40,6 +41,8 @@ addregions(
 \item{cont}{\code{logical}; whether to fit models that are continuous (\code{TRUE}) or discontinuous (\code{FALSE}) at the breakpoints. Default is \code{TRUE}.}
 
 \item{exhaus}{\code{logical}; whether to fit all possible models (\code{TRUE}) or use heuristics to reduce the number of models fit (\code{FALSE}). Default is \code{TRUE}. See Details. Setting to \code{FALSE} can reduce the size of the resulting object.}
+
+\item{includebp}{an optional vector of vertebrae that must be included in any tested set of breakpoints, e.g., if it is known that two regions are divided at that vertebra. \code{includebp} does not have to obey the \code{minvert} rules, but a warning will be thrown if it doesn't.}
 
 \item{omitbp}{an optional vector of vertebrae to be omitted from the list of possible breakpoints, e.g., if it is known that two adjacent vertebrae belong to the same region.}
 
@@ -62,11 +65,13 @@ A \code{regions_results} object with the following components:
 \code{calcregions()} enumerates all possible combinations of breakpoints to fit multivariate segmented regression models. \code{addregions()} adds models with additional numbers of regions to the resulting output object.
 }
 \details{
-\code{calcregions()} enumerates all possible combinations of breakpoints that satisfy the constraint imposed by \code{minvert} (i.e., that breakpoints need to be at least \code{minvert} vertebrae apart) and fits the segmented regression models implied by each combination. These are multivariate regression models with the PCO scores specified by \code{scores} as the outcome. When \code{cont = TRUE}, these regression models are continuous; i.e., the regression lines for each region connect at the breakpoints. Otherwise, the models are discontinuous so that each region has its own intercept and slope. The models are fit using \code{\link[=.lm.fit]{.lm.fit()}}, which efficiently implements ordinary least squares regression.
+\code{calcregions()} enumerates all possible combinations of breakpoints that satisfy the constraint imposed by \code{minvert} (i.e., that breakpoints need to be at least \code{minvert} vertebrae apart) and fits the segmented regression models implied by each combination. These are multivariate regression models with the PCO scores specified by \code{scores} as the outcomes. When \code{cont = TRUE}, these regression models are continuous; i.e., the regression lines for each region connect at the breakpoints. Otherwise, the models are discontinuous so that each region has its own intercept and slope. The models are fit using \code{\link[=.lm.fit]{.lm.fit()}}, which efficiently implements ordinary least squares regression.
 
 When \code{exhaus = FALSE}, heuristics are used to reduce the number of models to fit, which can be useful for keeping the size of the resulting object down by avoiding fitting models corresponding to breakpoint combinations that yield a poor fit to the data. Only breakpoint combinations that correspond to the breakpoints of the best fitting model with a smaller number of regions +/- 3 vertebrae are used, and only models that have an RSS smaller than half a standard deviation more the smallest RSS are kept.
 
 \code{addregions()} should be used on an existing \code{regions_results} object to add models with more regions. Internally, it works just the same as \code{calcregions()}.
+
+When the number of possible combinations of breakpoints for a given number of regions is larger than 50 million (i.e., 5e7), the problem will be split into smaller problems, with the results of each stored in temporary files that are deleted when the function completes.
 }
 \examples{
 data("alligator")
@@ -117,6 +122,8 @@ regionresults <- calcregions(alligator_PCO,
                              verbose = FALSE)
 
 regionresults
+
+summary(regionresults)
 }
 \seealso{
 \code{\link[=calcmodel]{calcmodel()}} to fit a segmented regression model for a single set of breakpoints; \code{\link[=modelselect]{modelselect()}} to select the best model for each number of regions based on RSS; \code{\link[=modelsupport]{modelsupport()}} to compute statistics the describe the support of the best models; \code{\link[=calcBPvar]{calcBPvar()}} to compute the variability in the optimal breakpoints.

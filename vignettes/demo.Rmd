@@ -130,33 +130,33 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 #missing vertebrae and adding vertebrae numbers
 plotvertmap(dolphin_pco, name = "Dolphin",
             modelsupport = supp, criterion = "bic", model = 1,
-            drop.na = TRUE, text = TRUE)
+            dropNA = TRUE, text = TRUE)
 
 #Plot vertebral map using best BPs from modelsupport(), removing
 #missing vertebrae and adding vertebrae numbers, plotted as percent
 plotvertmap(dolphin_pco, name = "Dolphin", type = "percent",
             modelsupport = supp, criterion = "bic", model = 1,
-            drop.na = TRUE, text = TRUE)
+            dropNA = TRUE, text = TRUE)
 
 #Plot vertebral map using best BPs from modelsupport(), plotted
 #as percent centrum length
 plotvertmap(dolphin_pco, name = "Dolphin", type = "percent",
             modelsupport = supp, criterion = "bic", model = 1,
-            drop.na = TRUE,
+            dropNA = TRUE,
             centraL = dolphin$Lc)
 
 #Plot vertebral map using weighted BPs and SDs from BPvar(), removing
 #missing vertebrae and adding vertebrae numbers
 plotvertmap(dolphin_pco, name = "Dolphin",
             bpvar = bpvar,
-            drop.na = TRUE, text = TRUE)
+            dropNA = TRUE, text = TRUE)
 
 #Plot vertebral map using given BPs and SDs; SD bars do not overlap,
 #numbers move out of the way
 plotvertmap(dolphin_pco, name = "Dolphin",
             bps = c(12, 17, 20, 30),
             bp.sd = c(3, 3, 2.5, 1.5),
-            drop.na = TRUE, text = TRUE)
+            dropNA = TRUE, text = TRUE)
 
 #Plot vertebral map adding colors for traditional regions
 blockcols <- list(PreCaudal = c("#BF812D","#8C510A","#543005"),
@@ -211,3 +211,164 @@ plotsegreg(sim, scores = 1, modelsupport = simsupport,
                    criterion = "aic"))
 ```
 
+#-----------
+
+```{r}
+library(regions2)
+data("porpoise")
+
+#Process measurements data
+porpoise_data <- process_measurements(list(porpoise1, porpoise2, porpoise3),
+                                      pos = "Vertebra")
+```
+
+```{r}
+#Compute PCOs
+porpoise_pco <- svdPCO(porpoise_data, "gower")
+
+#Plot PCOs
+plot(porpoise_pco, 1:2)
+plot(porpoise_pco, 1, 2)
+```
+
+```{r}
+#Dalculate number of PCOs to use in subsequent analyses
+(PCOs <- PCOselect(porpoise_pco, "manual", scores = 3))
+(PCOs <- PCOselect(porpoise_pco, "variance", cutoff = .05))
+(PCOs <- PCOselect(porpoise_pco, "boot"))
+plot(PCOs)
+```
+
+
+```{r}
+#PCO loadings
+loadings <- PCOload(porpoise_pco, scores = 1:2)
+loadings
+plot(loadings)
+```
+
+```{r}
+#Performance for all models across all breakpoint combos
+regionresults <- calcregions(porpoise_pco, scores = 1:2, noregions = 4,
+                             minvert = 3, cont = TRUE, exhaus = TRUE,
+                             cl = NULL, verbose = TRUE)
+regionresults
+summary(regionresults)
+```
+
+```{r}
+#Adding additional models to existing results
+regionresults <- addregions(regionresults, noregions = 5:6,
+                            exhaus = FALSE, cl = NULL,
+                            verbose = TRUE)
+regionresults
+summary(regionresults)
+```
+
+```{r}
+#Selected best model per number of regions
+models <- modelselect(regionresults)
+models
+```
+
+```{r}
+#Calculate fit statistics of models
+supp <- modelsupport(models)
+supp
+```
+
+```{r}
+#Calculate model performance (R2) of best model
+modelperf(porpoise_pco, scores = 1:2, modelsupport = supp,
+          criterion = "bic", model = 1)
+
+#Plot best model fit
+plotsegreg(porpoise_pco, scores = 1:2, modelsupport = supp,
+            criterion = "bic", model = 1)
+```
+
+```{r}
+#Calculate variability of optimal breakpoints
+bpvar <- calcBPvar(regionresults, noregions = 6,
+                   pct = .1, criterion = "aic")
+bpvar
+```
+
+```{r}
+#Calculate number of PCOs to use based on results
+regionresults <- calcregions(porpoise_pco, scores = 1:10, noregions = 5,
+                             minvert = 3, cont = TRUE, exhaus = TRUE)
+(PCOs <- PCOselect(porpoise_pco, "max", results = regionresults))
+summary(PCOs, plot = TRUE)
+```
+
+```{r}
+#Fit a single breakpoints model
+regionsmodel <- calcmodel(porpoise_pco, scores = 1:2,
+                          bps = c(22, 35, 54), cont = FALSE)
+
+regionsmodel
+
+#Evaluate performance (R2) on that model
+modelperf(regionsmodel)
+
+#Plot model results:
+plotsegreg(regionsmodel, scores = 1:2)
+
+#Can also evaluate model directly
+modelperf(porpoise_pco, scores = 1:2, 
+          bps = c(22, 35, 54), cont = FALSE)
+
+#Can also plot model directly
+plotsegreg(porpoise_pco, scores = 1:2, 
+            bps = c(22, 35, 54), cont = FALSE)
+
+```
+
+```{r, fig.height=1}
+#Plot vertebral map using arbitrary breakpoints
+plotvertmap(porpoise_pco,
+            bps = c(22, 35, 54))
+
+#Plot vertebral map using best BPs from modelsupport(), removing
+#missing vertebrae and adding vertebrae numbers
+plotvertmap(porpoise_pco, name = "Porpoise",
+            modelsupport = supp, criterion = "bic", model = 1,
+            dropNA = TRUE, text = TRUE)
+
+#Plot vertebral map using best BPs from modelsupport(), removing
+#missing vertebrae and adding vertebrae numbers, plotted as percent
+plotvertmap(porpoise_pco, name = "Porpoise", type = "percent",
+            modelsupport = supp, criterion = "bic", model = 1,
+            dropNA = TRUE, text = TRUE)
+
+#Plot vertebral map using best BPs from modelsupport(), plotted
+#as percent centrum length
+plotvertmap(porpoise_pco, name = "Porpoise", type = "percent",
+            modelsupport = supp, criterion = "bic", model = 1,
+            dropNA = TRUE,
+            centraL = "Lc")
+
+#Plot vertebral map using weighted BPs and SDs from BPvar(), removing
+#missing vertebrae and adding vertebrae numbers
+plotvertmap(porpoise_pco, name = "Porpoise",
+            bpvar = bpvar,
+            dropNA = TRUE, text = TRUE)
+
+#Plot vertebral map using given BPs and SDs; SD bars do not overlap,
+#numbers move out of the way
+plotvertmap(porpoise_pco, name = "Porpoise",
+            bps = c(12, 17, 20, 30),
+            bp.sd = c(3, 3, 2.5, 1.5),
+            dropNA = TRUE, text = TRUE)
+```
+
+```{r}
+#Subsample PCOs
+porpoise_pco_sub <- subsample(porpoise_pco, sample = .7)
+
+plotvertmap(porpoise_pco_sub, name = "Porpoise",
+            text = TRUE)
+plotvertmap(porpoise_pco_sub, name = "Porpoise",
+            text = FALSE, centraL = "Lc")
+```

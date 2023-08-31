@@ -11,7 +11,7 @@ svdPCO(x, metric = "gower", scale = TRUE)
 
 \item{metric}{string; the distance matrix calculation metric. Allowable options include those support by \code{\link[cluster:daisy]{cluster::daisy()}}, which are \code{"euclidean"}, \code{"manhattan"}, or \code{"gower"}. Default is \code{"gower"}. Abbreviations allowed.}
 
-\item{scale}{\code{logical}; whether to scale the variables prior to including them in the PCO estimation. Default is \code{TRUE}, which is especially advisable when using the bootstrap to select the number of PCOs to use in downstream analyses.}
+\item{scale}{\code{logical}; whether to scale the variables prior to including them in the PCO estimation. Default is \code{TRUE}, which is especially advisable when using the bootstrap to select the number of PCOs to use in downstream analyses. Passed to the \code{stand} argument of \code{cluster::daisy()}. Ignored if \code{metric = "gower"}.}
 }
 \value{
 A \code{regions_pco} object, which contains eigenvectors in the \code{scores} component and eigenvalues in the \code{eigen.val} component. The original dataset is stored in the \code{data} attribute.

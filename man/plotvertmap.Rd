@@ -14,7 +14,7 @@ plotvertmap(
   bpvar = NULL,
   bp.sd = NULL,
   sd.col = "black",
-  drop.na = FALSE,
+  dropNA = FALSE,
   text = FALSE,
   name = NULL,
   centraL = NULL,
@@ -43,7 +43,7 @@ plotvertmap(
 
 \item{sd.col}{when \code{bp.sd} is specified, the color of the mark on plot indicating the standard deviations. Default is black.}
 
-\item{drop.na}{\code{logical}; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertbrae from the plot (\code{TRUE}) or retain them and label them as missing (i.e., lacking a region) (\code{FALSE}). Default is \code{FALSE} to retain them.}
+\item{dropNA}{\code{logical}; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertbrae from the plot (\code{TRUE}) or retain them and label them as missing (i.e., lacking a region) (\code{FALSE}). Default is \code{FALSE} to retain them.}
 
 \item{text}{\code{logical}; whether to print the verbtra index on each vertebra. Default is \code{FALSE}.}
 

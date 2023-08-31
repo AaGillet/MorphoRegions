@@ -7,7 +7,7 @@ alligator_data <- process_measurements(alligator,
 alligator_PCO <- svdPCO(alligator_data)
 
 # Plot vertebrae before subsampling
-plotvertmap(alligator_PCO, drop.na = FALSE,
+plotvertmap(alligator_PCO, dropNA = FALSE,
             text = TRUE)
 
 # Subsample data after estimating PCOs; subsample down
@@ -17,5 +17,5 @@ alligator_PCO_sample <- subsample(alligator_PCO,
 
 # Plot vertebrae after subsampling; gray vertebrae
 # have been dropped
-plotvertmap(alligator_PCO_sample, drop.na = FALSE,
+plotvertmap(alligator_PCO_sample, dropNA = FALSE,
             text = TRUE)
