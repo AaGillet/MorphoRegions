@@ -48,3 +48,12 @@ regionresults <- calcregions(alligator_PCO,
 regionresults
 
 summary(regionresults)
+
+# Compute the number of breakpoint combinations for given
+# specification using `ncombos()`; if any number exceeds
+# the value supplied to `ncombos_file_trigger`, results
+# will temporary be stored in files before being read in and
+# deleted.
+ncombos(alligator_PCO,
+        noregions = 1:8,
+        minvert = 3)

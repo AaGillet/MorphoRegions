@@ -3,3 +3,4 @@
 ^_dev$
 ^vignettes/demo.Rmd$
 ^vignettes/notes.Rmd$
+^data-raw$
