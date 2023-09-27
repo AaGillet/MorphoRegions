@@ -46,7 +46,7 @@ plotsegreg.regions_pco <- function(x, scores, modelsupport = NULL, criterion = "
 
   if (!is.null(bps)) {
     if (!is.null(modelsupport)) {
-      chk::wrn("`bps` specified; ignoring `modelsupport`")
+      .wrn_immediate("`bps` specified; ignoring `modelsupport`")
     }
 
     chk::chk_numeric(bps)

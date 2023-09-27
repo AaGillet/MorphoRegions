@@ -30,7 +30,7 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
   dat <- .get_data_without_pos(x)
 
   if (metric != "gower" && !all(vapply(dat, is.numeric, logical(1L)))) {
-    chk::wrn(sprintf("`metric = \"%s\" cannot be used when non-numeric measurement variables are present. Setting `metric` to `\"gower\"`", metric))
+    .wrn_immediate(sprintf("`metric = \"%s\" cannot be used when non-numeric measurement variables are present. Setting `metric` to `\"gower\"`", metric))
   }
 
   #Set distance metric

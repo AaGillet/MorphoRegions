@@ -30,7 +30,6 @@
 # with no progress bar.
 .lapply_selector <- function(..., cl = NULL) {
   if (is.null(cl)) {
-
     lapply(...)
   }
   else if (inherits(cl, "cluster")) {
@@ -219,6 +218,18 @@
 .pmax2 <- function(x, n = 0) {
   x[x < n] <- n
   x
+}
+
+# Version of chk::wrn() that prints warnings immediately instead of waiting till
+# the end
+.wrn_immediate <- function(...) {
+  op <- options()
+  on.exit(options(op))
+  w <- getOption("warn")
+  if (!chk::vld_whole_number(w) || w < 2) {
+    options(warn = 1)
+  }
+  chk::wrn(...)
 }
 
 #To pass CRAN checks:

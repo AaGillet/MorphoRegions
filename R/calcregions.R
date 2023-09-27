@@ -219,7 +219,7 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
 
   if (any(ncombs == 0)) {
     max.regions <- max(noregions[ncombs > 0])
-    chk::wrn(sprintf("models for %s vertebrae cannot be fit with more than %s region%%s and `minvert` of %s",
+    .wrn_immediate(sprintf("models for %s vertebrae cannot be fit with more than %s region%%s and `minvert` of %s",
                      length(eligible_vertebrae), max.regions, minvert), n = max.regions)
     ncombs <- ncombs[noregions <= max.regions]
     noregions <- noregions[noregions <= max.regions]
