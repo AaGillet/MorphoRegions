@@ -145,6 +145,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
 
   if (any(eligible_noregions > 3)) {
     chk::chk_count(ncombos_file_trigger)
+    chk::chk_gt(ncombos_file_trigger, 0)
     if (any(ncombs[eligible_noregions > 3] > ncombos_file_trigger)) {
       if (!"temp_file_dir" %in% names(match.call())[-1] ||
           identical(temp_file_dir, tempdir())) {
@@ -227,6 +228,7 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
 
   if (any(noregions > 3)) {
     chk::chk_count(ncombos_file_trigger)
+    chk::chk_gt(ncombos_file_trigger, 0)
     if (any(ncombs[noregions > 3] > ncombos_file_trigger)) {
       if (!"temp_file_dir" %in% names(match.call())[-1] ||
           identical(temp_file_dir, tempdir())) {
@@ -590,8 +592,9 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
         dir.create(dir.exists)
       }
 
-      max_rows <- ncombos_file_trigger/100 # Max number of rows per iteration; keeps sizes small and
+      # Max number of rows per iteration; keeps sizes small and
       # improves progress bar
+      max_rows <- ceiling(ncombos_file_trigger/100)
 
       # Required number of splits of combos
       aa <- ceiling(ncombi / max_rows)
