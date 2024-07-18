@@ -27,3 +27,5 @@ AICcalc <- function(RSS, noPC, nvert, noregions, cont) {
 
   c(AICc = AICc, BIC = BIC)
 }
+
+#test
