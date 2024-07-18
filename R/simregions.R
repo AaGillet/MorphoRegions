@@ -5,7 +5,7 @@
 #' @param nvert `numeric`; the number of vertebrae for which to simulate data.
 #' @param nregions `numeric`; the desired number of regions in the simulated data.
 #' @param nvar `numeric`; the number of PCO axes to simulate. Default is 1.
-#' @param r2 `numeric`; a vector containing the \eqn{R^2} of the true segmented regression model for each simulated PCO. If a single value is supplied, all PCOs will receive that value. Otherwise, one value should be suppliedfor each simulated PCO.
+#' @param r2 `numeric`; a vector containing the \eqn{R^2} of the true segmented regression model for each simulated PCO. If a single value is supplied, all PCOs will receive that value. Otherwise, one value should be supplied for each simulated PCO.
 #' @param minvert `numeric`; the minimum number of vertebrae allowed in each region. Default is 3.
 #' @param cont `logical`; whether to use models that are continuous (`TRUE`) or discontinuous (`FALSE`) at the breakpoints to generate the data. Default is `TRUE`.
 #' @param sl.dif `numeric`; the minimum required difference in slopes between adjacent regions, expressed as a proportion of the maximal difference between allowable slopes. Must be between 0 and 1. See Details.
@@ -23,7 +23,7 @@
 #'
 #' Intercepts (the intercept of the first region when `cont = TRUE` and the intercept of all regions when `cont = FALSE`) are drawn from a uniform distribution with limits of \eqn{-n/4} and \eqn{n/4}, where \eqn{n} is the number of breakpoints, one less than `nregions`. Intercepts other than the first when `cont = TRUE` are determined by the slopes.
 #'
-#' The `cont`, `r2`, and `sl.dif` arguments control how easy it is for fitted segmented regression models to capture the true structure. When `cont = TRUE`, it can be harder to determine exactly where regions begin and end, especially if `sl.dif` is 0. When `r2` is high, there is little variation around the true, so the fitted lines will be more precise and region boundaries clearer. When `sl.dif` is high, slopes of adjacent regions are different from each other, so it is easier to detect region boundaries.
+#' The `cont`, `r2`, and `sl.dif` arguments control how easy it is for fitted segmented regression models to capture the true structure. When `cont = TRUE`, it can be harder to determine exactly where regions begin and end, especially if `sl.dif` is 0. When `r2` is high, there is little variation around the true line, so the fitted lines will be more precise and region boundaries clearer. When `sl.dif` is high, slopes of adjacent regions are different from each other, so it is easier to detect region boundaries. Setting `sl.dif` to between .5 and 1 ensures that the slopes in adjacent regions have different signs.
 #'
 #' @seealso
 #' [calcregions()] for fitting segmented regression models to the simulated data; [calcmodel()] for fitting a single segmented regression model to the simulated data; [plotsegreg()] for plotting estimated regression lines.
@@ -72,9 +72,7 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
   chk::chk_equivalent(length(r2), nvar)
 
   #Draw possible combination of breakpoints
-  goodcomb <- .combosR(Xvar, minvert, nbp)
-
-  bp <- goodcomb[sample(seq_len(nrow(goodcomb)), 1),]
+  bp <- .sample_combosR(Xvar, minvert, nbp)
 
   #Create design matrix
   x <- .design_matrix(Xvar, bp, cont)
@@ -84,37 +82,63 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
 
   rownames(coefs) <- {
     if (cont) c("int1", paste0("slope", seq_len(nregions)))
-    else paste0(rep(c("int", "slope"), nregions),
-                rep(seq_len(nregions), each = 2))
+    else paste0(rep(c("int", "slope"), each = nregions),
+                rep(seq_len(nregions), 2))
 
   }
   colnames(coefs) <- paste0("PC.", seq_len(nvar))
 
   if (cont) {
     for (i in seq_len(nvar)) {
-      coefs["int1", i] <- runif(1, -nbp/4, nbp/4)
-      test_slopes <- rep(0, nregions)
-      good <- FALSE
-      while (!good) {
-        test_slopes[1] <- runif(1, min = -.5, max = .5)
-        for (j in seq_along(test_slopes)[-1]) {
-          test_slopes[j] <- runif(1, min = -.5, max = .5) - sum(test_slopes)
+      # Rejection sampling for slopes
+      repeat {
+        if (sl.dif > .5) {
+          test_slopes <- rep(0, nregions)
+          test_slopes[1] <- (-1)^rbinom(1, 1, .5) * runif(1, min = sl.dif - .5, max = .5)
+
+          for (j in seq_along(test_slopes)[-1]) {
+            test_slopes[j] <- -sign(test_slopes[j - 1]) * runif(1, min = sl.dif - .5, max = .5)
+          }
+        }
+        else {
+          test_slopes <- runif(nregions, min = -.5, max = .5)
         }
 
-        good <- all(abs(diff(cumsum(test_slopes))) > sl.dif)
+        if (all(abs(diff(test_slopes)) >= sl.dif)) break
       }
+
+      for (j in seq_along(test_slopes)[-1]) {
+        test_slopes[j] <- test_slopes[j] - test_slopes[j - 1]
+      }
+
       coefs[startsWith(rownames(coefs), "slope"), i] <- test_slopes
+
+      coefs["int1", i] <- runif(1, -nbp/4, nbp/4)
     }
   }
   else {
     for (i in seq_len(nvar)) {
-      coefs[startsWith(rownames(coefs), "int"), i] <- runif(nregions, -nbp/4, nbp/4)
-      good <- FALSE
-      while (!good) {
-        test_slopes <- runif(nregions, min = -.5, max = .5)
-        good <- all(abs(diff(test_slopes)) > sl.dif)
+      # Rejection sampling for slopes
+      repeat {
+        if (sl.dif > .5) {
+          test_slopes <- rep(0, nregions)
+          test_slopes[1] <- (-1)^rbinom(1, 1, .5) * runif(1, min = sl.dif - .5, max = .5)
+
+          for (j in seq_along(test_slopes)[-1]) {
+            test_slopes[j] <- -sign(test_slopes[j - 1]) * runif(1, min = sl.dif - .5, max = .5)
+          }
+        }
+        else {
+          test_slopes <- runif(nregions, min = -.5, max = .5)
+        }
+
+        if (all(abs(diff(test_slopes)) >= sl.dif)) break
       }
+
       coefs[startsWith(rownames(coefs), "slope"), i] <- test_slopes
+
+      ints <- runif(nregions, -nbp/4, nbp/4)
+      coefs[startsWith(rownames(coefs), "int"), i] <- ints - test_slopes * c(0, bp)
     }
   }
 
@@ -136,7 +160,7 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
   attr(out, "design") <- x
 
   class(out) <- "regions_sim"
-  return(out)
+  out
 }
 
 #' @exportS3Method plot regions_sim
@@ -165,4 +189,49 @@ print.regions_sim <- function(x, ...) {
   cat(" - model type:", if (attr(x, "cont")) "continuous" else "discontinuous", "\n")
   cat(" - number of PCO scores:", ncol(x$Yvar), "\n")
   cat("Use `plot()` to display the true lines and simulated data.")
+}
+
+# Sample combos without needing to store all combos
+.sample_combosR <- function(vert, minvert, nbp) {
+
+  n <- length(vert)
+
+  #Choose combination at random
+  maxcombos <- .ncombos(n, minvert, nbp)
+
+  k <- sample.int(maxcombos, 1L)
+
+  .kth_combo(k, vert, minvert, nbp)
+}
+
+# Find the kth combo; assumes k <= maxcombs
+.kth_combo <- function(k, vert, minvert, nbp) {
+
+  n <- length(vert)
+
+  mins <- minvert * seq_len(nbp)
+  maxes <- n - rev(mins)
+
+  combo <- rep(0, nbp)
+
+  a <- 0
+
+  for (i in seq_len(nbp)) {
+    if (i < nbp) {
+      sums <- cumsum(.ncombos(n - mins[i]:maxes[i], minvert, nbp - i))
+      b <- min(which(k <= a + sums))
+      combo[i] <- mins[i] + b - 1
+      a <- a + c(0, sums)[b]
+      mins[i + 1] <- combo[i] + minvert
+    }
+    else {
+      sums <- seq_len(maxes[i] - mins[i] + 1)
+      b <- min(which(k <= a + sums))
+      combo[i] <- mins[i] + b - 1
+    }
+  }
+
+  combo[] <- vert[combo]
+
+  setNames(combo, paste0("breakpoint", seq_along(combo)))
 }
