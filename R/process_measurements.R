@@ -1,13 +1,13 @@
 #' Process vertebra measurements
 #'
-#' `process_measurements()` initializes the analysis workflow by processing a dataset of vertebra measurements into an object usable by `regions`. Such processing includes identifying the vertebra indices and the measurements and filling in missing values.
+#' `process_measurements()` initializes the analysis workflow by processing a dataset of vertebra measurements into an object usable by \pkg{MorphoRegions}. Such processing includes identifying the vertebra indices and the measurements and filling in missing values.
 #'
-#' @param data a dataframe containing a column of vertebra indices and measurements for each vertebra, or a list thereof for multiple specimens.
+#' @param data a data.frame containing a column of vertebra indices and measurements for each vertebra, or a list thereof for multiple specimens.
 #' @param pos the name or index of the variable in `data` containing the vertebra indices. Default is to use the first column.
 #' @param measurements the names or indices of the variables in `data` containing the relevant vertebra measurements. If unspecified, will use all variables other than that specified in `pos`.
 #' @param fillNA `logical`; whether to fill in missing values using a simple linear imputation. Default is `TRUE`. See Details.
 #'
-#' @returns A `regions_data` object, which is a list of dataframes (one for each specimen) with attributes containing metadata.
+#' @returns A `regions_data` object, which is a list of data.frames (one for each specimen) with attributes containing metadata.
 #'
 #' @details
 #' Any rows with missing values for all measurements will be removed. When missing values in non-removed rows are present and `fillNA` is set to `TRUE`, `process_measurements()` fills them in if the sequence of missing values is no greater than 2 in length. For numeric variables, it uses a linear interpolation, and for categorical variables, it fills in the missing values with the surrounding non-missing values if they are identical and leaves them missing otherwise. Otherwise, missing values are left as they are.
@@ -68,7 +68,10 @@ process_measurements <- function(data, pos = 1L, measurements, fillNA = TRUE) {
   measurements_names_list <- vector("list", length(data))
 
   for (i in seq_along(data)) {
-    if (!missing(measurements)) {
+    if (missing(measurements)) {
+      measurements_names_list[[i]] <- setdiff(names(data[[i]]), pos)
+    }
+    else {
       if (length(measurements) == 0) {
         measurements_names_list[[i]] <- character()
       }
@@ -86,20 +89,12 @@ process_measurements <- function(data, pos = 1L, measurements, fillNA = TRUE) {
         chk::err("`pos` and `measurements` cannot overlap")
       }
     }
-    else {
-      measurements_names_list[[i]] <- setdiff(names(data[[i]]), pos)
-    }
   }
 
   # Get only measurements that are common across datasets
   measurements <- Reduce(union, measurements_names_list)
 
   for (i in seq_along(data)) {
-    # if (length(measurements) > 0) {
-    #   if (!all(vapply(data[[i]][measurements], is.numeric, logical(1L)))) {
-    #     chk::err("all measurements must be numeric")
-    #   }
-    # }
 
     #Subset to specified variables
     data[[i]] <- data[[i]][names(data[[i]]) %in% c(pos, measurements)]

@@ -53,7 +53,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
     dat <- dat[seq_len(ntop),, drop = FALSE]
   }
   else {
-    chk::wrn(sprintf("number of models provided lower than percentage requested.\n  Weighted means and SD calculated on: %s%% of total number of models", round(nrow(dat)/nmodel*100, 2)))
+    chk::wrn(sprintf("number of models provided lower than percentage requested.\nWeighted means and SD calculated on: %s%% of total number of models", round(nrow(dat)/nmodel*100, 2)))
   }
 
   # Calculate probability (with AICc/BIC) and weight of each model:

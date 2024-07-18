@@ -1,6 +1,6 @@
 #' Select the best models
 #'
-#' `modelselect()` narrows down the search for the best model by identifying the best model for each number of regions as determined by its RSS.
+#' `modelselect()` narrows down the search for the best model by identifying the best model for each number of regions as determined by its residual sums of squares (RSS).
 #'
 #' @param results a `regions_results` object; the output of a call to `calcregions()` or `addregions()`.
 #' @param scores `numeric`; a vector corresponding to the indices of the PCOs the \eqn{R^2} of which will be used to determine the best model for each number of regions. If `NULL`, the default, all PCOs used included in the fitting will be used.
@@ -14,9 +14,6 @@
 
 #' @export
 modelselect <- function(results, scores = NULL) {
-  # regiondata: $results value from calcregionsAG output
-  # scores (optional): if null, will select models based on analysis on all PCOs included in calregionsAG
-  #	if specified (either as a single numeric value, i.e., 1 or as a range, i.e., 1:3) will run the analysis only on PCOs specified in the range (will exclude RSS values from PCOs not included in the range)
 
   chk::chk_is(results, "regions_results")
 

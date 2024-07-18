@@ -35,8 +35,6 @@ plotsegreg.regions_pco <- function(x, scores, modelsupport = NULL, criterion = "
   chk::chk_range(scores, c(1, ncol(x[["scores"]])))
   scores <- sort(scores)
 
-  # subset <- attr(attr(x, "data"), "subset")
-  # Xvar <- attr(attr(x, "data"), "pos")[subset]
   Xvar <- .get_pos(x)
   Yvar <- x[["scores"]][, scores, drop = FALSE]
 
@@ -199,10 +197,10 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
       if (use_specimen)
         geom_point(aes(y = Yvar, color = specimen, size = weights),
                    shape = "circle")
-     else
-       geom_point(aes(y = Yvar, size = weights),
-                  shape = "circle",
-                  color = "darkgray")
+      else
+        geom_point(aes(y = Yvar, size = weights),
+                   shape = "circle",
+                   color = "darkgray")
     }
 
   if (length(BPs) > 0) {
@@ -220,15 +218,17 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
                        show.legend = FALSE, color = linescolor)
   }
 
-  p + scale_size_area(max_size = 2, guide = NULL) +
+  p <- p + scale_size_area(max_size = 2, guide = NULL) +
     facet_wrap(~PCO, ncol = 1,
-                 scales = "free_y",
-                 strip.position = "left") +
+               scales = "free_y",
+               strip.position = "left") +
     theme_bw() +
     theme(strip.placement = "outside",
           strip.background = element_blank(),
           strip.text = element_text(size = 11)) +
-    labs(x = "Vertebra Position",
+    labs(x = "Position",
          y = NULL,
          color = NULL)
+
+  p
 }

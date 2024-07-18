@@ -2,7 +2,7 @@
 #'
 #' `modelperf()` computes model performance statistics in the form of \eqn{R^2} measures for a given combination of breakpoints.
 #'
-#' @param x a `regions_pco` object, the ouput of a call to [svdPCO()], or a `regions_results_single` object, the ouput of a call to [calcmodel()].
+#' @param x a `regions_pco` object, the ouput of a call to [svdPCO()], or a `regions_results_single` object, the output of a call to [calcmodel()].
 #' @param scores `numeric`; the indices of the PCO scores for which fit statistics are to be computed.
 #' @param modelsupport a `regions_modelsupport` object, the output of a call to [modelsupport()]. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.
 #' @param criterion string; the criterion to use to select the best model for which breakpoints are to be displayed when `modelsupport` is specified. Ignored otherwise. Allowable options include `"aic"` to use the AICc and `"bic"` to use the BIC. Abbreviations allowed. Default is `"aic"`. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.
@@ -31,14 +31,10 @@ modelperf <- function(x, ...) {
 modelperf.regions_pco <- function(x, scores,
                                   modelsupport = NULL, criterion = "aic", model = 1,
                                   bps = NULL, cont = TRUE, ...) {
-  #fka multivarrsqAG()
-
   chk::chk_not_missing(scores, "`scores`")
   chk::chk_whole_numeric(scores)
   chk::chk_range(scores, c(1, ncol(x[["scores"]])))
 
-  # subset <- attr(attr(x, "data"), "subset")
-  # Xvar <- attr(attr(x, "data"), "pos")[subset]
   Xvar <- .get_pos(x)
   Yvar <- x[["scores"]][, scores, drop = FALSE]
 
@@ -89,8 +85,6 @@ modelperf.regions_pco <- function(x, scores,
 modelperf.regions_sim <- function(x, scores = NULL,
                                   modelsupport = NULL, criterion = "aic", model = 1,
                                   bps = NULL, cont = TRUE, ...) {
-  #fka multivarrsqAG()
-
   Xvar <- x$Xvar
   Yvar <- x$Yvar
 
@@ -200,7 +194,7 @@ print.regions_perf <- function(x, digits = 3, ...) {
       SStot =  mss + rss,
       dfe =    rdf)
   }))
-  rownames(totrsq) <- paste0("PCO.", 1:ncol(Yvar))
+  rownames(totrsq) <- paste0("PCO.", seq_len(ncol(Yvar)))
 
   # Calculate R2 for all PCOs multivariately:
   tot.rsq <- colSums(totrsq[, -(1:2), drop = FALSE])

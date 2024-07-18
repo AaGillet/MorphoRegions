@@ -4,7 +4,7 @@
 #'
 #' @param models a `regions_modelselect` object; the output of a call to [modelselect()].
 #'
-#' @returns A `regions_modelsupport` object, which contains the best model for each number of regions as determined by the AICc and BIC. The computed statistics are `AICc`/`BIC`--the value of the information criterion (IC) for each model, `deltaAIC`/`deltaBIC`--the difference between the IC for the corresponding model and that of the model with the lowest IC value, `model_lik`--the likelihood ratio of the model against the model with the lowest IC value, and `Ak_weight`/`BIC_weight`, the Akaike weights for each model used to compute the region score. The region score is a weighted average of the numbers of regions, weighted by the Aikake weights to represent the variability around the optimal number of regions.
+#' @returns A `regions_modelsupport` object, which contains the best model for each number of regions as determined by the AICc and BIC. The computed statistics are `AICc`/`BIC`--the value of the information criterion (IC) for each model, `deltaAIC`/`deltaBIC`--the difference between the IC for the corresponding model and that of the model with the lowest IC value, `model_lik`--the likelihood ratio of the model against the model with the lowest IC value, and `Ak_weight`/`BIC_weight`--the Akaike weights for each model used to compute the region score. The region score is a weighted average of the numbers of regions, weighted by the Akaike weights to represent the variability around the optimal number of regions.
 #'
 #' @seealso [modelselect()], [calcregions()], [calcBPvar()], [modelperf()], [plotsegreg()]
 #'

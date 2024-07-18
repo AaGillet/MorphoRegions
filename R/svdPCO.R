@@ -1,7 +1,7 @@
 #' Calculate PCO (principal co-ordinates analysis) based on SVD
 #'
 #' Calculates distance matrix from raw data, then conducts a PCO ordination using a
-#' single value decomposition. This differs from other PCO functions which use [stats::cmdscale()] and rely on a
+#' single value decomposition (SVD). This differs from other PCO functions which use [stats::cmdscale()] and rely on a
 #' spectral decomposition.
 #'
 #' @param x a `regions_data` object; the output of a call to [process_measurements()].

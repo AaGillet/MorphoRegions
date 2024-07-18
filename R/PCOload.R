@@ -1,6 +1,6 @@
 #' Calculate PCO loadings
 #'
-#' `PCOload()` computes the loadings for each PCO score, which are the correlations between the features used to compute the PCOs and the PCOs.
+#' `PCOload()` computes the loadings for each principal coordinates (PCOs) analysis score, which are the correlations between the features used to compute the PCOs and the PCOs.
 #'
 #' @param x for `PCOload()`, a `regions_pco` object; the output of a call to [svdPCO()]. For `plot()`, a `regions_pco_load` object.
 #' @param scores a numeric vector containing the indices of the desired scores.
@@ -59,7 +59,7 @@ print.regions_pco_load <- function(x, digits = 3, ...) {
 #' @rdname PCOload
 plot.regions_pco_load <- function(x, ...) {
   d <- as.data.frame.matrix(x)
-  rownames(d)[rownames(d) == "vert.size"] <- "Vertebra size"
+  rownames(d)[rownames(d) == "vert.size"] <- "Size"
 
   d$feature <- factor(rownames(d), levels = rev(rownames(d)))
   d$featuren <- as.numeric(d$feature)
@@ -69,10 +69,10 @@ plot.regions_pco_load <- function(x, ...) {
                     idvar = "feature", v.names = "value",
                     timevar = "PCO")
 
-  ggplot() +
-    geom_tile(aes(x = d_long$PCO, y = d_long$featuren, fill = d_long$value)) +
+  ggplot(d_long) +
+    geom_tile(aes(x = .data$PCO, y = .data$featuren, fill = .data$value)) +
     labs(y = NULL, x = "PCO", fill = "Loading") +
-    scale_x_continuous(position = "top") +
+    scale_x_continuous(position = "top", breaks = seq_len(max(d_long$PCO))) +
     scale_y_continuous(labels = rev(rownames(d)),
                        breaks = sort(unique(d$featuren)),
                        expand = c(0, 0)) +

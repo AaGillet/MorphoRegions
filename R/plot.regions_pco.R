@@ -61,10 +61,11 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
   chk::chk_range(pco_x, c(1, ncol(x[["scores"]])))
 
   Xvar <- x[["scores"]][, pco_x]
-  ggplot(mapping = aes(x = Xvar,
-                       y = Yvar,
-                       label = pos,
-                       color = if (nlevels(specimen) > 1) specimen)) +
+
+  p <- ggplot(mapping = aes(x = Xvar,
+                            y = Yvar,
+                            label = pos,
+                            color = if (nlevels(specimen) > 1) specimen)) +
     geom_text(...) +
     geom_point(alpha = 0) +
     theme_bw() +
@@ -73,4 +74,6 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
          x = paste("PCO", pco_x),
          y = paste("PCO", pco_y),
          color = NULL)
+
+  p
 }

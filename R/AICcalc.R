@@ -17,12 +17,13 @@ AICcalc <- function(RSS, noPC, nvert, noregions, cont) {
   }
 
   if (n < k + 2) {
-    stop('ratio of variables to parameters too small. Reduce number of regions or increase variables')
+    chk::err("the ratio of variables to parameters is too small. Reduce the number of regions or increase the number of variables")
   }
 
   AIC <- n * log(var) + (2 * k)
   corr <- (2 * k * (k + 1)) / (n - k - 1)	# Correct for number of parameters and small sample
   AICc <- AIC + corr 	# Calculate AICc
   BIC <- n * log(var) + log(n) * k
-  return(c(AICc = AICc, BIC = BIC))
+
+  c(AICc = AICc, BIC = BIC)
 }
