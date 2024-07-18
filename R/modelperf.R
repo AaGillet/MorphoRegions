@@ -2,7 +2,7 @@
 #'
 #' `modelperf()` computes model performance statistics in the form of \eqn{R^2} measures for a given combination of breakpoints.
 #'
-#' @param x a `regions_pco` object, the ouput of a call to [svdPCO()], or a `regions_results_single` object, the output of a call to [calcmodel()].
+#' @param x a `regions_pco` object, the output of a call to [svdPCO()], or a `regions_results_single` object, the output of a call to [calcmodel()].
 #' @param scores `numeric`; the indices of the PCO scores for which fit statistics are to be computed.
 #' @param modelsupport a `regions_modelsupport` object, the output of a call to [modelsupport()]. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.
 #' @param criterion string; the criterion to use to select the best model for which breakpoints are to be displayed when `modelsupport` is specified. Ignored otherwise. Allowable options include `"aic"` to use the AICc and `"bic"` to use the BIC. Abbreviations allowed. Default is `"aic"`. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.

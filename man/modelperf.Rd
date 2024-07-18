@@ -34,7 +34,7 @@ modelperf(x, ...)
 \method{modelperf}{regions_results_single}(x, scores = NULL, ...)
 }
 \arguments{
-\item{x}{a \code{regions_pco} object, the ouput of a call to \code{\link[=svdPCO]{svdPCO()}}, or a \code{regions_results_single} object, the output of a call to \code{\link[=calcmodel]{calcmodel()}}.}
+\item{x}{a \code{regions_pco} object, the output of a call to \code{\link[=svdPCO]{svdPCO()}}, or a \code{regions_results_single} object, the output of a call to \code{\link[=calcmodel]{calcmodel()}}.}
 
 \item{\dots}{ignored.}
 

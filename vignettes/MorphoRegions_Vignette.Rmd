@@ -119,7 +119,7 @@ plot(dolphin_pco, pco_x = 1, pco_y = 2)
 
 While the regionalization analysis can be performed on all PCO axes, it's likely that lower PCO axes mostly contain noise. The number of PCO axes to retain for analysis can be selected using `PCOselect()`.
 
-**Four different methods to select PCOs** are available and be specified usign the `method` argument: 
+**Four different methods to select PCOs** are available and be specified using the `method` argument: 
 
 - `"manual"`: the number of PCOs is directly defined via the `scores` argument
 - `"variance"`: PCO axes with a variance (defined as the ratio between the eigenvalue of the given axis and the sum of all eigenvalues) higher to the `cutoff` value (expressed as a value between 0 and 1) are retained

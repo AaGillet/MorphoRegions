@@ -8,7 +8,7 @@
 #'
 #' @return `PCOload()` returns a `regions_pco_load` object, which is a matrix with a column for each PCO score requested and a row for each variable in the original dataset; values indicate the correlation between each variable and each PCO score. `plot()` returns a `ggplot` object, which can be manipulated using *ggplot2* syntax, that displays the loadings visually.
 #'
-#' @details the loadings for a constructed variable, `vert.size`, are also computed and displayed. This si computed as the mean of the features for each vertebra.
+#' @details the loadings for a constructed variable, `vert.size`, are also computed and displayed. This is computed as the mean of the features for each vertebra.
 #'
 #' @seealso
 #' [svdPCO()] for computing the PCOs; [plot.regions_pco()] for visualizing the correlations between PCO scores.

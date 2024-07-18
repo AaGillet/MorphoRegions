@@ -23,7 +23,7 @@ PCOload(x, scores)
 \code{PCOload()} computes the loadings for each principal coordinates (PCOs) analysis score, which are the correlations between the features used to compute the PCOs and the PCOs.
 }
 \details{
-the loadings for a constructed variable, \code{vert.size}, are also computed and displayed. This si computed as the mean of the features for each vertebra.
+the loadings for a constructed variable, \code{vert.size}, are also computed and displayed. This is computed as the mean of the features for each vertebra.
 }
 \examples{
 data("alligator")

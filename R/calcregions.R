@@ -3,7 +3,7 @@
 #' `calcregions()` enumerates all possible combinations of breakpoints to fit multivariate segmented regression models. `addregions()` adds models with additional numbers of regions to the resulting output object. `ncombos()` computes an upper bound on the number of breakpoint combinations that will be tested.
 #'
 #' @param pco a `regions_pco` object; the output of a call to [svdPCO()].
-#' @param scores `numeric`; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., `1:4` to use the first four scores). Can also be the ouput of a call to [PCOselect()].
+#' @param scores `numeric`; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., `1:4` to use the first four scores). Can also be the output of a call to [PCOselect()].
 #' @param noregions `numeric`; for `calcregions()`, the maximum number of regions for which models are fit (e.g, 4 to request models with 1 to 4 regions); for `addregions()`, a vector containing the numbers of regions to add (e.g., 5:6 to request models with 5 and 6 regions); for `ncombos()`, a vector containing the numbers of regions to check.
 #' @param minvert `numeric`; the minimum number of vertebrae allowed in each region. Default is 3.
 #' @param cont `logical`; whether to fit models that are continuous (`TRUE`) or discontinuous (`FALSE`) at the breakpoints. Default is `TRUE`.

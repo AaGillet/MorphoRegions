@@ -39,7 +39,7 @@ ncombos(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL)
 \arguments{
 \item{pco}{a \code{regions_pco} object; the output of a call to \code{\link[=svdPCO]{svdPCO()}}.}
 
-\item{scores}{\code{numeric}; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., \code{1:4} to use the first four scores). Can also be the ouput of a call to \code{\link[=PCOselect]{PCOselect()}}.}
+\item{scores}{\code{numeric}; the indices of the PCO scores to use as the outcomes in fitting the models (e.g., \code{1:4} to use the first four scores). Can also be the output of a call to \code{\link[=PCOselect]{PCOselect()}}.}
 
 \item{noregions}{\code{numeric}; for \code{calcregions()}, the maximum number of regions for which models are fit (e.g, 4 to request models with 1 to 4 regions); for \code{addregions()}, a vector containing the numbers of regions to add (e.g., 5:6 to request models with 5 and 6 regions); for \code{ncombos()}, a vector containing the numbers of regions to check.}
 

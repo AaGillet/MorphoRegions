@@ -17,7 +17,7 @@ Authors@R: c(
          comment = c(ORCID = "0000-0003-0717-1841"))
   )
 Description: A package to compute the optimal number of regions (or subdivisions) and 
-    their position in serial structures without a priori assumptions and to vizualize 
+    their position in serial structures without a priori assumptions and to visualize 
     the results. After reducing data dimensionality with the built-in function for
     data ordination, regions are fitted as segmented linear regressions
     along the serial structure. Every region boundary

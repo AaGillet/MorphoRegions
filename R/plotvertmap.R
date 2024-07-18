@@ -11,8 +11,8 @@
 #' @param bpvar an optional `regions_BPvar` object; the output of a call to [calcBPvar()]. One of `bps`, `modelsupport`, or `bpvar` should be specified to display regions breakpoints. See Details.
 #' @param bp.sd an optional vector of the standard deviations of the breakpoints (e.g., as calculated by [calcBPvar()]). When `bpvar` is supplied, the weighted standard deviations are used.
 #' @param sd.col when `bp.sd` is specified, the color of the mark on plot indicating the standard deviations. Default is black.
-#' @param dropNA `logical`; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertbrae from the plot (`TRUE`) or retain them and label them as missing (i.e., lacking a region) (`FALSE`). Default is `FALSE` to retain them.
-#' @param text `logical`; whether to print the verbtra index on each vertebra. Default is `FALSE`.
+#' @param dropNA `logical`; when some vertebrae are missing, e.g., due to subsampling or starting the analysis at a vertebra beyond the first, whether to remove the missing vertebrae from the plot (`TRUE`) or retain them and label them as missing (i.e., lacking a region) (`FALSE`). Default is `FALSE` to retain them.
+#' @param text `logical`; whether to print the vertebra index on each vertebra. Default is `FALSE`.
 #' @param name an optional string containing a label used on the left side of the plot.
 #' @param centraL an optional numeric vector containing centrum length for each vertebra, which is used to change the size of the plotted vertebrae, or a string containing the name of the variable in the original dataset containing centrum length. Should be of length equal to the number of included vertebrae (i.e., the length of the original dataset). Any vertebrae with centrum length of 0 will be omitted.
 #' @param reg.lim a vector of breakpoints indicating other region limits, e.g., anatomic regions.
