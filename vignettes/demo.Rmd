@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-library(regions2)
+library(MorphoRegions)
 data("dolphin")
 # dolphin <- dolphin[sample(1:40, 40),]
 #Process measurements data

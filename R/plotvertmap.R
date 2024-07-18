@@ -34,9 +34,7 @@
 #'
 #' When `block.lim` is specified, `block.cols` must be specified as a list of vectors of colors, with an entry for each "block". Blocks are predefined regions separate from those specified using the above arguments, e.g., traditional regions. For each region, the most common block is found and assigned to that region. A color of that block as supplied in `block.cols` is used to color that region. So, each block needs as many colors as there are regions assigned to it. For example, if regions 1 and 2 are both assigned to block 1 (i.e., because block 1 is the most common block in those regions), the entry in `block.cols` for that block must have (at least) 2 colors. If an incorrect number of colors per block is supplied, an error will be thrown identifying which blocks are lacking colors. See Examples.
 #'
-#' @examples
-#' # example code
-#'
+#' @example man/examples/example-plotvertmap.R
 
 #' @export
 plotvertmap <- function(x, type = "count",

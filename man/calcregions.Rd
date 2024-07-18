@@ -72,7 +72,7 @@ A \code{regions_results} object with the following components:
 \item \code{stats} - statistics summarizing the fitting process. Use \code{summary()} to view this information in a clean format.
 }
 
-\code{ncombos()} returns a numeric vector with the number of breakpoint combinations for each number of regions (whcih are stored as the names).
+\code{ncombos()} returns a numeric vector with the number of breakpoint combinations for each number of regions (which are stored as the names).
 }
 \description{
 \code{calcregions()} enumerates all possible combinations of breakpoints to fit multivariate segmented regression models. \code{addregions()} adds models with additional numbers of regions to the resulting output object. \code{ncombos()} computes an upper bound on the number of breakpoint combinations that will be tested.

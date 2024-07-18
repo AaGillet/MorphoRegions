@@ -4,7 +4,6 @@
 \alias{PCOselect}
 \alias{plot.regions_pco_select}
 \alias{summary.regions_pco_select}
-\alias{plot.summary.regions_pco_select}
 \title{Select PCO scores}
 \usage{
 PCOselect(
@@ -20,9 +19,7 @@ PCOselect(
 
 \method{plot}{regions_pco_select}(x, ...)
 
-\method{summary}{regions_pco_select}(object, plot = FALSE, ...)
-
-\method{plot}{summary.regions_pco_select}(x, ...)
+\method{summary}{regions_pco_select}(object, ...)
 }
 \arguments{
 \item{pco}{a \code{regions_pco} object; the output of a call to \code{\link[=svdPCO]{svdPCO()}}.}
@@ -41,21 +38,19 @@ PCOselect(
 
 \item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE}.}
 
-\item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"}. For \code{plot.summary.regions_pco_select()}, the output of a call to \code{summary.regions_pco_select()}.}
+\item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"} or \code{"max"}.}
 
 \item{\dots}{ignored.}
 
 \item{object}{a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "max"}.}
-
-\item{plot}{\code{logical}; whether to plot the summary. Default is \code{FALSE}.}
 }
 \value{
 For \code{PCOselect()}, a \code{regions_pco_select} object, which is a numeric vector containing the indices of the chosen PCOs, with attributes containing information about the PCO scores chosen by the specified method. When \code{method = "boot"}, the bootstrap results are stored in the \code{"boot"} attribute. When \code{method = "max"}, the \code{regions_results} object passed to \code{regions} and other information about the quality of fit for each number of PCOs are stored in the \code{"pcomax"} attribute.
 
-The \code{plot()} methods each return a \code{ggplot} object that can manipulated using \code{ggplot2} syntax. The \code{summary()} method returns a data.frame of results; when \code{plot = TRUE}, this is returned invisibly and the plot is printed.
+The \code{plot()} methods each return a \code{ggplot} object that can manipulated using \pkg{ggplot2} syntax. The \code{summary()} method returns a data.frame of results.
 }
 \description{
-\code{PCOselect()} provides several methods to select the number of principal coordinates analysis scores to be used in subsequent analyses.
+\code{PCOselect()} provides several methods to select the number of principal coordinates (PCOs) analysis scores to be used in subsequent analyses.
 }
 \details{
 Each method provides an alternate way to select the number of scores. These are described below.
@@ -76,7 +71,7 @@ This method works by computing the ratio of each eigenvalue to the sum of the ei
 
 \subsection{\code{method = "max"}}{
 
-This method works by select the number of PCOs that gives the maximum possible region score for the segmented models fit in the object supplied to \code{results}. Which criterion is maximized (AIC or BIC) is determined by the value supplied to \code{criterion}. The \code{summary()} method displays the region score (estimated number of regions) for each PCO (\code{RSind}) and for PCOs cumulatively (\code{RScum}) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The \code{plot(summary(.))} plot (also displayed by \code{summary()} when \code{plot = TRUE}) displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
+This method works by select the number of PCOs that gives the maximum possible region score for the segmented models fit in the object supplied to \code{results}. Which criterion is maximized (AIC or BIC) is determined by the value supplied to \code{criterion}. The \code{summary()} method displays the region score (estimated number of regions) for each PCO (\code{RSind}) and for PCOs cumulatively (\code{RScum}) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The \code{plot()} method displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
 }
 }
 \examples{
@@ -111,5 +106,7 @@ regionresults <- calcregions(alligator_PCO, scores = 1:21, noregions = 7,
                    results = regionresults,
                    criterion = "bic"))
 
-summary(PCOs, plot = TRUE)
+plot(PCOs)
+
+summary(PCOs)
 }

@@ -29,4 +29,6 @@ regionresults <- calcregions(alligator_PCO, scores = 1:21, noregions = 7,
                    results = regionresults,
                    criterion = "bic"))
 
-summary(PCOs, plot = TRUE)
+plot(PCOs)
+
+summary(PCOs)

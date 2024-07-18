@@ -18,7 +18,7 @@ A \code{regions_pco} object, which contains eigenvectors in the \code{scores} co
 }
 \description{
 Calculates distance matrix from raw data, then conducts a PCO ordination using a
-single value decomposition. This differs from other PCO functions which use \code{\link[stats:cmdscale]{stats::cmdscale()}} and rely on a
+single value decomposition (SVD). This differs from other PCO functions which use \code{\link[stats:cmdscale]{stats::cmdscale()}} and rely on a
 spectral decomposition.
 }
 \examples{

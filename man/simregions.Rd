@@ -24,7 +24,7 @@ simregions(
 
 \item{nvar}{\code{numeric}; the number of PCO axes to simulate. Default is 1.}
 
-\item{r2}{\code{numeric}; a vector containing the \eqn{R^2} of the true segmented regression model for each simulated PCO. If a single value is supplied, all PCOs will receive that value. Otherwise, one value should be suppliedfor each simulated PCO.}
+\item{r2}{\code{numeric}; a vector containing the \eqn{R^2} of the true segmented regression model for each simulated PCO. If a single value is supplied, all PCOs will receive that value. Otherwise, one value should be supplied for each simulated PCO.}
 
 \item{minvert}{\code{numeric}; the minimum number of vertebrae allowed in each region. Default is 3.}
 
@@ -53,7 +53,7 @@ simregions(
 
 Intercepts (the intercept of the first region when \code{cont = TRUE} and the intercept of all regions when \code{cont = FALSE}) are drawn from a uniform distribution with limits of \eqn{-n/4} and \eqn{n/4}, where \eqn{n} is the number of breakpoints, one less than \code{nregions}. Intercepts other than the first when \code{cont = TRUE} are determined by the slopes.
 
-The \code{cont}, \code{r2}, and \code{sl.dif} arguments control how easy it is for fitted segmented regression models to capture the true structure. When \code{cont = TRUE}, it can be harder to determine exactly where regions begin and end, especially if \code{sl.dif} is 0. When \code{r2} is high, there is little variation around the true, so the fitted lines will be more precise and region boundaries clearer. When \code{sl.dif} is high, slopes of adjacent regions are different from each other, so it is easier to detect region boundaries.
+The \code{cont}, \code{r2}, and \code{sl.dif} arguments control how easy it is for fitted segmented regression models to capture the true structure. When \code{cont = TRUE}, it can be harder to determine exactly where regions begin and end, especially if \code{sl.dif} is 0. When \code{r2} is high, there is little variation around the true line, so the fitted lines will be more precise and region boundaries clearer. When \code{sl.dif} is high, slopes of adjacent regions are different from each other, so it is easier to detect region boundaries. Setting \code{sl.dif} to between .5 and 1 ensures that the slopes in adjacent regions have different signs.
 }
 \examples{
 # Simulate 40 vertebra, 4 regions (3 breakpoints), 3 PCOs,

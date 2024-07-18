@@ -15,7 +15,7 @@ modelselect(results, scores = NULL)
 A \code{regions_modelselect} object, which contains information about the best models for each number of regions extracted from \code{results}.
 }
 \description{
-\code{modelselect()} narrows down the search for the best model by identifying the best model for each number of regions as determined by its RSS.
+\code{modelselect()} narrows down the search for the best model by identifying the best model for each number of regions as determined by its residual sums of squares (RSS).
 }
 \examples{
 data("alligator")

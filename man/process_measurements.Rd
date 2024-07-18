@@ -7,7 +7,7 @@
 process_measurements(data, pos = 1L, measurements, fillNA = TRUE)
 }
 \arguments{
-\item{data}{a dataframe containing a column of vertebra indices and measurements for each vertebra, or a list thereof for multiple specimens.}
+\item{data}{a data.frame containing a column of vertebra indices and measurements for each vertebra, or a list thereof for multiple specimens.}
 
 \item{pos}{the name or index of the variable in \code{data} containing the vertebra indices. Default is to use the first column.}
 
@@ -16,10 +16,10 @@ process_measurements(data, pos = 1L, measurements, fillNA = TRUE)
 \item{fillNA}{\code{logical}; whether to fill in missing values using a simple linear imputation. Default is \code{TRUE}. See Details.}
 }
 \value{
-A \code{regions_data} object, which is a list of dataframes (one for each specimen) with attributes containing metadata.
+A \code{regions_data} object, which is a list of data.frames (one for each specimen) with attributes containing metadata.
 }
 \description{
-\code{process_measurements()} initializes the analysis workflow by processing a dataset of vertebra measurements into an object usable by \code{regions}. Such processing includes identifying the vertebra indices and the measurements and filling in missing values.
+\code{process_measurements()} initializes the analysis workflow by processing a dataset of vertebra measurements into an object usable by \pkg{MorphoRegions}. Such processing includes identifying the vertebra indices and the measurements and filling in missing values.
 }
 \details{
 Any rows with missing values for all measurements will be removed. When missing values in non-removed rows are present and \code{fillNA} is set to \code{TRUE}, \code{process_measurements()} fills them in if the sequence of missing values is no greater than 2 in length. For numeric variables, it uses a linear interpolation, and for categorical variables, it fills in the missing values with the surrounding non-missing values if they are identical and leaves them missing otherwise. Otherwise, missing values are left as they are.
