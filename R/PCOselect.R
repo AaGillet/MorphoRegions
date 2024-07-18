@@ -1,6 +1,6 @@
 #' Select PCO scores
 #'
-#' `PCOselect()` provides several methods to select the number of principal coordinates analysis scores to be used in subsequent analyses.
+#' `PCOselect()` provides several methods to select the number of principal coordinates (PCOs) analysis scores to be used in subsequent analyses.
 #'
 #' @param pco a `regions_pco` object; the output of a call to [svdPCO()].
 #' @param method string; the method used to select the number of PCOs. Allowable options include `"manual"`, `"boot"`, `"variance"`, and `"max"`. Default is `"manual"`. Abbreviations allowed. See Details.
@@ -10,14 +10,13 @@
 #' @param results when `method = "max"`, a `regions_results` object, the output of a call to [calcregions()].
 #' @param criterion when `method = "max"`, which criterion should be used to select the number of scores. Allowable options include `"aic"` and `"bic"`. Abbreviations allowed.
 #' @param verbose when `method = "boot"`, whether to display a progress bar. Default is `TRUE`.
-#' @param x for `plot.regions_pco_select()`, a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "boot"`. For `plot.summary.regions_pco_select()`, the output of a call to `summary.regions_pco_select()`.
+#' @param x for `plot.regions_pco_select()`, a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "boot"` or `"max"`.
 #' @param object a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "max"`.
-#' @param plot `logical`; whether to plot the summary. Default is `FALSE`.
 #' @param \dots ignored.
 #'
 #' @return For `PCOselect()`, a `regions_pco_select` object, which is a numeric vector containing the indices of the chosen PCOs, with attributes containing information about the PCO scores chosen by the specified method. When `method = "boot"`, the bootstrap results are stored in the `"boot"` attribute. When `method = "max"`, the `regions_results` object passed to `regions` and other information about the quality of fit for each number of PCOs are stored in the `"pcomax"` attribute.
 #'
-#' The `plot()` methods each return a `ggplot` object that can manipulated using `ggplot2` syntax. The `summary()` method returns a data.frame of results; when `plot = TRUE`, this is returned invisibly and the plot is printed.
+#' The `plot()` methods each return a `ggplot` object that can manipulated using \pkg{ggplot2} syntax. The `summary()` method returns a data.frame of results.
 #'
 #' @details
 #' Each method provides an alternate way to select the number of scores. These are described below.
@@ -36,7 +35,7 @@
 #'
 #' ## `method = "max"`
 #'
-#' This method works by select the number of PCOs that gives the maximum possible region score for the segmented models fit in the object supplied to `results`. Which criterion is maximized (AIC or BIC) is determined by the value supplied to `criterion`. The `summary()` method displays the region score (estimated number of regions) for each PCO (`RSind`) and for PCOs cumulatively (`RScum`) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The `plot(summary(.))` plot (also displayed by `summary()` when `plot = TRUE`) displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
+#' This method works by select the number of PCOs that gives the maximum possible region score for the segmented models fit in the object supplied to `results`. Which criterion is maximized (AIC or BIC) is determined by the value supplied to `criterion`. The `summary()` method displays the region score (estimated number of regions) for each PCO (`RSind`) and for PCOs cumulatively (`RScum`) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The `plot()` method displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
 #'
 #' @example man/examples/example-PCOselect.R
 #'
@@ -112,47 +111,53 @@ print.regions_pco_select <- function(x, ...) {
   cat("A `regions_pco_select` object\n")
   cat(sprintf("- PCO scores selected: %s\n", paste(x[], collapse = ", ")))
   cat(sprintf("- Method: %s\n",
-      switch(info$method,
-             "boot" = sprintf("boot (%s replications)", info$nreps),
-             "variance" = sprintf("variance (cutoff: %s)", info$cutoff),
-             "max" = sprintf("max (criterion: %s)", toupper(info$criterion)),
-             info$method)))
+              switch(info$method,
+                     "boot" = sprintf("boot (%s replications)", info$nreps),
+                     "variance" = sprintf("variance (cutoff: %s)", info$cutoff),
+                     "max" = sprintf("max (criterion: %s)", toupper(info$criterion)),
+                     info$method)))
   invisible(x)
 }
 
 #' @exportS3Method plot regions_pco_select
 #' @rdname PCOselect
 plot.regions_pco_select <- function(x, ...) {
-  if (!identical(attr(x, "info")$method, "boot") ||
-      is.null(attr(x, "boot"))) {
-    chk::err("`plot()` can only be used on `regions_pco_select` objects when `method = \"boot\"`")
+  if (!identical(attr(x, "info")$method, "boot") &&
+      !identical(attr(x, "info")$method, "max")) {
+    chk::err("`plot()` can only be used on `regions_pco_select` objects when `method` is `\"boot\"` or `\"max\"`")
   }
 
-  boot <- attr(x, "boot")
-  ind <- seq_along(boot$eigen.true)
+  if (identical(attr(x, "info")$method, "boot")) {
+    boot <- attr(x, "boot")
+    ind <- seq_along(boot$eigen.true)
 
-  eigen.boot <- as.vector(boot$eigen.boot)
-  ind.boot <- as.vector(row(boot$eigen.boot))
+    eigen.boot <- as.vector(boot$eigen.boot)
+    ind.boot <- as.vector(row(boot$eigen.boot))
 
-  ggplot() +
-    geom_point(aes(x = ind, y = boot$eigen.true), shape = "circle filled") +
-    geom_line(aes(x = ind, y = boot$eigen.true)) +
-    geom_boxplot(aes(y = eigen.boot, x = ind.boot, group = factor(ind.boot)),
-                 outlier.shape = NA) +
-    labs(x = "PCO axis", y = "Eigenvalue", title = "Eigenvalue cutoff") +
-    theme_bw()
+    p <- ggplot() +
+      geom_point(aes(x = ind, y = boot$eigen.true), shape = "circle filled") +
+      geom_line(aes(x = ind, y = boot$eigen.true)) +
+      geom_boxplot(aes(y = eigen.boot, x = ind.boot, group = factor(ind.boot)),
+                   outlier.shape = NA) +
+      labs(x = "PCO axis", y = "Eigenvalue", title = "Eigenvalue cutoff") +
+      theme_bw()
+  }
+  else {
+    s <- summary(x, plot = FALSE)
 
+    p <- .plot_summary_regions_pco_select(s)
+  }
+
+  p
 }
 
 #' @exportS3Method summary regions_pco_select
 #' @rdname PCOselect
-summary.regions_pco_select <- function(object, plot = FALSE, ...) {
+summary.regions_pco_select <- function(object, ...) {
   if (!identical(attr(object, "info")$method, "max") ||
       is.null(attr(object, "pcomax"))) {
     chk::err("`summary()` can only be used on `regions_pco_select` objects when `method = \"max\"`")
   }
-
-  chk::chk_flag(plot)
 
   results <- attr(object, "pcomax")$results
   eigenvals <- attr(object, "pcomax")$pco$eigen.val
@@ -190,42 +195,7 @@ summary.regions_pco_select <- function(object, plot = FALSE, ...) {
   attr(pco.no.test, "noregions") <- noregions
   class(pco.no.test) <- c("summary.regions_pco_select", class(pco.no.test))
 
-  if (plot) {
-    print(plot.summary.regions_pco_select(pco.no.test))
-  }
-
   pco.no.test
-}
-
-#' @exportS3Method plot summary.regions_pco_select
-#' @rdname PCOselect
-plot.summary.regions_pco_select <- function(x, ...) {
-  pco.no.test.long <- reshape(x, direction = "long", idvar = "PCO", varying = list(c(2, 3), c(4,5)),
-                              timevar = "PCOtype", times = c("Single PCO", "Cumulated PCOs"),
-                              v.names = c("RS.AICc", "RS.BIC"))
-  pco.no.test.long <- reshape(pco.no.test.long, direction = "long", varying = 4:5,
-                              timevar = "Testtype", times = c("AICc", "BIC"),
-                              v.names = "value")
-
-  noregions <- attr(x, "noregions")
-
-  p <- ggplot(pco.no.test.long, aes())+
-    geom_point(data = pco.no.test.long, aes(x = .data$PCO, y = .data$value,
-                                            color = .data$PCOtype, shape = .data$PCOtype)) +
-    scale_color_manual(values = c("#fc8d62", "#8da0cb")) +
-    geom_line(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
-              color = "darkgrey", linewidth = 1) +
-    scale_y_continuous(name = "Region score",
-                       sec.axis = sec_axis(~ (. - 1)/(noregions - 1), labels = scales::percent,
-                                           # limits = c(0, 1),
-                                           name = "Cumulated variance explained")) +
-    scale_x_continuous(breaks = scales::breaks_extended(Q = c(0:5))) +
-    facet_wrap(~Testtype) +
-    theme_bw() +
-    theme(panel.grid.minor=element_blank(), legend.position = "bottom") +
-    labs(color = "Region score", shape = "Region score")
-
-  p
 }
 
 #' @exportS3Method print summary.regions_pco_select
@@ -295,7 +265,6 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
 
   regiondata <- results$results
 
-  # noregions <- max(regiondata$regions)
   nvar <- sum(startsWith(colnames(regiondata), "RSS."))
 
   pco.no.test <- data.frame(PCO = seq_len(nvar),
@@ -311,10 +280,41 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
     pco.no.test[["RS_BIC"]][i] <- support.cum$Region_score_BIC
   }
 
-  pco.max.AICc <- which.max(pco.no.test[["RS_AICc"]])
-  pco.max.BIC <- which.max(pco.no.test[["RS_BIC"]])
+  pco.max.AICc <- which(.equiv(pco.no.test[["RS_AICc"]], max(pco.no.test[["RS_AICc"]])))[1]
+  pco.max.BIC <- which(.equiv(pco.no.test[["RS_BIC"]], max(pco.no.test[["RS_BIC"]])))[1]
 
   list(pco.max.AICc = pco.max.AICc,
        pco.max.BIC = pco.max.BIC,
        pco.dist = pco.no.test)
+}
+
+.plot_summary_regions_pco_select <- function(x, ...) {
+  chk::chk_is(x, "summary.regions_pco_select")
+
+  pco.no.test.long <- reshape(x, direction = "long", idvar = "PCO", varying = list(c(2, 3), c(4,5)),
+                              timevar = "PCOtype", times = c("Single PCO", "Cumulated PCOs"),
+                              v.names = c("RS.AICc", "RS.BIC"))
+  pco.no.test.long <- reshape(pco.no.test.long, direction = "long", varying = 4:5,
+                              timevar = "Testtype", times = c("AICc", "BIC"),
+                              v.names = "value")
+
+  noregions <- attr(x, "noregions")
+
+  p <- ggplot(pco.no.test.long, aes())+
+    geom_point(data = pco.no.test.long, aes(x = .data$PCO, y = .data$value,
+                                            color = .data$PCOtype, shape = .data$PCOtype)) +
+    scale_color_manual(values = c("#fc8d62", "#8da0cb")) +
+    geom_line(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
+              color = "darkgrey", linewidth = 1) +
+    scale_y_continuous(name = "Region score",
+                       sec.axis = sec_axis(~ (. - 1)/(noregions - 1), labels = scales::percent,
+                                           # limits = c(0, 1),
+                                           name = "Cumulated variance explained")) +
+    scale_x_continuous(breaks = scales::breaks_extended(Q = c(0:5))) +
+    facet_wrap(~Testtype) +
+    theme_bw() +
+    theme(panel.grid.minor=element_blank(), legend.position = "bottom") +
+    labs(color = "Region score", shape = "Region score")
+
+  p
 }
