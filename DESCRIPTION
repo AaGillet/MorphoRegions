@@ -1,11 +1,31 @@
-Package: regions2
+Package: MorphoRegions
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.0.0.9003
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Title: Analysis of regionalization patterns in serially-homologous structures
+Version: 0.0.0.9004
+Authors@R: c(
+  person("Amandine", "Gillet", role = c("cre", "aut"),
+         email = "gillet.aman@gmail.com", 
+         comment = c(ORCID = "0000-0001-9763-6061")),
+  person("Katrina", "Jones", role = c("aut"), 
+         email = "katrina.jones@manchester.ac.uk",
+	       comment = c(ORCID="0000-0003-1088-0497")),
+  person("Noah", "Greifer", role = c("aut"), 
+         email = "ngreifer@iq.harvard.edu",
+	       comment = c(ORCID="0000-0003-3067-7154")),
+  person("Stephanie", "Pierce", role = c("aut"),
+         email = "spierce@oeb.harvard.edu", 
+         comment = c(ORCID = "0000-0003-0717-1841"))
+  )
+Description: A package to compute the optimal number of regions (or subdivisions) and 
+    their position in serial structures without a priori assumptions and to vizualize 
+    the results. After reducing data dimensionality with the built-in function for
+    data ordination, regions are fitted as segmented linear regressions
+    along the serial structure. Every region boundary
+    position and increasing number of regions are iteratively fitted and
+    the best model (number of regions and boundary positions) is selected
+    with an information criterion. This package expands on the previous
+    regions package (Jones et al., Science 2018) with improved
+    computation and more fitting and plotting options.
 License: GPL (>= 2)
 Encoding: UTF-8
 Depends: 
@@ -20,9 +40,11 @@ Imports:
     chk (>= 0.8.1),
     pbapply (>= 1.7-0)
 Suggests:
+    viridis,
+    patchwork,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
