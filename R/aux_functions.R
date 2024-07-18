@@ -118,7 +118,7 @@
 
   }
 
-  return(out)
+  out
 }
 
 # Checks if supplied argument is a color; vectorized
@@ -195,6 +195,7 @@
     if (length(vec) > 1) function(x, y) {x %in% y}
     else function(x, y) {x == y}
   }
+
   .rowSums(matrix(comp(m, vec), ncol = ncol(m)),
            m = nrow(m), n = ncol(m)) > 0
 }
@@ -232,7 +233,12 @@
   chk::wrn(...)
 }
 
-#To pass CRAN checks:
-# utils::globalVariables(c("L.beg", "L.end", "L.pct.beg", "L.pct.end", "PCO",
-#                          "Region", "beg", "bp", "featuren", "ind", "ind.beg",
-#                          "ind.end", "pct.beg", "pct.end", "value", "vname"))
+# Checks if two vector of numbers are equal within tolerance
+.equiv <- function(x, y, tol = sqrt(.Machine$double.eps)) {
+  chk::chk_numeric(x)
+  chk::chk_numeric(y)
+  chk::chk_number(tol)
+  chk::chk_gte(tol, 0)
+
+  abs(x - y) < tol
+}
