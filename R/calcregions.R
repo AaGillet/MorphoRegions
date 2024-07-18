@@ -21,7 +21,7 @@
 #' * `results` - the results of the fitting process for each combination of breakpoints
 #' * `stats` - statistics summarizing the fitting process. Use `summary()` to view this information in a clean format.
 #'
-#' `ncombos()` returns a numeric vector with the number of breakpoint combinations for each number of regions (whcih are stored as the names).
+#' `ncombos()` returns a numeric vector with the number of breakpoint combinations for each number of regions (which are stored as the names).
 #'
 #' @details `calcregions()` enumerates all possible combinations of breakpoints that satisfy the constraint imposed by `minvert` (i.e., that breakpoints need to be at least `minvert` vertebrae apart) and fits the segmented regression models implied by each combination. These are multivariate regression models with the PCO scores specified by `scores` as the outcomes. When `cont = TRUE`, these regression models are continuous; i.e., the regression lines for each region connect at the breakpoints. Otherwise, the models are discontinuous so that each region has its own intercept and slope. The models are fit using [.lm.fit()], which efficiently implements ordinary least squares regression.
 #'
@@ -132,7 +132,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
   Yvar <- Yvar[o, , drop = FALSE]
 
   ncombs <- vapply(eligible_noregions, function(i) {
-    .ncombos(eligible_vertebrae, minvert, i - 1)
+    .ncombos(length(eligible_vertebrae), minvert, i - 1)
   }, numeric(1L))
 
   if (any(ncombs == 0)) {
@@ -215,13 +215,13 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
   minvert <- attr(regions_results, "minvert")
 
   ncombs <- vapply(noregions, function(i) {
-    .ncombos(eligible_vertebrae, minvert, i - 1)
+    .ncombos(length(eligible_vertebrae), minvert, i - 1)
   }, numeric(1L))
 
   if (any(ncombs == 0)) {
     max.regions <- max(noregions[ncombs > 0])
     .wrn_immediate(sprintf("models for %s vertebrae cannot be fit with more than %s region%%s and `minvert` of %s",
-                     length(eligible_vertebrae), max.regions, minvert), n = max.regions)
+                           length(eligible_vertebrae), max.regions, minvert), n = max.regions)
     ncombs <- ncombs[noregions <= max.regions]
     noregions <- noregions[noregions <= max.regions]
   }
@@ -364,7 +364,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   }
 
   ncombs <- vapply(eligible_noregions, function(i) {
-    .ncombos(eligible_vertebrae, minvert, i - 1)
+    .ncombos(length(eligible_vertebrae), minvert, i - 1)
   }, numeric(1L))
 
   setNames(ncombs, eligible_noregions)
@@ -535,7 +535,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     }
 
     # Number of combinations
-    ncombi <- .ncombos(eligible_vertebrae, minvert, nbp)
+    ncombi <- .ncombos(length(eligible_vertebrae), minvert, nbp)
 
     # Max length for an R object to not exceed 2Gb in size (Memory safety net)
     # lim <- 5e7
@@ -796,30 +796,37 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   regions_results
 }
 
-# Returns number of combos possible
-.ncombos <- function(vert, minvert, nbp) {
-  if (nbp == 0) return(1)
+# Returns number of combos possible; vectorized across nvert
+.ncombos <- function(nvert, minvert, nbp) {
+  if (nbp == 0) return(rep(1, length(nvert)))
 
   # Number of possibilities for each BP
-  p <- length(vert) - minvert * (nbp + 1) + 1
+  p <- nvert - minvert * (nbp + 1) + 1
 
-  if (p <= 0) return(0)
+  out <- rep(0, length(nvert))
+
+  if (all(p <= 0)) return(out)
 
   # Number of combinations - this is magic, kind of, but it works
   # prod(p - 1 + 1:nbp)/prod(1:nbp)
-  choose(p - 1 + nbp, nbp)
+  out[p > 0] <- choose(p[p > 0] - 1 + nbp, nbp)
+
+  out
 }
 
+# Returns all combos satisfying rules by dispatching to .combosR_slow()
+# or .combosR_quick() depending on rules
 .combos <- function(vert, minvert, nbp, ncombos = Inf, last_combo = NULL,
                     includebp = NULL) {
 
-  if (!is.null(last_combo) || ncombos < .ncombos(vert, minvert, nbp) ||
+  maxcombos <- .ncombos(length(vert), minvert, nbp)
+  if (!is.null(last_combo) || ncombos < maxcombos || maxcombos == 0 ||
       (!is.null(includebp) && any(diff(includebp) < minvert))) {
-    return(.combosR(vert, minvert, nbp, ncombos, last_combo,
-                    includebp))
+    return(.combosR_slow(vert, minvert, nbp, ncombos, last_combo,
+                         includebp))
   }
 
-  out <- .combosR4(vert, minvert, nbp)
+  out <- .combosR_quick(vert, minvert, nbp)
 
   if (!is.null(includebp)) {
     out <- out[.all_mat_in(out, includebp),, drop = FALSE]
@@ -829,8 +836,8 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 }
 
 # Returns matrix of all combos, uses counter and allows other options
-.combosR <- function(vert, minvert, nbp, ncombos = Inf, last_combo = NULL,
-                     includebp = NULL) {
+.combosR_slow <- function(vert, minvert, nbp, ncombos = Inf, last_combo = NULL,
+                          includebp = NULL) {
 
   if (!is.null(includebp) && length(includebp) == nbp) {
     combos <- matrix(includebp, nrow = 1, ncol = nbp)
@@ -854,9 +861,9 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   }
 
   mins <- minvert_override * seq_len(nbp)
-  maxes <- rep(n, nbp) - rev(mins)
+  maxes <- n - rev(mins)
 
-  maxcombos <- .ncombos(vert, minvert_override, nbp)
+  maxcombos <- .ncombos(n, minvert_override, nbp)
 
   ncombos <- min(ncombos, maxcombos)
   combos <- matrix(NA_integer_, nrow = ncombos, ncol = max(nbp, 1))
@@ -866,6 +873,8 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
   if (ncombos == 0 || nbp == 0) return(combos)
 
+  reset0 <- rep(FALSE, nbp)
+
   if (is.null(last_combo)) {
     counters <- mins
   }
@@ -873,7 +882,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     counters <- match(last_combo, vert)
 
     #Increment combo before inserting into combos matrix
-    reset <- rep(FALSE, nbp)
+    reset <- reset0
     counters[nbp] <- counters[nbp] + 1
 
     i <- nbp
@@ -889,11 +898,10 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     }
   }
 
-  reset <- rep(FALSE, nbp)
   k <- 1
 
   while (k <= nrow(combos) && counters[1] <= maxes[1]) {
-    reset[reset] <- FALSE
+    reset <- reset0
 
     if (is.null(includebp) || all(includebp %in% counters)) {
       ok <- TRUE
@@ -937,10 +945,9 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
 #Bare bones, uses recursive solution from https://stackoverflow.com/a/76975508/6348551
 #(fastest)
-.combosR4 <- function(vert, minvert, nbp) {
+.combosR_quick <- function(vert, minvert, nbp) {
 
-  y <- seq_along(vert)
-  y <- y[minvert:(length(y) - minvert)]
+  y <- minvert:(length(vert) - minvert)
   vn <- y[length(y)]
 
   f0 <- function(v, k, m) {
@@ -948,13 +955,14 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
     d <- Recall(v, k - 1, m)
 
-    u <- (minvert*(k - 1)):(vn - m)
+    u <- (m * (k - 1)):(vn - m)
 
     lst <- lapply(u, function(i) {
       p <- (i + m):vn
       dd <- d[d[, k - 1] == i, , drop = FALSE]
       cbind(dd[rep(1:nrow(dd), each = length(p)), , drop = FALSE], p)
     })
+
     unname(do.call("rbind", lst))
   }
 
