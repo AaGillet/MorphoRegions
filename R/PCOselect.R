@@ -35,7 +35,7 @@
 #'
 #' ## `method = "max"`
 #'
-#' This method works by select the number of PCOs that gives the maximum possible region score for the segmented models fit in the object supplied to `results`. Which criterion is maximized (AIC or BIC) is determined by the value supplied to `criterion`. The `summary()` method displays the region score (estimated number of regions) for each PCO (`RSind`) and for PCOs cumulatively (`RScum`) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The `plot()` method displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
+#' This method works by selecting the smallest number of PCOs that gives a region score within .001 of the maximum possible region score for the segmented models fit in the object supplied to `results`. Which criterion is maximized (AIC or BIC) is determined by the value supplied to `criterion`. The `summary()` method displays the region score (estimated number of regions) for each PCO (`RSind`) and for PCOs cumulatively (`RScum`) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The `plot()` method displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
 #'
 #' @example man/examples/example-PCOselect.R
 #'
@@ -251,7 +251,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   diff[diff < 0] <- 0
 
   #split the dataset at the zeros, and calculate number of pcos in the first string
-  sigpco <- length(split(diff, cumsum(diff == 0))$"0")
+  sigpco <- length(split(diff, cumsum(diff == 0))[["0"]])
 
   list(eigen.true = eigen.true,
        eigen.mean = eigen.mean,
@@ -261,7 +261,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
 
 }
 
-.PCOmax <- function(results) {
+.PCOmax <- function(results, tol = .001) {
 
   regiondata <- results$results
 
@@ -280,8 +280,8 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
     pco.no.test[["RS_BIC"]][i] <- support.cum$Region_score_BIC
   }
 
-  pco.max.AICc <- which(.equiv(pco.no.test[["RS_AICc"]], max(pco.no.test[["RS_AICc"]])))[1]
-  pco.max.BIC <- which(.equiv(pco.no.test[["RS_BIC"]], max(pco.no.test[["RS_BIC"]])))[1]
+  pco.max.AICc <- which(.equiv(pco.no.test[["RS_AICc"]], max(pco.no.test[["RS_AICc"]]), tol = tol))[1]
+  pco.max.BIC <- which(.equiv(pco.no.test[["RS_BIC"]], max(pco.no.test[["RS_BIC"]]), tol = tol))[1]
 
   list(pco.max.AICc = pco.max.AICc,
        pco.max.BIC = pco.max.BIC,
