@@ -28,7 +28,7 @@
 #'
 #' ### Specifying breakpoints:
 #'
-#' There are three ways to specify regions in `plotvertmap()`. First is to supply the vector of breakpoints directly to `bps`. Second is to supply a `regions_modelsupport` object to `modelsupport`. When supplied, the `criterion` and `model` arguments can be used to select which of the sets of breakpoints in the object is to be used. `model` selects which breakpoint model is to be used (1 for first best, 2 for second best, etc.), and `criterion` determines which criterion (AICc or BIC) is used to rank the models. Third is to supply ` regions_BPvar` object to `bpvar`. The weighted average breakpoints will be used, with vertebra indices less than than a given breakpoint assigned to the same region (e.g., a weighted average breakpoint of 3.3 will place vertebrae 1, 2, and 3 in a region, and so would a weighted average breakpoint of 3.9).
+#' There are three ways to specify regions in `plotvertmap()`. First is to supply the vector of breakpoints directly to `bps`. Second is to supply a `regions_modelsupport` object to `modelsupport`. When supplied, the `criterion` and `model` arguments can be used to select which of the sets of breakpoints in the object is to be used. `model` selects which breakpoint model is to be used (1 for first best, 2 for second best, etc.), and `criterion` determines which criterion (AICc or BIC) is used to rank the models. Third is to supply ` regions_BPvar` object to `bpvar`. The weighted average breakpoints will be used after rounding (e.g., a weighted average breakpoint of 3.3 will place vertebrae 1, 2, and 3 in a region, and a weighted average breakpoint of 3.9 will place vertebrae 1, 2, 3, and 4 in a region).
 #'
 #' ### Using `block.cols`:
 #'
@@ -61,6 +61,7 @@ plotvertmap <- function(x, type = "count",
   }
 
   chk::chk_flag(dropNA)
+  chk::chk_flag(text)
 
   chk::chk_string(type)
   type <- tolower(type)
@@ -108,7 +109,7 @@ plotvertmap <- function(x, type = "count",
   }
   else if (!is.null(bpvar)) {
     chk::chk_is(bpvar, "regions_BPvar")
-    BPs <- drop(bpvar$WeightedBP["wMean",])
+    BPs <- round(drop(bpvar$WeightedBP["wMean",]))
 
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
 
@@ -165,7 +166,7 @@ plotvertmap <- function(x, type = "count",
       data_combined <- .get_data_without_pos(x, subset = FALSE)
 
     if (is.numeric(centraL)) {
-      if (length(centraL) == nrow(data_combined)) {
+      if (!inherits(x, "regions_sim") && length(centraL) == nrow(data_combined)) {
         for (i in unique_vert) {
           vertmap$centraL[vert.all == i] <- mean(centraL[Xvar == i], na.rm = TRUE)
         }
@@ -215,6 +216,9 @@ plotvertmap <- function(x, type = "count",
 
       chk::chk_not_any_na(vertmap$centraL, "the variable named in `centraL`")
       chk::chk_gte(vertmap$centraL, 0, "the variable named in `centraL`")
+    }
+    else {
+      chk::err("`centraL` must be a vector of centrum lengths or a string containing them name of the centrum length variable")
     }
   }
 
@@ -277,7 +281,7 @@ plotvertmap <- function(x, type = "count",
 
     # Add traditional regions to table:
     for (i in seq_along(block.names)) {
-      if (i == 1) {
+      if (i == 1L) {
         vertmap$trad.reg[!missing_vert &
                            vertmap$vname <= block.lim[i]] <- block.names[i]
       }
@@ -303,11 +307,10 @@ plotvertmap <- function(x, type = "count",
       vertmap$tradreg.corr[vertmap$reg == regs[i]] <- names(which.max(t))
     }
 
-    # Rename estimated regions based on their appartenance to traditional regions.
-    #
+    # Rename estimated regions based on their appartenance to traditional regions
     reg.corr <- unique(vertmap$tradreg.corr)
-    reg.ct <- rep(NA_integer_, sum(!missing_vert))
-    reg.nm <- rep(NA_character_, sum(!missing_vert))
+    reg.ct <- rep.int(NA_integer_, sum(!missing_vert))
+    reg.nm <- rep.int(NA_character_, sum(!missing_vert))
     vertmap$Region <- NA_character_
 
     for (i in seq_along(reg.corr)) {
@@ -430,16 +433,18 @@ plotvertmap <- function(x, type = "count",
     }
 
     # Assign vertical position and deal with overlaps
-    y <- rep(0, length(BPs))
+    y <- rep.int(0, length(BPs))
     y[1] <- 1
 
     for (i in seq_along(BPs)[-1]) {
-      num_ovl <- vapply(1:max(y), function(l) {
+      num_ovl <- vapply(seq_len(max(y)), function(l) {
         sum(bp.sd$beg[y == l] < bp.sd$end[i] & bp.sd$end[y == l] >= bp.sd$beg[i])
       }, numeric(1L))
 
-      if (all(num_ovl > 0)) y[i] <- max(y) + 1
-      else y[i] <- min(which(num_ovl == 0))
+      y[i] <- {
+        if (all(num_ovl > 0)) max(y) + 1
+        else min(which(num_ovl == 0))
+      }
     }
 
     # Rescale to keep first position at 0 and alternate above and below
@@ -453,8 +458,10 @@ plotvertmap <- function(x, type = "count",
 
   ## Add vertebra number; dodge SDs if requested
   if (text) {
-    if (is.null(bp.sd)) text.y <- 1.5
-    else text.y <- mean(c(1, min(bp.sd$y)))
+    vertmap$text.y <- {
+      if (is.null(bp.sd)) 1.5
+      else .5 + .5 * min(bp.sd$y)
+    }
   }
 
   ## Set color for each region
@@ -501,78 +508,80 @@ plotvertmap <- function(x, type = "count",
     else {
       pal <- RColorBrewer::brewer.pal(nreg, "Paired")
     }
+
     colors <- setNames(pal[seq_len(nreg)], regions)
   }
 
   colors <- c(Missing = "grey", colors)		# Add color for missing vertebrae
 
-  # Initialize plot
-  p <- ggplot()
-
   if (is.null(centraL)) {
+    # Initialize plot
+    p <- ggplot(data = vertmap)
+
     if (type == "count") {
       p <- p +
-        geom_rect(aes(xmin = vertmap$ind.beg,
-                      xmax = vertmap$ind.end,
+        geom_rect(aes(xmin = .data$ind.beg,
+                      xmax = .data$ind.end,
                       ymin = 1, ymax = 2,
-                      fill = vertmap$Region),
+                      fill = .data$Region),
                   color = border.col) +
         labs(y = name, x = "Vertebral count")
 
       if (text) {
         # Add vertebral number on each colored square
-        p <- p + geom_text(aes(x = vertmap$ind,
-                               y = text.y,
-                               label = vertmap$vname))
+        p <- p + geom_text(aes(x = .data$ind,
+                               y = .data$text.y,
+                               label = .data$vname))
       }
     }
     else if (type == "percent") {
       p <- p +
-        geom_rect(aes(xmin = vertmap$pct.beg,
-                      xmax = vertmap$pct.end,
+        geom_rect(aes(xmin = .data$pct.beg,
+                      xmax = .data$pct.end,
                       ymin = 1, ymax = 2,
-                      fill = vertmap$Region),
+                      fill = .data$Region),
                   color = border.col) +
         labs(y = name, x = "% Vertebral count")
 
       if (text) {
-        p <- p + geom_text(aes(x = (vertmap$pct.beg + vertmap$pct.end)/2,
-                               y = text.y,
-                               label = vertmap$vname))
+        p <- p + geom_text(aes(x = (.data$pct.beg + .data$pct.end)/2,
+                               y = .data$text.y,
+                               label = .data$vname))
       }
     }
   }
   else {
+    # Initialize plot with nonzero centrum lengths
+    p <- ggplot(data = vertmap[vertmap$centraL > 0,])
+
     if (type == "count") {
       p <- p +
-        geom_rect(aes(xmin = vertmap$L.beg,
-                      xmax = vertmap$L.end,
+        geom_rect(aes(xmin = .data$L.beg,
+                      xmax = .data$L.end,
                       ymin = 1, ymax = 2,
-                      fill = vertmap$Region),
+                      fill = .data$Region),
                   color = border.col) +
         labs(y = name, x = "Centrum position")
 
       if (text) {
-        vertmap_ <- vertmap[vertmap$centraL > 0,]
-        p <- p + geom_text(aes(x = (vertmap_$L.beg + vertmap_$L.end)/2,
-                               y = text.y,
-                               label = vertmap_$vname))
+        p <- p + geom_text(aes(x = (.data$L.beg + .data$L.end)/2,
+                               y = .data$text.y,
+                               label = .data$vname))
       }
     }
     else if (type == "percent") {
       p <- p +
-        geom_rect(aes(xmin = vertmap$L.pct.beg,
-                      xmax = vertmap$L.pct.end,
+        geom_rect(aes(xmin = .data$L.pct.beg,
+                      xmax = .data$L.pct.end,
                       ymin = 1, ymax = 2,
-                      fill = vertmap$Region),
+                      fill = .data$Region),
                   color = border.col) +
         labs(y = name, x = "% Total centrum length")
 
       if (text) {
-        vertmap_ <- vertmap[vertmap$centraL > 0,]
-        p <- p + geom_text(aes(x = (vertmap_$L.pct.beg + vertmap_$L.pct.end)/2,
-                               y = text.y,
-                               label = vertmap_$vname))
+        p <- p + geom_text(aes(x = (.data$L.pct.beg + .data$L.pct.end)/2,
+                               y = .data$text.y,
+                               label = .data$vname))
       }
     }
   }
@@ -584,17 +593,22 @@ plotvertmap <- function(x, type = "count",
 
   if (!is.null(bp.sd)) {
     # Add horizontal line for BPs standard deviation
-    p <- p + geom_pointrange(aes(xmin = bp.sd$beg,
-                                 xmax = bp.sd$end,
-                                 y = bp.sd$y,
-                                 x = bp.sd$bp),
-                             lwd = 1, col = sd.col, shape = "diamond", size = .8)
+    p <- p + geom_pointrange(data = bp.sd,
+                             aes(xmin = .data$beg,
+                                 xmax = .data$end,
+                                 y = .data$y,
+                                 x = .data$bp),
+                             linewidth = 1, color = sd.col,
+                             shape = "diamond", size = .8)
   }
 
   p <- p +
     scale_fill_manual("Legend", values = colors) +
-    scale_x_continuous(expand = c(0, 0), labels = if (type == "percent") scales::percent
-                       else waiver()) +
+    scale_x_continuous(expand = c(0, 0),
+                       labels = {
+                         if (type == "percent") scales::percent
+                         else waiver()
+                       }) +
     theme_classic() +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),

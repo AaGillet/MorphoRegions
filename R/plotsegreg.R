@@ -177,49 +177,58 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
                               linescolor = "darkturquoise", BPcolor = "coral", specimen = NULL,
                               weights = NULL) {
 
-  PCO <- factor(rep(paste("PCO", scores), each = length(Xvar)))
-  Xvar <- rep(Xvar, ncol(Yvar))
+  plot_data <- data.frame(
+    PCO = factor(rep(paste("PCO", scores), each = length(Xvar))),
+    Xvar = rep(Xvar, ncol(Yvar))
+  )
+
   use_specimen <- !is.null(specimen) && nlevels(specimen) > 1
   if (use_specimen) {
-    specimen <- rep(specimen, ncol(Yvar))
+    plot_data$specimen <- rep(specimen, ncol(Yvar))
   }
 
-  if (is.null(weights)) weights <- rep(1, length(Xvar))
-  else weights <- rep(weights, ncol(Yvar))
+  plot_data$weights <- {
+    if (is.null(weights)) 1
+    else rep(weights, ncol(Yvar))
+  }
+
 
   #Flatten scores/predicted values
-  Yvar <- as.vector(Yvar)
-  if (!is.null(yhat)) yhat <- as.vector(yhat)
+  plot_data$Yvar <- as.vector(Yvar)
+  if (!is.null(yhat)) plot_data$yhat <- as.vector(yhat)
 
-  p <- ggplot(data.frame(PCO, Xvar, Yvar),
-              aes(x = Xvar)) +
-    {
-      if (use_specimen)
-        geom_point(aes(y = Yvar, color = specimen, size = weights),
-                   shape = "circle")
-      else
-        geom_point(aes(y = Yvar, size = weights),
-                   shape = "circle",
-                   color = "darkgray")
-    }
+  p <- ggplot(plot_data,
+              aes(x = .data$Xvar))
+
+  if (use_specimen)
+    p <- p + geom_point(aes(y = .data$Yvar,
+                            color = .data$specimen,
+                            size = .data$weights),
+                        shape = "circle")
+  else
+    p <- p + geom_point(aes(y = .data$Yvar,
+                            size = .data$weights),
+                        shape = "circle",
+                        color = "darkgray")
 
   if (length(BPs) > 0) {
     breakpoints <- BPs + .5
-    p <- p +
-      geom_vline(xintercept = breakpoints, color = BPcolor, linetype = "dashed")
+    p <- p + geom_vline(xintercept = breakpoints,
+                        color = BPcolor,
+                        linetype = "dashed")
   }
   else {
     breakpoints <- numeric(0)
   }
 
   if (!is.null(yhat) && lines) {
-    p <- p + geom_line(aes(y = yhat,
-                           group = cut(Xvar, c(-Inf, breakpoints, Inf))),
+    p <- p + geom_line(aes(y = .data$yhat,
+                           group = cut(.data$Xvar, c(-Inf, breakpoints, Inf))),
                        show.legend = FALSE, color = linescolor)
   }
 
   p <- p + scale_size_area(max_size = 2, guide = NULL) +
-    facet_wrap(~PCO, ncol = 1,
+    facet_wrap(vars(.data$PCO), ncol = 1,
                scales = "free_y",
                strip.position = "left") +
     theme_bw() +
