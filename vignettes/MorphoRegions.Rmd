@@ -138,7 +138,7 @@ PCOs <- PCOselect(dolphin_pco, method = "variance",
 PCOs
 ```
 
-```{r, fig.show='all', out.width = '60%',fig.align='center'}
+```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve."}
 # Max:
 regionresults <- calcregions(dolphin_pco, scores = 1:39, noregions = 4, 
                              minvert = 3, cont = TRUE, exhaus = TRUE,
@@ -150,7 +150,7 @@ PCOs
 plot(PCOs)
 ```
 
-```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses."}
+```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses."}
 # Bootstrap:
 PCOs <- PCOselect(dolphin_pco, method = "boot")
 PCOs
@@ -287,6 +287,7 @@ bpvar <- calcBPvar(regionresults, noregions = 7,
 bpvar
 ```
 
+Note that when using output from `calcBPvar` for plotting, breakpoint positions will be rounded to the closest whole number. In the example above, breakpoints will then be 19, 24, 26, 35, 38, and 41. Since `calcregions` only returns whole numbers as breakpoint values, a weighted mean breakpoint position of 23.97 involves that most models found a breakpoint value of 24 (corresponding to a region break between vertebrae 24 and 25).
 
 ## Visualizing results
 
@@ -357,7 +358,7 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 
 To facilitate the interpretation of the regions, the function offers some plotting options.
 
-It is possible to **add other boundaries on the plot**, for instance the boundaries between traditional anatomical regions (thoraco-lumbar, lumbo-caudal, etc). Boundary positions can be supplied as a vector to the `reg.lim` argument, with each numeric value corresponding to the position of the last element before the boundary. For instance, in the dolphin dataset, the thoraco-lumbar, lumbo-caudal, and caudal-fluke transitions fall between vertebrae 17-18, 25-26, and 35-36, respectively.
+It is possible to **add other boundaries on the plot**, such as the boundaries between traditional anatomical regions (thoraco-lumbar, lumbo-caudal, etc). Boundary positions can be supplied as a vector to the `reg.lim` argument, with each numeric value corresponding to the position of the last element before the boundary. For example, in the dolphin dataset, the thoraco-lumbar, lumbo-caudal, and caudal-fluke transitions fall between vertebrae 17-18, 25-26, and 35-36, respectively.
 
 It is also possible to plot the **positional info** of each element (vertebra) as a number on the corresponding rectangle.
 
@@ -405,9 +406,9 @@ Finally, it is possible to **change colors used for each region** with the `bloc
 Alternatively, it's also possible to *define a set of colors per block*, each block being defined by the `block.lim` argument. In this case, colors must be supplied as a named list, each element of the list containing a vector of color for a given block. For instance, for the dolphin data, we could define regions in the precaudal block (thoracic + lumbar) to be colors in shades of beige/brown, while regions in the caudal block (caudal + fluke) to be color in shades of blue. Since the lumbo-caudal transition falls between vertebrae 25 and 26, we'll define two blocks with a limit at vertebra 25.  
 
 
-```{r, eval = requireNamespace("viridis", quietly = TRUE), message=FALSE, fig.width=7, fig.height=0.7, fig.show='hold', fig.align='center', fig.cap="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*."}
+```{r, eval = requireNamespace("viridisLite", quietly = TRUE), message=FALSE, fig.width=7, fig.height=0.7, fig.show='hold', fig.align='center', fig.cap="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*."}
 # Manually color-coding each region using the viridis palette:
-library(viridis)
+library(viridisLite)
 nreg <- supp$Model_support_BIC[1,1]  # get nbr of regions
 cols <- viridis(n = nreg)
 
@@ -542,7 +543,7 @@ plotsegreg(dolphin_pco, scores=PCOs,
 
 ### Exhaustive _vs._ non-exhaustive search {#Exhaus}
 
-*MorphoRegions* has been implemented to fit numerous models efficiently enough to run in a few minutes on most computers. However, in the case of quite complex models (numerous elements, regions to fit, and/or PCO scores), computational time can quickly increase. To speed up the process, it is possible fit models in a non-exhaustive way by setting the `exhaus = FALSE` in `calcregions()`.
+*MorphoRegions* has been implemented to fit numerous models efficiently enough to run in a few minutes on most computers. However, in the case of quite complex models (numerous elements, regions to fit, and/or PCO scores), computational time can quickly increase. To speed up the process, it is possible to fit models in a non-exhaustive way by setting `exhaus = FALSE` in `calcregions()`.
 
 When a non-exhaustive search is used, all possible models for 1 and 2 regions models are fitted, but for 3 and more regions, the algorithm will only fit a subset of all the possible models. For a given number of regions, $n$, the optimal positions of breakpoints of the models with $n-1$ regions are used as a starting point to define the subset of models to fit.
 
@@ -633,6 +634,7 @@ supp
 # Calculate variability of optimal breakpoints
 bpvar <- calcBPvar(regionresults, noregions = 5, pct = .05,
                    criterion = "bic")
+bpvar
 
 # Calculate model performance (R2) of best model
 modelperf(porpoise_pco, scores = PCOs, modelsupport = supp,
@@ -728,14 +730,16 @@ plotsegreg(sim, scores = 1:2, modelsupport = simsupport,
 ```
 
 
-The simulated dataset had 5 predefined regions with breakpoints at vertebrae 16, 20, 29, and 34. When running the regionalization analysis on the simulated dataset, the analysis correctly recovered the 5 regions model as the best fit model (using AICc). The best fit model recovered breakpoints at vertebrae 15, 21, 28, 34. The recovered position of the first three breakpoints differ sightly from the simulated positions, and the recovered position of the fourth breakpoint matches that of the simulated data.
+The simulated dataset had 5 predefined regions with breakpoints at vertebrae 16, 20, 29, and 34. When running the regionalization analysis on the simulated dataset, the analysis correctly recovered the 5 regions model as the best fit model using AICc, however the 5 regions model is second best using BIC. 
+
+The AICc best fit model recovered breakpoints at vertebrae 15, 21, 28, 34. The recovered position of the first three breakpoints differ sightly from the simulated positions, and the recovered position of the fourth breakpoint matches that of the simulated data.
 
 ```{r}
 # Simulated data breakpoints:
 sim$BPs
 
 # Recovered best fit breakpoints:
-simsupport$Model_support[1,2:6]
+simsupport$Model_support[1,2:5]
 
 # Variability of recovered best fit breakpoints:
 calcBPvar(simresults, noregions = 5, pct = 0.1, criterion = "aic")
