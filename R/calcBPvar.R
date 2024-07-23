@@ -58,7 +58,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
 
   # Calculate probability (with AICc/BIC) and weight of each model:
   IC <- vapply(dat$sumRSS, function(r) {
-    ic <- AICcalc(r, noPC = noPC, nvert = nvert, noregions = noregions, cont = cont)
+    ic <- .AICcalc(r, noPC = noPC, nvert = nvert, noregions = noregions, cont = cont)
     ic[switch(criterion, "aic" = "AICc", "bic" = "BIC")]
   }, numeric(1L))
 

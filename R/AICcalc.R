@@ -1,4 +1,4 @@
-AICcalc <- function(RSS, noPC, nvert, noregions, cont) {
+.AICcalc <- function(RSS, noPC, nvert, noregions, cont) {
   n <- noPC * nvert 	# No of variables used
   var <- RSS/n 	# Variance calculated ML way
   k <- { # Calculating the number of parameters (k) being fitted in the model

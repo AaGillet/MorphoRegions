@@ -27,7 +27,7 @@ modelsupport <- function(models) {
   BIC <- numeric(nrow(models))
 
   for (i in seq_len(nrow(models))) {
-    probs <- AICcalc(models$sumRSS[i], nPC, nvert,
+    probs <- .AICcalc(models$sumRSS[i], nPC, nvert,
                      models$regions[i], cont) #Calculate AIC score
 
     AICc[i] <- probs["AICc"]

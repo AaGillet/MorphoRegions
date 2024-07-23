@@ -82,7 +82,7 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
   res <- as.data.frame(matrix(c(nbp + 1, BPs, RSS, rsq), nrow = 1,
                               dimnames = list(NULL, colhead)))
 
-  supp <- AICcalc(RSS, noPC = noPC, nvert = length(Xvar),
+  supp <- .AICcalc(RSS, noPC = noPC, nvert = length(Xvar),
                   noregions = nbp + 1, cont = cont)
 
   out <- list(results = res,

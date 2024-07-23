@@ -65,7 +65,7 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
 
   nbp <- nregions - 1
 
-  if (length(r2) == 1) {
+  if (length(r2) == 1L) {
     r2 <- rep(r2, nvar)
   }
 
@@ -212,7 +212,7 @@ print.regions_sim <- function(x, ...) {
   mins <- minvert * seq_len(nbp)
   maxes <- n - rev(mins)
 
-  combo <- rep(0, nbp)
+  combo <- rep.int(0, nbp)
 
   a <- 0
 

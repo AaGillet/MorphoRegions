@@ -798,7 +798,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
 # Returns number of combos possible; vectorized across nvert
 .ncombos <- function(nvert, minvert, nbp) {
-  if (nbp == 0) return(rep(1, length(nvert)))
+  if (nbp == 0) return(rep.int(1, length(nvert)))
 
   # Number of possibilities for each BP
   p <- nvert - minvert * (nbp + 1) + 1
