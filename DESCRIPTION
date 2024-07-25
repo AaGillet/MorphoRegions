@@ -1,7 +1,7 @@
 Package: MorphoRegions
 Type: Package
-Title: Analysis of regionalization patterns in serially-homologous structures
-Version: 0.0.0.9005
+Title: Analysis of Regionalization Patterns in Serially-Homologous Structures
+Version: 0.1.0
 Authors@R: c(
   person("Amandine", "Gillet", role = c("cre", "aut"),
          email = "gillet.aman@gmail.com", 
@@ -16,7 +16,7 @@ Authors@R: c(
          email = "spierce@oeb.harvard.edu", 
          comment = c(ORCID = "0000-0003-0717-1841"))
   )
-Description: A package to compute the optimal number of regions (or subdivisions) and 
+Description: Computes the optimal number of regions (or subdivisions) and 
     their position in serial structures without a priori assumptions and to visualize 
     the results. After reducing data dimensionality with the built-in function for
     data ordination, regions are fitted as segmented linear regressions
@@ -24,7 +24,7 @@ Description: A package to compute the optimal number of regions (or subdivisions
     position and increasing number of regions are iteratively fitted and
     the best model (number of regions and boundary positions) is selected
     with an information criterion. This package expands on the previous
-    regions package (Jones et al., Science 2018) with improved
+    'regions' package (Jones et al., Science 2018) with improved
     computation and more fitting and plotting options.
 License: GPL (>= 2)
 Encoding: UTF-8
