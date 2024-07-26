@@ -40,7 +40,7 @@ devtools::install_github("AaGillet/MorphoRegions")
 
 ## Example
 
-The following example illustrates the basic steps to prepare the data, fit regionalization models, select the best model, and plot the results. See the vignette or the [MorphoRegions website]() for a detailed guide of the package and its functionalities.
+The following example illustrates the basic steps to prepare the data, fit regionalization models, select the best model, and plot the results. See the vignette or the [MorphoRegions website](https://aagillet.github.io/MorphoRegions/) for a detailed guide of the package and its functionalities.
 
 
 ```{r loadpackage}
