@@ -38,6 +38,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aagillet/MorphoRegions/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -46,27 +47,29 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures">MorphoRegions: Analysis of Regionalization Patterns in Serially-Homologous Structures<a class="anchor" aria-label="anchor" href="#morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures"></a>
+<div class="page-header"><h1 id="morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures">
+<em>MorphoRegions</em>: Analysis of Regionalization Patterns in Serially-Homologous Structures<a class="anchor" aria-label="anchor" href="#morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
 <p><em>MorphoRegions</em> is a package package built to computationally identify regions (morphological, functional, etc.) in serially homologous structures such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified using maximum-likelihood methods without <em>a priori</em> assumptions.</p>
 <p>This package was first presented in <a href="https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1" class="external-link">Gillet et al. (2024)</a> and is an updated version of the <a href="https://github.com/katrinajones/regions" class="external-link"><em>regions</em> R-package</a> from <a href="%7Bhttps://www.science.org/doi/abs/10.1126/science.aar3126" class="external-link">Jones et al. (2018)</a> with improved computational methods and expanded fitting and plotting options.</p>
 <div class="section level2">
-<h2 id="installing-morphoregions">Installing MorphoRegions<a class="anchor" aria-label="anchor" href="#installing-morphoregions"></a>
+<h2 id="installing-morphoregions">Installing <em>MorphoRegions</em>
+<a class="anchor" aria-label="anchor" href="#installing-morphoregions"></a>
 </h2>
-<p>You can install the released version of MorphoRegions from <a href="https://CRAN.R-project.org" class="external-link">CRAN</a> with:</p>
+<p>You can install the released version of <em>MorphoRegions</em> from <a href="https://CRAN.R-project.org/package=MorphoRegions" class="external-link">CRAN</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"MorphoRegions"</span><span class="op">)</span></span></code></pre></div>
-<p>Or the development version from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>Or the development version from <a href="https://github.com/AaGillet/MorphoRegions" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"AaGillet/MorphoRegions"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"AaGillet/MorphoRegions"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>The following example illustrates the basic steps to prepare the data, fit regionalization models, select the best model, and plot the results. See the vignette or the <a href="">MorphoRegions website</a> for a detailed guide of the package and its functionalities.</p>
+<p>The following example illustrates the basic steps to prepare the data, fit regionalization models, select the best model, and plot the results. See <code><a href="articles/MorphoRegions.html">vignette("MorphoRegions")</a></code> or the <a href="https://aagillet.github.io/MorphoRegions/"><em>MorphoRegions</em> website</a> for a detailed guide of the package and its functionalities.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aagillet.github.io/MorphoRegions/">MorphoRegions</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
@@ -74,33 +77,187 @@
 </h4>
 <p>Data should be provided as a dataframe where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The <code>dolphin</code> dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dolphin"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dolphin</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Vertebra   Lc   Wc   Hc  Hnp  Wnp  Inp   Ha   Wa   Lm   Wm  Hm Hch Wch  Ltp</span></span>
-<span><span class="co">#&gt; 8         8 1.33 3.37 2.02 2.85 1.17 2.01 1.72 1.48 0.00 0.00 0.0   0   0 1.71</span></span>
-<span><span class="co">#&gt; 9         9 1.46 3.67 2.10 3.20 1.63 2.01 1.44 1.65 0.00 0.00 0.0   0   0 1.51</span></span>
-<span><span class="co">#&gt; 10       10 1.57 3.62 2.26 3.13 1.71 2.01 1.42 2.18 0.00 0.00 0.0   0   0 1.06</span></span>
-<span><span class="co">#&gt; 11       11 1.71 3.75 2.24 3.07 1.71 2.01 1.38 1.25 0.56 0.38 1.7   0   0 1.03</span></span>
-<span><span class="co">#&gt; 12       12 1.74 3.72 2.28 2.66 1.96 1.99 1.30 1.50 1.45 1.09 2.0   0   0 0.60</span></span>
-<span><span class="co">#&gt; 13       13 1.82 3.92 2.28 2.61 1.74 1.88 1.29 1.74 1.86 1.12 2.0   0   0 0.37</span></span>
-<span><span class="co">#&gt;     Wtp  Itp</span></span>
-<span><span class="co">#&gt; 8  1.67 1.57</span></span>
-<span><span class="co">#&gt; 9  1.61 1.57</span></span>
-<span><span class="co">#&gt; 10 1.90 1.57</span></span>
-<span><span class="co">#&gt; 11 1.91 1.66</span></span>
-<span><span class="co">#&gt; 12 1.71 1.57</span></span>
-<span><span class="co">#&gt; 13 1.44 1.57</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dolphin"</span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="4%">
+<col width="9%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+<col width="4%">
+<col width="4%">
+<col width="4%">
+<col width="5%">
+<col width="5%">
+<col width="5%">
+</colgroup>
+<thead><tr class="header">
+<th align="left"></th>
+<th align="right">Vertebra</th>
+<th align="right">Lc</th>
+<th align="right">Wc</th>
+<th align="right">Hc</th>
+<th align="right">Hnp</th>
+<th align="right">Wnp</th>
+<th align="right">Inp</th>
+<th align="right">Ha</th>
+<th align="right">Wa</th>
+<th align="right">Lm</th>
+<th align="right">Wm</th>
+<th align="right">Hm</th>
+<th align="right">Hch</th>
+<th align="right">Wch</th>
+<th align="right">Ltp</th>
+<th align="right">Wtp</th>
+<th align="right">Itp</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">8</td>
+<td align="right">8</td>
+<td align="right">1.33</td>
+<td align="right">3.37</td>
+<td align="right">2.02</td>
+<td align="right">2.85</td>
+<td align="right">1.17</td>
+<td align="right">2.01</td>
+<td align="right">1.72</td>
+<td align="right">1.48</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1.71</td>
+<td align="right">1.67</td>
+<td align="right">1.57</td>
+</tr>
+<tr class="even">
+<td align="left">9</td>
+<td align="right">9</td>
+<td align="right">1.46</td>
+<td align="right">3.67</td>
+<td align="right">2.10</td>
+<td align="right">3.20</td>
+<td align="right">1.63</td>
+<td align="right">2.01</td>
+<td align="right">1.44</td>
+<td align="right">1.65</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1.51</td>
+<td align="right">1.61</td>
+<td align="right">1.57</td>
+</tr>
+<tr class="odd">
+<td align="left">10</td>
+<td align="right">10</td>
+<td align="right">1.57</td>
+<td align="right">3.62</td>
+<td align="right">2.26</td>
+<td align="right">3.13</td>
+<td align="right">1.71</td>
+<td align="right">2.01</td>
+<td align="right">1.42</td>
+<td align="right">2.18</td>
+<td align="right">0.00</td>
+<td align="right">0.00</td>
+<td align="right">0.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1.06</td>
+<td align="right">1.90</td>
+<td align="right">1.57</td>
+</tr>
+<tr class="even">
+<td align="left">11</td>
+<td align="right">11</td>
+<td align="right">1.71</td>
+<td align="right">3.75</td>
+<td align="right">2.24</td>
+<td align="right">3.07</td>
+<td align="right">1.71</td>
+<td align="right">2.01</td>
+<td align="right">1.38</td>
+<td align="right">1.25</td>
+<td align="right">0.56</td>
+<td align="right">0.38</td>
+<td align="right">1.7</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1.03</td>
+<td align="right">1.91</td>
+<td align="right">1.66</td>
+</tr>
+<tr class="odd">
+<td align="left">12</td>
+<td align="right">12</td>
+<td align="right">1.74</td>
+<td align="right">3.72</td>
+<td align="right">2.28</td>
+<td align="right">2.66</td>
+<td align="right">1.96</td>
+<td align="right">1.99</td>
+<td align="right">1.30</td>
+<td align="right">1.50</td>
+<td align="right">1.45</td>
+<td align="right">1.09</td>
+<td align="right">2.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.60</td>
+<td align="right">1.71</td>
+<td align="right">1.57</td>
+</tr>
+<tr class="even">
+<td align="left">13</td>
+<td align="right">13</td>
+<td align="right">1.82</td>
+<td align="right">3.92</td>
+<td align="right">2.28</td>
+<td align="right">2.61</td>
+<td align="right">1.74</td>
+<td align="right">1.88</td>
+<td align="right">1.29</td>
+<td align="right">1.74</td>
+<td align="right">1.86</td>
+<td align="right">1.12</td>
+<td align="right">2.0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0.37</td>
+<td align="right">1.44</td>
+<td align="right">1.57</td>
+</tr>
+</tbody>
+</table>
 <p>Prior to analysis, data must be processed into an object usable by <code>regions</code> using <code><a href="reference/process_measurements.html">process_measurements()</a></code>. The <code>pos</code> argument is used to specify the name or index of the column containing positional information and the <code>fillNA</code> argument allows to fill missing values in the dataset (up to two successive elements).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dolphin_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/process_measurements.html">process_measurements</a></span><span class="op">(</span><span class="va">dolphin</span>, pos <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">dolphin_data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "regions_data"</span></span></code></pre></div>
-<p>Data are then ordinated using a Principal Coordinates Analysis (PCO) to reduce dimensionality and allow the combination of a variety of data types. The number of PCOs to retain for analyses can be selected using <code>PCOselect</code> (see the vignette for different methods of PCO axes selection).</p>
+<p>Data are then ordinated using a Principal Coordinates Analysis (PCO) to reduce dimensionality and allow the combination of a variety of data types. The number of PCOs to retain for analyses can be selected using <code><a href="reference/PCOselect.html">PCOselect()</a></code> (see the vignette for different methods of PCO axes selection).</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dolphin_pco</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/svdPCO.html">svdPCO</a></span><span class="op">(</span><span class="va">dolphin_data</span>, metric <span class="op">=</span> <span class="st">"gower"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># Select PCOs with variance &gt; 0.05 :</span></span>
 <span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"variance"</span>,</span>
-<span>                  cutoff <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span></code></pre></div>
+<span>                  cutoff <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
+<span><span class="va">PCOs</span></span>
+<span><span class="co">#&gt; A `regions_pco_select` object</span></span>
+<span><span class="co">#&gt; - PCO scores selected: 1, 2</span></span>
+<span><span class="co">#&gt; - Method: variance (cutoff: 0.05)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="fitting-regressions-and-selecting-the-best-model">Fitting regressions and selecting the best model<a class="anchor" aria-label="anchor" href="#fitting-regressions-and-selecting-the-best-model"></a>
@@ -160,13 +317,13 @@
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-scatterplot-1.png" width="55%" style="display: block; margin: auto;"></p>
-<p>In the <strong>vertebral map</strong> plot, each vertebra is represented by a rectangle color-coded according to the region to which it belongs. Vertebrae not included in the analysis (here vertebrae 1 to 7) are represented by grayed rectangles and can be removed using <code>dropNA=T</code>.</p>
+<p>In the <strong>vertebral map</strong> plot, each vertebra is represented by a rectangle color-coded according to the region to which it belongs. Vertebrae not included in the analysis (here vertebrae 1 to 7) are represented by grayed rectangles and can be removed using <code>dropNA = TRUE</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>, </span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>, </span>
-<span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span>, dropNA <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;"><img src="reference/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;"></p>
 </div>
 </div>
@@ -178,7 +335,15 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"MorphoRegions"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://github.com/aagillet/MorphoRegions/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/aagillet/MorphoRegions/issues" class="external-link">Report a bug</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>GPL (&gt;= 2)</li>
