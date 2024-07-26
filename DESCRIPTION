@@ -47,4 +47,5 @@ VignetteBuilder: knitr
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
-URL: https://aagillet.github.io/MorphoRegions/
+URL: https://aagillet.github.io/MorphoRegions/, https://github.com/aagillet/MorphoRegions
+BugReports: https://github.com/aagillet/MorphoRegions/issues

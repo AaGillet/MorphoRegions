@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# MorphoRegions: Analysis of Regionalization Patterns in Serially-Homologous Structures
+# *MorphoRegions*: Analysis of Regionalization Patterns in Serially-Homologous Structures
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -23,27 +23,29 @@ al. (2018)](%7Bhttps://www.science.org/doi/abs/10.1126/science.aar3126)
 with improved computational methods and expanded fitting and plotting
 options.
 
-## Installing MorphoRegions
+## Installing *MorphoRegions*
 
-You can install the released version of MorphoRegions from
-[CRAN](https://CRAN.R-project.org) with:
+You can install the released version of *MorphoRegions* from
+[CRAN](https://CRAN.R-project.org/package=MorphoRegions) with:
 
 ``` r
 install.packages("MorphoRegions")
 ```
 
-Or the development version from [GitHub](https://github.com/) with:
+Or the development version from
+[GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("AaGillet/MorphoRegions")
+# install.packages("remotes")
+remotes::install_github("AaGillet/MorphoRegions")
 ```
 
 ## Example
 
 The following example illustrates the basic steps to prepare the data,
 fit regionalization models, select the best model, and plot the results.
-See the vignette or the [MorphoRegions website]() for a detailed guide
+See `vignette("MorphoRegions")` or the [*MorphoRegions*
+website](https://aagillet.github.io/MorphoRegions/) for a detailed guide
 of the package and its functionalities.
 
 ``` r
@@ -62,22 +64,16 @@ information (vertebral number) in the first column.
 
 ``` r
 data("dolphin")
-head(dolphin)
-#>    Vertebra   Lc   Wc   Hc  Hnp  Wnp  Inp   Ha   Wa   Lm   Wm  Hm Hch Wch  Ltp
-#> 8         8 1.33 3.37 2.02 2.85 1.17 2.01 1.72 1.48 0.00 0.00 0.0   0   0 1.71
-#> 9         9 1.46 3.67 2.10 3.20 1.63 2.01 1.44 1.65 0.00 0.00 0.0   0   0 1.51
-#> 10       10 1.57 3.62 2.26 3.13 1.71 2.01 1.42 2.18 0.00 0.00 0.0   0   0 1.06
-#> 11       11 1.71 3.75 2.24 3.07 1.71 2.01 1.38 1.25 0.56 0.38 1.7   0   0 1.03
-#> 12       12 1.74 3.72 2.28 2.66 1.96 1.99 1.30 1.50 1.45 1.09 2.0   0   0 0.60
-#> 13       13 1.82 3.92 2.28 2.61 1.74 1.88 1.29 1.74 1.86 1.12 2.0   0   0 0.37
-#>     Wtp  Itp
-#> 8  1.67 1.57
-#> 9  1.61 1.57
-#> 10 1.90 1.57
-#> 11 1.91 1.66
-#> 12 1.71 1.57
-#> 13 1.44 1.57
 ```
+
+|     | Vertebra |   Lc |   Wc |   Hc |  Hnp |  Wnp |  Inp |   Ha |   Wa |   Lm |   Wm |  Hm | Hch | Wch |  Ltp |  Wtp |  Itp |
+|:----|---------:|-----:|-----:|-----:|-----:|-----:|-----:|-----:|-----:|-----:|-----:|----:|----:|----:|-----:|-----:|-----:|
+| 8   |        8 | 1.33 | 3.37 | 2.02 | 2.85 | 1.17 | 2.01 | 1.72 | 1.48 | 0.00 | 0.00 | 0.0 |   0 |   0 | 1.71 | 1.67 | 1.57 |
+| 9   |        9 | 1.46 | 3.67 | 2.10 | 3.20 | 1.63 | 2.01 | 1.44 | 1.65 | 0.00 | 0.00 | 0.0 |   0 |   0 | 1.51 | 1.61 | 1.57 |
+| 10  |       10 | 1.57 | 3.62 | 2.26 | 3.13 | 1.71 | 2.01 | 1.42 | 2.18 | 0.00 | 0.00 | 0.0 |   0 |   0 | 1.06 | 1.90 | 1.57 |
+| 11  |       11 | 1.71 | 3.75 | 2.24 | 3.07 | 1.71 | 2.01 | 1.38 | 1.25 | 0.56 | 0.38 | 1.7 |   0 |   0 | 1.03 | 1.91 | 1.66 |
+| 12  |       12 | 1.74 | 3.72 | 2.28 | 2.66 | 1.96 | 1.99 | 1.30 | 1.50 | 1.45 | 1.09 | 2.0 |   0 |   0 | 0.60 | 1.71 | 1.57 |
+| 13  |       13 | 1.82 | 3.92 | 2.28 | 2.61 | 1.74 | 1.88 | 1.29 | 1.74 | 1.86 | 1.12 | 2.0 |   0 |   0 | 0.37 | 1.44 | 1.57 |
 
 Prior to analysis, data must be processed into an object usable by
 `regions` using `process_measurements()`. The `pos` argument is used to
@@ -94,14 +90,19 @@ class(dolphin_data)
 Data are then ordinated using a Principal Coordinates Analysis (PCO) to
 reduce dimensionality and allow the combination of a variety of data
 types. The number of PCOs to retain for analyses can be selected using
-`PCOselect` (see the vignette for different methods of PCO axes
+`PCOselect()` (see the vignette for different methods of PCO axes
 selection).
 
 ``` r
 dolphin_pco <- svdPCO(dolphin_data, metric = "gower")
+
 # Select PCOs with variance > 0.05 :
 PCOs <- PCOselect(dolphin_pco, method = "variance",
                   cutoff = .05)
+PCOs
+#> A `regions_pco_select` object
+#> - PCO scores selected: 1, 2
+#> - Method: variance (cutoff: 0.05)
 ```
 
 #### Fitting regressions and selecting the best model
@@ -193,14 +194,15 @@ plotsegreg(dolphin_pco, scores = 1:2, modelsupport = supp,
 In the **vertebral map** plot, each vertebra is represented by a
 rectangle color-coded according to the region to which it belongs.
 Vertebrae not included in the analysis (here vertebrae 1 to 7) are
-represented by grayed rectangles and can be removed using `dropNA=T`.
+represented by grayed rectangles and can be removed using
+`dropNA = TRUE`.
 
 ``` r
 plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp, 
             criterion = "bic", model = 1)
 
 plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp, 
-            criterion = "bic", model = 1, dropNA = T)
+            criterion = "bic", model = 1, dropNA = TRUE)
 ```
 
 <img src="man/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;" />
