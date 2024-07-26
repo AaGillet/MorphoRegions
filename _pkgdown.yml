@@ -3,11 +3,11 @@ template:
   bootstrap: 5
 
 reference:
-- title: "Functions"
+- title: Functions
   desc: >
     Functions for preparing the data, fitting regressions,
     selecting best models, and plotting results
-  contents:
+- contents:
   - starts_with("PCO")
   - starts_with("calc")
   - starts_with("model")
