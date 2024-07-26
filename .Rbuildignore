@@ -4,3 +4,7 @@
 ^vignettes/demo.Rmd$
 ^vignettes/notes.Rmd$
 ^data-raw$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
