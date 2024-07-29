@@ -1,6 +1,6 @@
 Package: MorphoRegions
 Type: Package
-Title: Analysis of Regionalization Patterns in Serially-Homologous Structures
+Title: Analysis of Regionalization Patterns in Serially Homologous Structures
 Version: 0.1.0
 Authors@R: c(
   person("Amandine", "Gillet", role = c("cre", "aut"),
