@@ -76,8 +76,8 @@ data("dolphin")
 | 13  |       13 | 1.82 | 3.92 | 2.28 | 2.61 | 1.74 | 1.88 | 1.29 | 1.74 | 1.86 | 1.12 | 2.0 |   0 |   0 | 0.37 | 1.44 | 1.57 |
 
 Prior to analysis, data must be processed into an object usable by
-`regions` using `process_measurements()`. The `pos` argument is used to
-specify the name or index of the column containing positional
+*MorphoRegions* using `process_measurements()`. The `pos` argument is
+used to specify the name or index of the column containing positional
 information and the `fillNA` argument allows to fill missing values in
 the dataset (up to two successive elements).
 
@@ -107,7 +107,7 @@ PCOs
 
 #### Fitting regressions and selecting the best model
 
-The `calcregions` function allows fitting all possible combinations of
+The `calcregions()` function allows fitting all possible combinations of
 segmented linear regressions from 1 region (no breakpoint) to the number
 of regions specified in the `noregions` argument. In this example, up to
 5 regions (4 breakpoints) will be fitted along the backbone, however,
@@ -133,7 +133,7 @@ regionresults
 ```
 
 For each given number of regions, the best fit is selected by minimizing
-the residual sum of squares (sumRSS):
+the residual sum of squares (`sumRSS`):
 
 ``` r
 models <- modelselect(regionresults)
@@ -214,24 +214,24 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
 
 <img src="man/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;" />
 
-The variability around breakpoint positions can be calculated using the
-`calcBPvar` function and then displayed on the vertebral map. The
-weighted average position of each breakpoint is shown by the black dot
-and the weighted variance is illustrated by the horizontal black bar.
+The variability around breakpoint positions can be calculated using
+`calcBPvar()` and then displayed on the vertebral map. The weighted
+average position of each breakpoint is shown by the black dot and the
+weighted variance is illustrated by the horizontal black bar.
 
 ``` r
 bpvar <- calcBPvar(regionresults, noregions = 5,
                    pct = 0.1, criterion = "bic")
 
 plotvertmap(dolphin_pco, name = "Dolphin", 
-            dropNA= TRUE, bpvar = bpvar)
+            dropNA = TRUE, bpvar = bpvar)
 ```
 
 <img src="man/figures/README-vertebralmapBPvar-1.png" width="80%" style="display: block; margin: auto;" />
 
 ## Citation
 
-To cite `MorphoRegions`, please use:
+To cite *MorphoRegions*, please use:
 
 ``` r
 citation("MorphoRegions")

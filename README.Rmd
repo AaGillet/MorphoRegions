@@ -59,7 +59,7 @@ knitr::kable(head(dolphin))
 ```
 
 
-Prior to analysis, data must be processed into an object usable by `regions` using `process_measurements()`. The `pos` argument is used to specify the name or index of the column containing positional information and the `fillNA` argument allows to fill missing values in the dataset (up to two successive elements).
+Prior to analysis, data must be processed into an object usable by *MorphoRegions* using `process_measurements()`. The `pos` argument is used to specify the name or index of the column containing positional information and the `fillNA` argument allows to fill missing values in the dataset (up to two successive elements).
 
 
 ```{r processData}
@@ -82,7 +82,7 @@ PCOs
 #### Fitting regressions and selecting the best model
 
 
-The `calcregions` function allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
+The `calcregions()` function allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
 
 ```{r calcregions}
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
@@ -91,7 +91,7 @@ regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
 regionresults
 ```
 
-For each given number of regions, the best fit is selected by minimizing the residual sum of squares (sumRSS):
+For each given number of regions, the best fit is selected by minimizing the residual sum of squares (`sumRSS`):
 
 ```{r modelselect}
 models <- modelselect(regionresults)
@@ -130,20 +130,20 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
             criterion = "bic", model = 1, dropNA = TRUE)
 ```
 
-The variability around breakpoint positions can be calculated using the `calcBPvar` function and then displayed on the vertebral map. The weighted average position of each breakpoint is shown by the black dot and the weighted variance is illustrated by the horizontal black bar.
+The variability around breakpoint positions can be calculated using `calcBPvar()` and then displayed on the vertebral map. The weighted average position of each breakpoint is shown by the black dot and the weighted variance is illustrated by the horizontal black bar.
 
 ```{r vertebralmapBPvar, out.width = "80%", fig.align='center',fig.height=0.65}
 bpvar <- calcBPvar(regionresults, noregions = 5,
                    pct = 0.1, criterion = "bic")
 
 plotvertmap(dolphin_pco, name = "Dolphin", 
-            dropNA= TRUE, bpvar = bpvar)
+            dropNA = TRUE, bpvar = bpvar)
 ```
 
 
 ## Citation
 
-To cite `MorphoRegions`, please use: 
+To cite *MorphoRegions*, please use: 
 ```{r citation, eval=F}
 citation("MorphoRegions")
 ```
