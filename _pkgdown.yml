@@ -1,12 +1,10 @@
 url: https://aagillet.github.io/MorphoRegions/
 template:
   bootstrap: 5
-
 reference:
 - title: Functions
-  desc: >
-    Functions for preparing the data, fitting regressions,
-    selecting best models, and plotting results
+  desc: |
+    Functions for preparing the data, fitting regressions, selecting best models, and plotting results
 - contents:
   - starts_with("PCO")
   - starts_with("calc")
@@ -17,5 +15,4 @@ reference:
   - subsample
   - svdPCO
 - title: Datasets
-- contents:
-  - has_keyword("datasets")
+- contents: has_keyword("datasets")
