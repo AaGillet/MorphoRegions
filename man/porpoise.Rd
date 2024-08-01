@@ -14,7 +14,7 @@ Each is a data frame with 58, 56, and 59 vertebrae (respectively) and 16 measure
 data("porpoise")
 }
 \description{
-Linear and angular measurements from NRM 815072 (\code{porpoise1}), NRM 835011 (\code{porpoise2}), and NRM 855083 (\code{porpoise3}).
+Linear and angular measurements from Phocoena phocoena NRM 815072 (\code{porpoise1}), NRM 835011 (\code{porpoise2}), and NRM 855083 (\code{porpoise3}).
 }
 \references{
 Gillet, A., Frederich, B., Pierce, S. E., & Parmentier, E. (2022). Iterative habitat transitions are associated with morphological convergence of the backbone in delphinoids. Journal of Mammalian Evolution, 29(4), 931-946.

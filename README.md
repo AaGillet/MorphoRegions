@@ -1,12 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# *MorphoRegions*: Analysis of Regionalization Patterns in Serially-Homologous Structures
+# *MorphoRegions*: Analysis of Regionalization Patterns in Serially Homologous Structures
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-*MorphoRegions* is a package package built to computationally identify
+*MorphoRegions* is an R package built to computationally identify
 regions (morphological, functional, etc.) in serially homologous
 structures such as, but not limited to, the vertebrate backbone. Regions
 are modeled as segmented linear regressions with each segment
@@ -17,9 +17,9 @@ using maximum-likelihood methods without *a priori* assumptions.
 
 This package was first presented in [Gillet et
 al. (2024)](https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1)
-and is an updated version of the [*regions*
-R-package](https://github.com/katrinajones/regions) from [Jones et
-al. (2018)](%7Bhttps://www.science.org/doi/abs/10.1126/science.aar3126)
+and is an updated version of the [*regions* R
+package](https://github.com/katrinajones/regions) from [Jones et
+al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126)
 with improved computational methods and expanded fitting and plotting
 options.
 
@@ -55,7 +55,7 @@ library(MorphoRegions)
 #### Preparing the data
 
 Data should be provided as a dataframe where each row is an element of
-the serially-homologous structure (e.g., a vertebra). One column should
+the serially homologous structure (e.g., a vertebra). One column should
 contain positional information of each element (e.g., vertebral number)
 and other columns should contain variables that will be used to
 calculate regions (e.g., morphological measurements). The `dolphin`
@@ -107,10 +107,16 @@ PCOs
 
 #### Fitting regressions and selecting the best model
 
-Fitting all possible combinations of segmented linear regressions from 1
-region (no breakpoint) to 5 regions (4 breakpoints) along the backbone,
-with a minimum of 3 vertebrae per region and using a continuous fit (see
-the vignette for details about fitting options).
+The `calcregions` function allows fitting all possible combinations of
+segmented linear regressions from 1 region (no breakpoint) to the number
+of regions specified in the `noregions` argument. In this example, up to
+5 regions (4 breakpoints) will be fitted along the backbone, however,
+there is no limit for this value and it is possible to fit as many
+regions as you would like. For this example, regions will be fitted with
+a minimum of 3 vertebrae per region (`minvert = 3`) and using a
+continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or
+[*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for
+details about fitting options).
 
 ``` r
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
@@ -127,7 +133,7 @@ regionresults
 ```
 
 For each given number of regions, the best fit is selected by minimizing
-the residual sum of squares (RSS):
+the residual sum of squares (sumRSS):
 
 ``` r
 models <- modelselect(regionresults)
@@ -141,8 +147,8 @@ models
 ```
 
 The best overall model (best number of regions) is then select by
-ordering models from best (top row) to worst (last row) using either the
-AICc or BIC criterion:
+ordering models from the best fit (top row) to the worst fit (last row)
+using either the AICc or BIC criterion:
 
 ``` r
 supp <- modelsupport(models)
@@ -172,7 +178,9 @@ corresponds to the last vertebra included in the region, so the first
 region here is made of vertebrae 8 to 23 included and the second region
 is made of vertebrae 24 to 27.* The function also returns the **region
 score**, a continuous value reflecting the level of regionalization
-while accounting for uncertainty in the best number of regions.
+while accounting for uncertainty in the best number of regions (see
+`vignette("MorphoRegions")` or [*MorphoRegions*
+website](https://aagillet.github.io/MorphoRegions/) for more details).
 
 #### Plotting results
 
@@ -180,9 +188,9 @@ Results of the best model (or any other model) can be visualized either
 as a scatter plot or as a vertebral map.
 
 The **scatter plot** shows the PCO score (here for PCO 1 and 2) of each
-vertebra along the backbone and the segmented linear regressions (cyan
-line) of the model to plot. Breakpoints are showed by dotted orange
-lines.
+vertebra along the backbone (gray dots) and the segmented linear
+regressions (cyan line) of the model to plot. Breakpoints are showed by
+dotted orange lines.
 
 ``` r
 plotsegreg(dolphin_pco, scores = 1:2, modelsupport = supp,
@@ -194,8 +202,7 @@ plotsegreg(dolphin_pco, scores = 1:2, modelsupport = supp,
 In the **vertebral map** plot, each vertebra is represented by a
 rectangle color-coded according to the region to which it belongs.
 Vertebrae not included in the analysis (here vertebrae 1 to 7) are
-represented by grayed rectangles and can be removed using
-`dropNA = TRUE`.
+represented by gray rectangles and can be removed using `dropNA = TRUE`.
 
 ``` r
 plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp, 
@@ -206,6 +213,21 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
 ```
 
 <img src="man/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;" />
+
+The variability around breakpoint positions can be calculated using the
+`calcBPvar` function and then displayed on the vertebral map. The
+weighted average position of each breakpoint is shown by the black dot
+and the weighted variance is illustrated by the horizontal black bar.
+
+``` r
+bpvar <- calcBPvar(regionresults, noregions = 5,
+                   pct = 0.1, criterion = "bic")
+
+plotvertmap(dolphin_pco, name = "Dolphin", 
+            dropNA= TRUE, bpvar = bpvar)
+```
+
+<img src="man/figures/README-vertebralmapBPvar-1.png" width="80%" style="display: block; margin: auto;" />
 
 ## Citation
 

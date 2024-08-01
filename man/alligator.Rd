@@ -3,7 +3,7 @@
 \docType{data}
 \name{alligator}
 \alias{alligator}
-\title{Measurements from the vertebral column of Alligator}
+\title{Measurements from the vertebral column of an alligator}
 \format{
 A matrix with 22 vertebrae and 19 measurements. Column 1, vertebra, is the positional
 information.

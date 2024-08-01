@@ -8,5 +8,5 @@ bibentry(bibtype = "Article",
                    person("Katrina", "Jones"),
                    person("Stephanie", "Pierce")),
         year = 2024,
-        journal = "bioarxiv",
+        journal = "bioRxiv",
         doi = "10.1101/2024.03.15.585285")

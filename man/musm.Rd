@@ -3,7 +3,7 @@
 \docType{data}
 \name{musm}
 \alias{musm}
-\title{Measurements from the vertebral column of Mus}
+\title{Measurements from the vertebral column of a mouse}
 \format{
 A matrix with 23 vertebrae and 19 measurements. Column 1, vertebra, is the positional
 information.
