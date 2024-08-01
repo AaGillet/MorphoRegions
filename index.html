@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Analysis of Regionalization Patterns in Serially-Homologous Structures • MorphoRegions</title>
+<title>Analysis of Regionalization Patterns in Serially Homologous Structures • MorphoRegions</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Analysis of Regionalization Patterns in Serially-Homologous Structures">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Analysis of Regionalization Patterns in Serially Homologous Structures">
 <meta name="description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al., Science 2018) with improved computation and more fitting and plotting options.">
 <meta property="og:description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al., Science 2018) with improved computation and more fitting and plotting options.">
 </head>
@@ -48,12 +48,12 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures">
-<em>MorphoRegions</em>: Analysis of Regionalization Patterns in Serially-Homologous Structures<a class="anchor" aria-label="anchor" href="#morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures"></a>
+<em>MorphoRegions</em>: Analysis of Regionalization Patterns in Serially Homologous Structures<a class="anchor" aria-label="anchor" href="#morphoregions-analysis-of-regionalization-patterns-in-serially-homologous-structures"></a>
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p><em>MorphoRegions</em> is a package package built to computationally identify regions (morphological, functional, etc.) in serially homologous structures such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified using maximum-likelihood methods without <em>a priori</em> assumptions.</p>
-<p>This package was first presented in <a href="https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1" class="external-link">Gillet et al. (2024)</a> and is an updated version of the <a href="https://github.com/katrinajones/regions" class="external-link"><em>regions</em> R-package</a> from <a href="%7Bhttps://www.science.org/doi/abs/10.1126/science.aar3126" class="external-link">Jones et al. (2018)</a> with improved computational methods and expanded fitting and plotting options.</p>
+<p><em>MorphoRegions</em> is an R package built to computationally identify regions (morphological, functional, etc.) in serially homologous structures such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified using maximum-likelihood methods without <em>a priori</em> assumptions.</p>
+<p>This package was first presented in <a href="https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1" class="external-link">Gillet et al. (2024)</a> and is an updated version of the <a href="https://github.com/katrinajones/regions" class="external-link"><em>regions</em> R package</a> from <a href="https://www.science.org/doi/abs/10.1126/science.aar3126" class="external-link">Jones et al. (2018)</a> with improved computational methods and expanded fitting and plotting options.</p>
 <div class="section level2">
 <h2 id="installing-morphoregions">Installing <em>MorphoRegions</em>
 <a class="anchor" aria-label="anchor" href="#installing-morphoregions"></a>
@@ -75,7 +75,7 @@
 <div class="section level4">
 <h4 id="preparing-the-data">Preparing the data<a class="anchor" aria-label="anchor" href="#preparing-the-data"></a>
 </h4>
-<p>Data should be provided as a dataframe where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The <code>dolphin</code> dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.</p>
+<p>Data should be provided as a dataframe where each row is an element of the serially homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The <code>dolphin</code> dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dolphin"</span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
@@ -262,7 +262,7 @@
 <div class="section level4">
 <h4 id="fitting-regressions-and-selecting-the-best-model">Fitting regressions and selecting the best model<a class="anchor" aria-label="anchor" href="#fitting-regressions-and-selecting-the-best-model"></a>
 </h4>
-<p>Fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to 5 regions (4 breakpoints) along the backbone, with a minimum of 3 vertebrae per region and using a continuous fit (see the vignette for details about fitting options).</p>
+<p>The <code>calcregions</code> function allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the <code>noregions</code> argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (<code>minvert = 3</code>) and using a continuous fit (<code>cont = TRUE</code>) (see <code><a href="articles/MorphoRegions.html">vignette("MorphoRegions")</a></code> or <a href="https://aagillet.github.io/MorphoRegions/"><em>MorphoRegions</em> website</a> for details about fitting options).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                             minvert <span class="op">=</span> <span class="fl">3</span>, cont <span class="op">=</span> <span class="cn">TRUE</span>, </span>
@@ -275,7 +275,7 @@
 <span><span class="co">#&gt;  - min vertebrae per region: 3 </span></span>
 <span><span class="co">#&gt;  - total models saved: 28810 </span></span>
 <span><span class="co">#&gt; Use `summary()` to examine summaries of the fitting process.</span></span></code></pre></div>
-<p>For each given number of regions, the best fit is selected by minimizing the residual sum of squares (RSS):</p>
+<p>For each given number of regions, the best fit is selected by minimizing the residual sum of squares (sumRSS):</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regionresults</span><span class="op">)</span></span>
 <span><span class="va">models</span></span>
@@ -285,7 +285,7 @@
 <span><span class="co">#&gt;        3   23   29    .    .  0.147 0.092 0.055</span></span>
 <span><span class="co">#&gt;        4   23   30   40    .  0.073 0.034 0.040</span></span>
 <span><span class="co">#&gt;        5   23   27   34   40  0.046 0.026 0.020</span></span></code></pre></div>
-<p>The best overall model (best number of regions) is then select by ordering models from best (top row) to worst (last row) using either the AICc or BIC criterion:</p>
+<p>The best overall model (best number of regions) is then select by ordering models from the best fit (top row) to the worst fit (last row) using either the AICc or BIC criterion:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">supp</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="va">supp</span></span>
@@ -306,18 +306,18 @@
 <span><span class="co">#&gt;        2   26    .    .    .  0.413 -390.668  135.891         0          0</span></span>
 <span><span class="co">#&gt;        1    .    .    .    .  1.898 -281.774  244.784         0          0</span></span>
 <span><span class="co">#&gt; Region score: 5</span></span></code></pre></div>
-<p>Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. <em>The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.</em> The function also returns the <strong>region score</strong>, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions.</p>
+<p>Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. <em>The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.</em> The function also returns the <strong>region score</strong>, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions (see <code><a href="articles/MorphoRegions.html">vignette("MorphoRegions")</a></code> or <a href="https://aagillet.github.io/MorphoRegions/"><em>MorphoRegions</em> website</a> for more details).</p>
 </div>
 <div class="section level4">
 <h4 id="plotting-results">Plotting results<a class="anchor" aria-label="anchor" href="#plotting-results"></a>
 </h4>
 <p>Results of the best model (or any other model) can be visualized either as a scatter plot or as a vertebral map.</p>
-<p>The <strong>scatter plot</strong> shows the PCO score (here for PCO 1 and 2) of each vertebra along the backbone and the segmented linear regressions (cyan line) of the model to plot. Breakpoints are showed by dotted orange lines.</p>
+<p>The <strong>scatter plot</strong> shows the PCO score (here for PCO 1 and 2) of each vertebra along the backbone (gray dots) and the segmented linear regressions (cyan line) of the model to plot. Breakpoints are showed by dotted orange lines.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-scatterplot-1.png" width="55%" style="display: block; margin: auto;"></p>
-<p>In the <strong>vertebral map</strong> plot, each vertebra is represented by a rectangle color-coded according to the region to which it belongs. Vertebrae not included in the analysis (here vertebrae 1 to 7) are represented by grayed rectangles and can be removed using <code>dropNA = TRUE</code>.</p>
+<p>In the <strong>vertebral map</strong> plot, each vertebra is represented by a rectangle color-coded according to the region to which it belongs. Vertebrae not included in the analysis (here vertebrae 1 to 7) are represented by gray rectangles and can be removed using <code>dropNA = TRUE</code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>, </span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -325,13 +325,21 @@
 <span><span class="fu"><a href="reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>, </span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;"><img src="reference/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;"></p>
+<p>The variability around breakpoint positions can be calculated using the <code>calcBPvar</code> function and then displayed on the vertebral map. The weighted average position of each breakpoint is shown by the black dot and the weighted variance is illustrated by the horizontal black bar.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bpvar</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                   pct <span class="op">=</span> <span class="fl">0.1</span>, criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, </span>
+<span>            dropNA<span class="op">=</span> <span class="cn">TRUE</span>, bpvar <span class="op">=</span> <span class="va">bpvar</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-vertebralmapBPvar-1.png" width="80%" style="display: block; margin: auto;"></p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>To cite <code>MorphoRegions</code>, please use:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"MorphoRegions"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
