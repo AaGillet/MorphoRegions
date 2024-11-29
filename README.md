@@ -16,8 +16,8 @@ optimal number of regions and their breakpoint positions are identified
 using maximum-likelihood methods without *a priori* assumptions.
 
 This package was first presented in [Gillet et
-al. (2024)](https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1)
-and is an updated version of the [*regions* R
+al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an
+updated version of the [*regions* R
 package](https://github.com/katrinajones/regions) from [Jones et
 al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126)
 with improved computational methods and expanded fitting and plotting

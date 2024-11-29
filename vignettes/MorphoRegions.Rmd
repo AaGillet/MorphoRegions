@@ -41,7 +41,7 @@ library(MorphoRegions)
 
 ## About *MorphoRegions*
 
-The *MorphoRegions* package is built to **computationally identify regions** (morphological, functional, etc.) **in serially homologous structures** such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified without *a priori* assumptions. The algorithm fits increasingly complex models (increasing number of regions). For each given number of regions, all possible combinations of breakpoint positions will be iteratively fitted. Maximum-likelihood methods are then used to identify the best model, as described in @GilRev. 
+The *MorphoRegions* package is built to **computationally identify regions** (morphological, functional, etc.) **in serially homologous structures** such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified without *a priori* assumptions. The algorithm fits increasingly complex models (increasing number of regions). For each given number of regions, all possible combinations of breakpoint positions will be iteratively fitted. Maximum-likelihood methods are then used to identify the best model, as described in @Gillet2024. 
 
 
 ```{r images, fig.show = "hold", out.width = "30%", fig.cap="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models.",echo=F}
@@ -225,7 +225,7 @@ In the example above, in the model with three regions, the first region encompas
 
 ### Selecting best overall model and region score
 
-`modelsupport()` will find the best overall models across the models returned by `modelselect()`. The best model is **calculated using AICc or BIC** which allows the selection of the best fit model while penalizing for models that are too complex. *See @Jones2018 for AICc calculations and @GilRev for BIC calculations.* 
+`modelsupport()` will find the best overall models across the models returned by `modelselect()`. The best model is **calculated using AICc or BIC** which allows the selection of the best fit model while penalizing for models that are too complex. *See @Jones2018 for AICc calculations and @Gillet2024 for BIC calculations.* 
 
 ```{r}
 supp <- modelsupport(models)
