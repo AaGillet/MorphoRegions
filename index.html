@@ -8,11 +8,11 @@
 <title>Analysis of Regionalization Patterns in Serially Homologous Structures • MorphoRegions</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Analysis of Regionalization Patterns in Serially Homologous Structures">
-<meta name="description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al., Science 2018) with improved computation and more fitting and plotting options.">
-<meta property="og:description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al., Science 2018) with improved computation and more fitting and plotting options.">
+<meta name="description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al. (2018) &lt;doi:10.1126/science.aar3126&gt;) with improved computation and more fitting and plotting options.">
+<meta property="og:description" content="Computes the optimal number of regions (or subdivisions) and their position in serial structures without a priori assumptions and to visualize the results. After reducing data dimensionality with the built-in function for data ordination, regions are fitted as segmented linear regressions along the serial structure. Every region boundary position and increasing number of regions are iteratively fitted and the best model (number of regions and boundary positions) is selected with an information criterion. This package expands on the previous regions package (Jones et al. (2018) &lt;doi:10.1126/science.aar3126&gt;) with improved computation and more fitting and plotting options.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">MorphoRegions</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,7 +53,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 <p><em>MorphoRegions</em> is an R package built to computationally identify regions (morphological, functional, etc.) in serially homologous structures such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified using maximum-likelihood methods without <em>a priori</em> assumptions.</p>
-<p>This package was first presented in <a href="https://www.biorxiv.org/content/10.1101/2024.03.15.585285v1" class="external-link">Gillet et al. (2024)</a> and is an updated version of the <a href="https://github.com/katrinajones/regions" class="external-link"><em>regions</em> R package</a> from <a href="https://www.science.org/doi/abs/10.1126/science.aar3126" class="external-link">Jones et al. (2018)</a> with improved computational methods and expanded fitting and plotting options.</p>
+<p>This package was first presented in <a href="https://doi.org/10.1038/s41467-024-51963-w" class="external-link">Gillet et al. (2024)</a> and is an updated version of the <a href="https://github.com/katrinajones/regions" class="external-link"><em>regions</em> R package</a> from <a href="https://www.science.org/doi/abs/10.1126/science.aar3126" class="external-link">Jones et al. (2018)</a> with improved computational methods and expanded fitting and plotting options.</p>
 <div class="section level2">
 <h2 id="installing-morphoregions">Installing <em>MorphoRegions</em>
 <a class="anchor" aria-label="anchor" href="#installing-morphoregions"></a>
@@ -346,6 +346,7 @@
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=MorphoRegions" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/aagillet/MorphoRegions/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/aagillet/MorphoRegions/issues" class="external-link">Report a bug</a></li>
 </ul>
@@ -387,7 +388,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>
