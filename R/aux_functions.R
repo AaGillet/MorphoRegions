@@ -136,13 +136,17 @@
     x <- attr(x, "data")
   }
 
-  pos_ind <- attr(x, "pos_ind")
+  if(inherits(x, 'regions_data')){   # Original code for data processed with process_measurements
+    pos_ind <- attr(x, "pos_ind")
+    pos <- unlist(lapply(x, `[[`, pos_ind))
+    if (!subset) return(pos)
+    pos[pos %in% attr(x, "eligible_vertebrae")]
 
-  pos <- unlist(lapply(x, `[[`, pos_ind))
+  } else if(inherits(x, 'regions_dataGM')){  # New code for data processed with process_gmPC
+    pos <- attr(x, "Xvar")
+    pos[pos %in% attr(x, "eligible_vertebrae")]
+  }
 
-  if (!subset) return(pos)
-
-  pos[pos %in% attr(x, "eligible_vertebrae")]
 }
 
 # Extracts measurements from

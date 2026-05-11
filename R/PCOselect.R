@@ -27,7 +27,7 @@
 #'
 #' ## `method = "boot"`
 #'
-#' Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so `scale = TRUE` should be set in the call to [svdPCO()], which is the default; the data are scaled in the same way prior to bootstrapping. The `plot()` method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO.
+#' Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so `scale = TRUE` should be set in the call to [svdPCO()], which is the default; the data are scaled in the same way prior to bootstrapping. The `plot()` method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO. The `boot` method is unavailable for user-supplied PC scores (`regions_pco` object obtained from `process_PC` or `process_gmPC` functions).
 #'
 #' ## `method = "variance"`
 #'
@@ -218,11 +218,16 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
     cat("Bootstrapping...\n")
   }
 
+  #### Edited code to add support for GMM data: ##
+  metric <- attr(pco, "metric")
+  if(metric=='custom'){
+    chk::err("method `boot` not allowed for user-supplied PC scores")
+  }
+
   #calculate 'true' eigenvalues as percentage variance
   eigen.true <- prop.table(pco$eigen.val)
 
   data <- .get_data_without_pos(pco)
-  metric <- attr(pco, "metric")
 
   randdata <- data
 
