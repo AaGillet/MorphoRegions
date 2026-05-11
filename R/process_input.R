@@ -176,7 +176,7 @@ process_PC <- function(data, pos = 1L, pcscores, eigenvals, posPC){ #, specimen)
     }
     spec_names_PC <- names(posPC)
     spec_names_data <- names(data)
-    chk::chk_setequal(spec_names_PC, spec_names_dat, x_name="specimen names in `pcscores`")
+    chk::chk_setequal(spec_names_PC, spec_names_data, x_name="specimen names in `pcscores`")
   }
 
 
