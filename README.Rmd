@@ -23,6 +23,13 @@ knitr::opts_chunk$set(
 This package was first presented in [Gillet et al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an updated version of the [*regions* R package](https://github.com/katrinajones/regions) from [Jones et al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126) with improved computational methods and expanded fitting and plotting options.
 
 
+## New features (development version)
+
+The current development version of *MorphoRegions* (available on GitHub) includes new functionality to allow users to input **principal component (PC) scores computed externally**, including support for **geometric morphometric data**, via the newly added functions `process_PC()` and `process_gmPC()`.
+
+See section below to install the most recent version of the package. Note that this is a development version whic may chnage before next CRAN release.
+
+
 ## Installing *MorphoRegions*
 
 You can install the released version of *MorphoRegions* from [CRAN](https://CRAN.R-project.org/package=MorphoRegions) with:
@@ -31,12 +38,13 @@ You can install the released version of *MorphoRegions* from [CRAN](https://CRAN
 install.packages("MorphoRegions")
 ```
 
-Or the development version from [GitHub](https://github.com/AaGillet/MorphoRegions) with:
+Or the development version (0.2.0.9000), including support for geometric morphometric data, from the `developGMM` branch on [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ```{r eval=F}
 # install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions")
+remotes::install_github("AaGillet/MorphoRegions", ref = "developGMM")
 ```
+
 
 ## Example
 

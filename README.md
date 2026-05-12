@@ -4,6 +4,7 @@
 # *MorphoRegions*: Analysis of Regionalization Patterns in Serially Homologous Structures
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 *MorphoRegions* is an R package built to computationally identify
@@ -23,6 +24,18 @@ al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126)
 with improved computational methods and expanded fitting and plotting
 options.
 
+## New features (development version)
+
+The current development version of *MorphoRegions* (available on GitHub)
+includes new functionality to allow users to input **principal component
+(PC) scores computed externally**, including support for **geometric
+morphometric data**, via the newly added functions `process_PC` and
+`process_gmPC`.
+
+See section below to install the most recent version of the package.
+Note that this is a development version whic may chnage before next CRAN
+release.
+
 ## Installing *MorphoRegions*
 
 You can install the released version of *MorphoRegions* from
@@ -32,12 +45,13 @@ You can install the released version of *MorphoRegions* from
 install.packages("MorphoRegions")
 ```
 
-Or the development version from
+Or the development version (0.2.0.9000), including support for geometric
+morphometric data, from the `developGMM` branch on
 [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ``` r
 # install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions")
+remotes::install_github("AaGillet/MorphoRegions", ref = "developGMM")
 ```
 
 ## Example
@@ -50,6 +64,7 @@ of the package and its functionalities.
 
 ``` r
 library(MorphoRegions)
+#> Warning: package 'MorphoRegions' was built under R version 4.5.3
 ```
 
 #### Preparing the data
@@ -197,7 +212,7 @@ plotsegreg(dolphin_pco, scores = 1:2, modelsupport = supp,
            criterion = "bic", model = 1)
 ```
 
-<img src="man/figures/README-scatterplot-1.png" width="55%" style="display: block; margin: auto;" />
+<img src="man/figures/README-scatterplot-1.png" alt="" width="55%" style="display: block; margin: auto;" />
 
 In the **vertebral map** plot, each vertebra is represented by a
 rectangle color-coded according to the region to which it belongs.
@@ -212,7 +227,7 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
             criterion = "bic", model = 1, dropNA = TRUE)
 ```
 
-<img src="man/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-vertebralmap-1.png" alt="" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" alt="" width="80%" style="display: block; margin: auto;" />
 
 The variability around breakpoint positions can be calculated using
 `calcBPvar()` and then displayed on the vertebral map. The weighted
@@ -227,7 +242,7 @@ plotvertmap(dolphin_pco, name = "Dolphin",
             dropNA = TRUE, bpvar = bpvar)
 ```
 
-<img src="man/figures/README-vertebralmapBPvar-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-vertebralmapBPvar-1.png" alt="" width="80%" style="display: block; margin: auto;" />
 
 ## Citation
 
