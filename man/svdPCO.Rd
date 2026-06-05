@@ -40,7 +40,9 @@ plot(alligator_PCO, pco_y = 1:2)
 plot(alligator_PCO, pco_y = 1, pco_x = 2)
 }
 \seealso{
-\code{\link[=plot.regions_pco]{plot.regions_pco()}} for plotting PCO axes
-
-\code{\link[cluster:daisy]{cluster::daisy()}}, which is used to compute the distance matrix used in the calculation; \code{\link[stats:cmdscale]{stats::cmdscale()}} for a spectral decomposition-based implementation
+\itemize{
+\item \code{\link[=plot.regions_pco]{plot.regions_pco()}} for plotting PCO axes
+\item \code{\link[cluster:daisy]{cluster::daisy()}}, which is used to compute the distance matrix used in the calculation
+\item \code{\link[stats:cmdscale]{stats::cmdscale()}} for a spectral decomposition-based implementation
+}
 }

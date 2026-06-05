@@ -24,6 +24,7 @@ PCOload(x, scores)
 }
 \details{
 the loadings for a constructed variable, \code{vert.size}, are also computed and displayed. This is computed as the mean of the features for each vertebra.
+This function is not suitable for geometric morphometric data.
 }
 \examples{
 data("alligator")

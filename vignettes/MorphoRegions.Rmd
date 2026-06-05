@@ -75,9 +75,9 @@ library(MorphoRegions)
 
 ## Preparing the data
 
-Data should be provided as a dataframe where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements).
+Data should be provided as a data frame where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements).
 
-The package comes with **four built-in datasets**. `alligator`, `musm`, and `dolphin` contain measurements on the vertebrae of an alligator, mouse, and dolphin. `porpoise` contains vertebral measurements of three specimens of harbor porpoises and can be used to test fitting a single model for multiple specimens together   ([see below](#IntraSp)). *Alligator and mouse data are from @Jones2018; dolphin and porpoise data are from @Gillet2022.*
+The package comes with **six built-in datasets**. `alligator`, `musm`, and `dolphin` contain measurements on the vertebrae of an alligator, mouse, and dolphin. `porpoise` contains vertebral measurements of three specimens of harbor porpoises and can be used to test fitting a single model for multiple specimens together ([see below](#IntraSp)). `seal_gmm` and `wolves_gmm` contain GMM data. ### *Alligator and mouse data are from @Jones2018; dolphin and porpoise data are from @Gillet2022.*
 
 
 ```{r, results="hold"}
@@ -147,13 +147,16 @@ PCOs <- PCOselect(dolphin_pco, method = "max",
                   results = regionresults,
                   criterion = "bic")
 PCOs
+
 plot(PCOs)
 ```
 
 ```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses."}
 # Bootstrap:
 PCOs <- PCOselect(dolphin_pco, method = "boot")
+
 PCOs
+
 plot(PCOs)
 ```
 
@@ -164,6 +167,7 @@ Correlations between original variables and each PCO axis are obtained through t
 
 ```{r, out.width = '70%',fig.align='center', fig.cap="**Fig.4.** Correlations between original variables and PCO axes 1 and 2."}
 loadings <- PCOload(dolphin_pco, scores = PCOs)
+
 plot(loadings)
 ```
 
