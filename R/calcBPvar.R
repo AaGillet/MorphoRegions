@@ -18,19 +18,16 @@
 
 #' @export
 calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") {
-  chk::chk_is(regions_results, "regions_results")
+  arg::arg_is(regions_results, "regions_results")
 
-  chk::chk_not_missing(noregions, "`noregions`")
-  chk::chk_whole_number(noregions)
-  chk::chk_range(noregions, range(regions_results$stats$Nregions))
+  arg::arg_supplied(noregions)
+  arg::arg_whole_number(noregions)
+  arg::arg_between(noregions, range(regions_results$stats$Nregions))
 
-  chk::chk_number(pct)
-  chk::chk_gt(pct, 0)
-  chk::chk_lte(pct, 1)
+  arg::arg_number(pct)
+  arg::arg_between(pct, c(0, 1), inclusive = c(FALSE, TRUE))
 
-  chk::chk_string(criterion)
-  criterion <- tolower(criterion)
-  criterion <- .match_arg(criterion, c("aic", "bic"))
+  criterion <- arg::match_arg(criterion, c("aic", "bic"))
 
   nmodel <- regions_results$stats$Nmodel_possible[regions_results$stats$Nregions == noregions]
 
@@ -44,16 +41,17 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
   noPC <- sum(startsWith(colnames(regions_results$results), "RSS."))
 
   # Extract models corresponding to the given number of regions
-  dat <- regions_results$results[regions_results$results$regions == noregions,, drop = FALSE]
+  dat <- regions_results$results[regions_results$results$regions == noregions, , drop = FALSE]
 
   # Order by increasing sumRSS (from best to worst model)
-  dat <- dat[order(dat$sumRSS),, drop = FALSE]
+  dat <- dat[order(dat$sumRSS), , drop = FALSE]
 
   if (nrow(dat) >= ntop) {
-    dat <- dat[seq_len(ntop),, drop = FALSE]
+    dat <- dat[seq_len(ntop), , drop = FALSE]
   }
   else {
-    chk::wrn(sprintf("number of models provided lower than percentage requested.\nWeighted means and SD calculated on: %s%% of total number of models", round(nrow(dat)/nmodel*100, 2)))
+    pct_calc <- round(nrow(dat)/nmodel*100, 2)
+    arg::wrn("number of models provided lower than percentage requested. Weighted means and SD calculated on {pct_calc}% of total number of models")
   }
 
   # Calculate probability (with AICc/BIC) and weight of each model:
@@ -69,7 +67,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
 
   # Calculate weighted mean and weighted SD of each BP position using
   # Akaike weights: (formulae from Symonds & Moussalli, Behav Ecol Sociobiol 2011)
-  bps <- as.matrix(dat[paste0("breakpoint", seq_len(noregions - 1))])
+  bps <- as.matrix(dat[paste0("breakpoint", seq_len(noregions - 1L))])
 
   # Weighted mean is the sum of bps values multiplied by the corresponding Akaike weight
   wMean <- colSums(bps * IC_weight)
@@ -80,7 +78,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
   WeightedBP <- rbind(wMean, wSD)
 
   wt_dat <- data.frame(IC_weight, CumWeight = cumsum(IC_weight))
-  names(wt_dat)[1] <- switch(criterion, "aic" = "AICweight", "bic" = "BICweight")
+  names(wt_dat)[1L] <- switch(criterion, "aic" = "AICweight", "bic" = "BICweight")
 
   out <- list(WeightedBP = WeightedBP, BestModels = cbind(dat, wt_dat))
 

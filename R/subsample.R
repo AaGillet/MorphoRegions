@@ -6,7 +6,8 @@
 #' @param sample `numeric`; either the number or proportion of vertebrae to remain the sampled dataset. If `NULL`, the original dataset is returned.
 #' @param type string; the type of subsampling to do, either `"seq"` for sampling in sequence or `"random"` for random sampling. Default is `"seq"`. Abbreviations allowed.
 #'
-#' @returns A `regions_pco` object, a subset of the original supplied to `pco`. The original dataset is stored as an attribute, which itself contains the subsampling indices.
+#' @return
+#' A `regions_pco` object, a subset of the original supplied to `pco`. The original dataset is stored as an attribute, which itself contains the subsampling indices.
 #'
 #' @seealso [svdPCO()], [process_measurements()], [plotvertmap()] to visualize the vertebral map after subsampling.
 #'
@@ -16,23 +17,22 @@
 #' @export
 subsample <- function(pco, sample = NULL, type = "seq") {
 
-  chk::chk_is(pco, "regions_pco")
+  arg::arg_supplied(pco)
+  arg::arg_is(pco, "regions_pco")
 
   pos <- .get_pos(pco)
 
   if (!identical(pos, .get_pos(pco, subset = FALSE))) {
-    chk::err("`subsample()` cannot be used on a `regions_pco` object after using `subsample()` or `subset(., drop = FALSE)` on it")
+    arg::err("{.fun subsample} cannot be used on a {.cls regions_pco} object after using {.fun subsample} or {.code subset(., drop = FALSE)} on it")
   }
 
   eligible_vertebrae <- .get_eligible_vertebrae(pco)
 
-  chk::chk_number(sample)
-  chk::chk_gt(sample, 0)
-  chk::chk_lte(sample, length(eligible_vertebrae))
+  arg::arg_number(sample)
+  arg::arg_gt(sample, 0)
+  arg::arg_lte(sample, length(eligible_vertebrae))
 
-  chk::chk_string(type)
-  type <- tolower(type)
-  type <- .match_arg(type, c("seq", "random"))
+  type <- arg::match_arg(type, c("seq", "random"))
 
   if (sample <= 1) {
     sample <- round(sample * length(eligible_vertebrae))

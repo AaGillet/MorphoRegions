@@ -20,28 +20,27 @@
 #' @export
 PCOload <- function(x, scores) {
 
-  chk::chk_is(x, "regions_pco")
+  arg::arg_is(x, "regions_pco")
   pco_scores <- x[["scores"]]
 
   # New code: Check if original data is GM:
-  data_type <- attr(attr(x,'data'),'class')
-  if(data_type=='regions_dataGM'){
-    chk::err("loadings cannot be computed for geometric morphometric data")
+  if (inherits(attr(x, "data"), "regions_dataGM")) {
+    arg::err("loadings cannot be computed for geometric morphometric data")
   }
 
   # New code: Check if PC scores have been computed outside of MorphoRegions:
-  metric <- attr(x, "metric")
-  if(metric=='custom'){
-    chk::wrn("loadings computed as correlations between original data and PC scores, check if this method is relevant for your data and ordination method")
+  if (identical(attr(x, "metric"), "custom")) {
+    arg::wrn("loadings computed as correlations between original data and PC scores; check if this method is relevant for your data and ordination method")
   }
 
+  arg::when_supplied(
+    scores,
+    arg::arg_whole_numeric,
+    arg::arg_between(c(1, ncol(pco_scores)))
+  )
 
   if (missing(scores)) {
     scores <- seq_len(ncol(pco_scores))
-  }
-  else {
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(pco_scores)))
   }
 
   data <- .get_data_without_pos(x)
@@ -67,6 +66,8 @@ print.regions_pco_load <- function(x, digits = 3, ...) {
   print(d[-nrow(x),, drop = FALSE], digits = digits, ...)
   cat("\n - Corr w/ vertebra size:\n\n")
   print(d[nrow(x),, drop = FALSE], digits = digits, ...)
+
+  invisible(x)
 }
 
 #' @exportS3Method plot regions_pco_load

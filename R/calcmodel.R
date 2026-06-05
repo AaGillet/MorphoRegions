@@ -15,16 +15,18 @@
 
 #' @export
 calcmodel <- function(x, scores, bps, cont = TRUE) {
+  arg::arg_is(x, c("regions_pco", "regions_sim"))
+
   if (inherits(x, "regions_pco")) {
-    chk::chk_not_missing(scores, "`scores`")
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(x[["scores"]])))
+    arg::arg_supplied(scores)
+    arg::arg_whole_numeric(scores)
+    arg::arg_between(scores, c(1L, ncol(x[["scores"]])))
 
     Xvar <- .get_pos(x)
     Yvar <- x[["scores"]][, scores, drop = FALSE]
     eligible_vertebrae <- .get_eligible_vertebrae(x)
   }
-  else if (inherits(x, "regions_sim")) {
+  else {
     if (missing(scores)) {
       scores <- seq_len(ncol(x[["Yvar"]]))
     }
@@ -32,20 +34,17 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
     Yvar <- x[["Yvar"]][, scores, drop = FALSE]
     eligible_vertebrae <- sort(unique(Xvar))
   }
-  else {
-    chk::err("`x` must be a `regions_pco` or `regions_sim` object")
-  }
 
-  chk::chk_not_missing(bps, "`bps`")
+  arg::arg_supplied(bps)
 
-  if (chk::vld_atomic(bps) && all(is.na(bps))) {
+  if (is.atomic(bps) && all(is.na(bps))) {
     bps <- NA_real_
     cont <- TRUE
   }
   else {
-    chk::chk_numeric(bps)
-    chk::chk_range(bps, range(eligible_vertebrae))
-    chk::chk_flag(cont)
+    arg::arg_numeric(bps)
+    arg::arg_between(bps, range(eligible_vertebrae))
+    arg::arg_flag(cont)
   }
 
   # Re-order data
@@ -60,15 +59,15 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
 
   noPC <- ncol(Yvar)
 
-  colhead <- c("regions", paste0("breakpoint", seq_len(max(1, nbp))),
+  colhead <- c("regions", paste0("breakpoint", seq_len(max(1L, nbp))),
                "sumRSS", paste("RSS", 1:noPC, sep = "."))
 
   #Calculate weights to ensure each vertebra counts equally
   vert_tab <- tabulate(Xvar)
-  w <- 1/vert_tab[Xvar]
+  w <- 1 / vert_tab[Xvar]
 
   #Fit the model
-  x <- .design_matrix(Xvar, if (anyNA(BPs)) NULL else BPs, cont)
+  x <- .design_matrix(Xvar, if (!anyNA(BPs)) BPs, cont)
 
   lines <- .fast_lm(x = x, y = Yvar, w = w)
 
@@ -79,7 +78,7 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
     else RSS
   }
 
-  res <- as.data.frame(matrix(c(nbp + 1, BPs, RSS, rsq), nrow = 1,
+  res <- as.data.frame(matrix(c(nbp + 1, BPs, RSS, rsq), nrow = 1L,
                               dimnames = list(NULL, colhead)))
 
   supp <- .AICcalc(RSS, noPC = noPC, nvert = length(Xvar),
@@ -101,7 +100,7 @@ calcmodel <- function(x, scores, bps, cont = TRUE) {
 #' @exportS3Method print regions_results_single
 print.regions_results_single <- function(x, digits = 3, ...) {
   x0 <- x
-  colnames(x[["results"]])[1] <- "Regions"
+  colnames(x[["results"]])[1L] <- "Regions"
   colnames(x[["results"]]) <- sub("breakpoint", "BP ", colnames(x[["results"]]),
                                   fixed = TRUE)
   print(round(x[["results"]], digits), row.names = FALSE)
@@ -113,6 +112,6 @@ print.regions_results_single <- function(x, digits = 3, ...) {
 
 #' @exportS3Method plot regions_results_single
 plot.regions_results_single <- function(x, scores, ...) {
-  chk::chk_not_missing(scores, "`scores`")
+  arg::arg_supplied(scores)
   plotsegreg.regions_results_single(x, scores = scores, ...)
 }

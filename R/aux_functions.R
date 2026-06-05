@@ -1,26 +1,3 @@
-# Clean version of match.arg() for a single choice
-.match_arg <- function(arg, choices) {
-  arg_name <- deparse1(substitute(arg))
-
-  if (is.null(arg)) return(choices[1L])
-
-  chk::chk_string(arg, arg_name)
-
-  i <- pmatch(arg, choices, nomatch = 0L, duplicates.ok = TRUE)
-
-  if (all(i == 0L)) {
-    if (length(choices) == 2L) {
-      chk::err("`", arg_name, "` should be one of ", paste(dQuote(choices, FALSE), collapse = " or "))
-    }
-    else {
-      chk::err("`", arg_name, "` should be one of ", paste(dQuote(choices[-length(choices)], FALSE), collapse = ", "),
-               ", or ", dQuote(choices[length(choices)], FALSE))
-    }
-  }
-
-  choices[i]
-}
-
 # Similar to na.omit() without appending attributes
 .drop_na <- function(x) {
   x[!is.na(x)]
@@ -82,7 +59,7 @@
     }
   }
   else {
-    stop("`x` and `y` must be data frames or matrices")
+    arg::err("{.arg x} and {.arg y} must be data frames or matrices")
   }
 
   if (ncol(x) > ncol(y)) {
@@ -103,12 +80,16 @@
   word.list <- word.list[!word.list %in% c(NA_character_, "")]
   L <- length(word.list)
 
-  if (L == 0) return("")
+  if (L == 0) {
+    return("")
+  }
 
-  if (L == 1) return(word.list)
+  if (L == 1) {
+    return(word.list)
+  }
 
+  and.or <- arg::match_arg(and.or, c("and", "or"))
 
-  and.or <- .match_arg(and.or, c("and", "or"))
   if (L == 2) {
     out <- paste(word.list, collapse = paste0(" ", and.or, " "))
   }
@@ -136,17 +117,19 @@
     x <- attr(x, "data")
   }
 
-  if(inherits(x, 'regions_data')){   # Original code for data processed with process_measurements
+  if (inherits(x, "regions_data")) {   # Original code for data processed with process_measurements
     pos_ind <- attr(x, "pos_ind")
     pos <- unlist(lapply(x, `[[`, pos_ind))
-    if (!subset) return(pos)
-    pos[pos %in% attr(x, "eligible_vertebrae")]
 
-  } else if(inherits(x, 'regions_dataGM')){  # New code for data processed with process_gmPC
+    if (!subset) {
+      return(pos)
+    }
+  }
+  else if (inherits(x, "regions_dataGM")) {  # New code for data processed with process_gmPC
     pos <- attr(x, "Xvar")
-    pos[pos %in% attr(x, "eligible_vertebrae")]
   }
 
+  pos[pos %in% attr(x, "eligible_vertebrae")]
 }
 
 # Extracts measurements from
@@ -160,7 +143,9 @@
 
   out <- do.call("rbind", x)[-pos_ind]
 
-  if (!subset) return(out)
+  if (!subset) {
+    return(out)
+  }
 
   out[.get_pos(x, FALSE) %in% .get_eligible_vertebrae(x),]
 }
@@ -170,7 +155,9 @@
     x <- attr(x, "data")
   }
 
-  if (subset) return(attr(x, "eligible_vertebrae"))
+  if (subset) {
+    return(attr(x, "eligible_vertebrae"))
+  }
 
   pos <- .get_pos(x, subset = FALSE)
 
@@ -179,7 +166,9 @@
 
 # Fast lm(), uses .lm.fit() but accommodates weights
 .fast_lm <- function(x, y, w = NULL) {
-  if (is.null(w)) return(.lm.fit(x, y))
+  if (is.null(w)) {
+    return(.lm.fit(x, y))
+  }
 
   w <- sqrt(w)
   out <- .lm.fit(x * w, y * w)
@@ -211,7 +200,7 @@
   out <- .rowSums(matrix(m == vec[1], ncol = p),
                   m = nrow(m), n = p) > 0
 
-  for (i in seq_along(vec)[-1]) {
+  for (i in seq_along(vec)[-1L]) {
     out[out][.rowSums(matrix(m[out,] == vec[i], ncol = p),
                       m = sum(out), n = p) == 0] <- FALSE
   }
@@ -225,24 +214,12 @@
   x
 }
 
-# Version of chk::wrn() that prints warnings immediately instead of waiting till
-# the end
-.wrn_immediate <- function(...) {
-  op <- options()
-  on.exit(options(op))
-  w <- getOption("warn")
-  if (!chk::vld_whole_number(w) || w < 2) {
-    options(warn = 1)
-  }
-  chk::wrn(...)
-}
-
 # Checks if two vector of numbers are equal within tolerance
 .equiv <- function(x, y, tol = sqrt(.Machine$double.eps)) {
-  chk::chk_numeric(x)
-  chk::chk_numeric(y)
-  chk::chk_number(tol)
-  chk::chk_gte(tol, 0)
+  arg::arg_numeric(x)
+  arg::arg_numeric(y)
+  arg::arg_number(tol)
+  arg::arg_gte(tol, 0)
 
   abs(x - y) < tol
 }

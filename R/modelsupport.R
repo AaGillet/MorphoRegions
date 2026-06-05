@@ -14,7 +14,8 @@
 #' @export
 modelsupport <- function(models) {
 
-  chk::chk_is(models, "regions_modelselect")
+  arg::arg_supplied(models)
+  arg::arg_is(models, "regions_modelselect")
 
   cont <- attr(models, "cont")
   nvert <- attr(models, "nvert")

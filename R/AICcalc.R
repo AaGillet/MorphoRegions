@@ -17,7 +17,7 @@
   }
 
   if (n < k + 2) {
-    chk::err("the ratio of variables to parameters is too small. Reduce the number of regions or increase the number of variables")
+    arg::err("the ratio of variables to parameters is too small. Reduce the number of regions or increase the number of variables")
   }
 
   AIC <- n * log(var) + (2 * k)

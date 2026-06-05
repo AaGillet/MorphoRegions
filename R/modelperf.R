@@ -31,22 +31,22 @@ modelperf <- function(x, ...) {
 modelperf.regions_pco <- function(x, scores,
                                   modelsupport = NULL, criterion = "aic", model = 1,
                                   bps = NULL, cont = TRUE, ...) {
-  chk::chk_not_missing(scores, "`scores`")
-  chk::chk_whole_numeric(scores)
-  chk::chk_range(scores, c(1, ncol(x[["scores"]])))
+  arg::arg_supplied(scores)
+  arg::arg_whole_numeric(scores)
+  arg::arg_between(scores, c(1L, ncol(x[["scores"]])))
 
   Xvar <- .get_pos(x)
   Yvar <- x[["scores"]][, scores, drop = FALSE]
 
   if (!is.null(bps)) {
-    if (chk::vld_atomic(bps) && all(is.na(bps))) {
+    if (is.atomic(bps) && all(is.na(bps))) {
       bps <- NA_real_
       cont <- TRUE
     }
     else {
-      chk::chk_numeric(bps)
-      chk::chk_range(bps, range(Xvar))
-      chk::chk_flag(cont)
+      arg::arg_numeric(bps)
+      arg::arg_between(bps, range(Xvar))
+      arg::arg_flag(cont)
     }
 
     BPs <- sort(.drop_na(bps))
@@ -54,27 +54,28 @@ modelperf.regions_pco <- function(x, scores,
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
   }
   else if (!is.null(modelsupport)) {
-    chk::chk_is(modelsupport, "regions_modelsupport")
+    arg::arg_is(modelsupport, "regions_modelsupport")
 
-    chk::chk_string(criterion)
-    criterion <- tolower(criterion)
-    criterion <- .match_arg(criterion, c("aic", "bic"))
+    criterion <- arg::match_arg(criterion, c("aic", "bic"))
     model_support_crit <- modelsupport[[switch(criterion, aic = "Model_support", bic = "Model_support_BIC")]]
+
+    arg::when_not_null(
+      model,
+      arg::arg_whole_number,
+      arg::arg_between(c(1, nrow(model_support_crit)))
+    )
 
     if (is.null(model)) {
       model <- 1L
     }
-    else {
-      chk::chk_whole_number(model)
-      chk::chk_range(model, c(1, nrow(model_support_crit)))
-    }
+
     cont <- attr(modelsupport, "cont")
 
     keep <- which(startsWith(names(model_support_crit), "breakpoint"))
     BPs <- .drop_na(unlist(model_support_crit[model, keep]))
   }
   else {
-    chk::err("`bps` or `modelsupport` argument must be provided")
+    arg::err("{.arg bps} or {.arg modelsupport} must be provided")
   }
 
   .modelperf_internal(Xvar, Yvar, BPs, cont)
@@ -88,22 +89,25 @@ modelperf.regions_sim <- function(x, scores = NULL,
   Xvar <- x$Xvar
   Yvar <- x$Yvar
 
-  if (!is.null(scores)) {
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(Yvar)))
+  arg::when_not_null(
+    scores,
+    arg::arg_whole_numeric,
+    arg::arg_between(c(1, ncol(Yvar)))
+  )
 
+  if (!is.null(scores)) {
     Yvar <- Yvar[, scores, drop = FALSE]
   }
 
   if (!is.null(bps)) {
-    if (chk::vld_atomic(bps) && all(is.na(bps))) {
+    if (is.atomic(bps) && all(is.na(bps))) {
       bps <- NA_real_
       cont <- TRUE
     }
     else {
-      chk::chk_numeric(bps)
-      chk::chk_range(bps, range(Xvar))
-      chk::chk_flag(cont)
+      arg::arg_numeric(bps)
+      arg::arg_between(bps, range(Xvar))
+      arg::arg_flag(cont)
     }
 
     BPs <- sort(.drop_na(bps))
@@ -111,27 +115,28 @@ modelperf.regions_sim <- function(x, scores = NULL,
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
   }
   else if (!is.null(modelsupport)) {
-    chk::chk_is(modelsupport, "regions_modelsupport")
+    arg::arg_is(modelsupport, "regions_modelsupport")
 
-    chk::chk_string(criterion)
-    criterion <- tolower(criterion)
-    criterion <- .match_arg(criterion, c("aic", "bic"))
+    criterion <- arg::match_arg(criterion, c("aic", "bic"))
     model_support_crit <- modelsupport[[switch(criterion, aic = "Model_support", bic = "Model_support_BIC")]]
+
+    arg::when_not_null(
+      model,
+      arg::arg_whole_number,
+      arg::arg_between(c(1, nrow(model_support_crit)))
+    )
 
     if (is.null(model)) {
       model <- 1L
     }
-    else {
-      chk::chk_whole_number(model)
-      chk::chk_range(model, c(1, nrow(model_support_crit)))
-    }
+
     cont <- attr(modelsupport, "cont")
 
     keep <- which(startsWith(names(model_support_crit), "breakpoint"))
     BPs <- .drop_na(unlist(model_support_crit[model, keep]))
   }
   else {
-    chk::err("`bps` or `modelsupport` argument must be provided")
+    arg::err("{.arg bps} or {.arg modelsupport} must be provided")
   }
 
   .modelperf_internal(Xvar, Yvar, BPs, cont)
@@ -145,11 +150,14 @@ modelperf.regions_results_single <- function(x, scores = NULL, ...) {
   BPs <- unlist(x$results[startsWith(names(x$results), "breakpoint")])
   cont <- attr(x, "cont")
 
-  if (!is.null(scores)) {
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(Yvar)))
+  arg::when_not_null(
+    scores,
+    arg::arg_whole_numeric,
+    arg::arg_between(c(1, ncol(Yvar)))
+  )
 
-    Yvar <- Yvar[, scores, drop = FALSE]
+  if (!is.null(scores)) {
+     Yvar <- Yvar[, scores, drop = FALSE]
   }
 
   .modelperf_internal(Xvar, Yvar, BPs, cont)
@@ -159,7 +167,7 @@ modelperf.regions_results_single <- function(x, scores = NULL, ...) {
 print.regions_perf <- function(x, digits = 3, ...) {
   x0 <- x
   cat("Breakpoints:", if (length(x[["BPs"]]) == 0) "(none)"
-      else paste(x[["BPs"]], collapse = ", "), "\n")
+      else toString(x[["BPs"]]), "\n")
   cat("\n- Univariate:\n")
   colnames(x$univariate) <- c("R\u00B2", "Adj. R\u00B2")
   print(round(x$univariate, digits))
@@ -174,7 +182,7 @@ print.regions_perf <- function(x, digits = 3, ...) {
 
   #Calculate weights to ensure each vertebra counts equally
   vert_tab <- tabulate(Xvar)
-  w <- 1/vert_tab[Xvar]
+  w <- 1 / vert_tab[Xvar]
 
   totrsq <- do.call("rbind", lapply(seq_len(ncol(Yvar)), function(i) {
     x <- .design_matrix(Xvar, BPs, cont)
@@ -185,7 +193,7 @@ print.regions_perf <- function(x, digits = 3, ...) {
     mss <- sum(w * (fitted - sum(w * fitted)/sum(w))^2)
     rss <- sum(w * fit$residuals^2)
     rdf <- n - fit$rank
-    r.squared <- mss/(mss + rss)
+    r.squared <- mss / (mss + rss)
 
     c(r2 =     r.squared,
       r2.adj = 1 - (1 - r.squared) * ((n - 1)/rdf),
@@ -194,6 +202,7 @@ print.regions_perf <- function(x, digits = 3, ...) {
       SStot =  mss + rss,
       dfe =    rdf)
   }))
+
   rownames(totrsq) <- paste0("PCO.", seq_len(ncol(Yvar)))
 
   # Calculate R2 for all PCOs multivariately:
@@ -202,7 +211,7 @@ print.regions_perf <- function(x, digits = 3, ...) {
   adj.tot.rsq <- unname(1 - (tot.rsq["SSres"] / tot.rsq["dfe"]) / (tot.rsq["SStot"] / tot.rsq["df"]))
 
   out <- list(BPs = BPs,
-              univariate = totrsq[,1:2],
+              univariate = totrsq[, 1:2],
               multivariate = c(r2 = ord.tot.rsq, r2.adj = adj.tot.rsq))
   attr(out, "cont") <- cont
 

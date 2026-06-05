@@ -46,40 +46,38 @@ plotvertmap <- function(x, type = "count",
                         reg.lim = NULL, lim.col = "black",
                         block.cols = NULL, block.lim = NULL) {
 
+  arg::arg_is(x, c("regions_pco", "regions_data", "regions_sim"))
+
   if (inherits(x, "regions_pco") || inherits(x, "regions_data")) {
     Xvar <- .get_pos(x, subset = FALSE)
     eligible_vertebrae <- .get_eligible_vertebrae(x)
     unique_vert <- .get_eligible_vertebrae(x, subset = FALSE)
   }
-  else if (inherits(x, "regions_sim")) {
+  else {
     Xvar <- x$Xvar
     eligible_vertebrae <- sort(unique(Xvar))
     unique_vert <- eligible_vertebrae
   }
-  else {
-    chk::err("`x` must inherit from class 'regions_pco', 'regions_data', or 'regions_sim")
-  }
 
-  chk::chk_flag(dropNA)
-  chk::chk_flag(text)
+  arg::arg_flag(dropNA)
+  arg::arg_flag(text)
 
-  chk::chk_string(type)
-  type <- tolower(type)
-  type <- .match_arg(type, c("count", "percent"))
+  type <- arg::match_arg(type, c("count", "percent"))
 
-  if (!is.null(name)) {
-    chk::chk_string(name)
-  }
+  arg::when_not_null(
+    name,
+    arg::arg_string
+  )
 
   border.col <- "white"
 
   if (!is.null(bps)) {
-    if (chk::vld_atomic(bps) && all(is.na(bps))) {
+    if (is.atomic(bps) && all(is.na(bps))) {
       bps <- NA_real_
     }
     else {
-      chk::chk_numeric(bps)
-      chk::chk_range(bps, range(unique_vert))
+      arg::arg_numeric(bps)
+      arg::arg_between(bps, range(unique_vert))
     }
 
     BPs <- sort(.drop_na(bps))
@@ -87,19 +85,19 @@ plotvertmap <- function(x, type = "count",
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
   }
   else if (!is.null(modelsupport)) {
-    chk::chk_is(modelsupport, "regions_modelsupport")
+    arg::arg_is(modelsupport, "regions_modelsupport")
 
-    chk::chk_string(criterion)
-    criterion <- tolower(criterion)
-    criterion <- .match_arg(criterion, c("aic", "bic"))
+    criterion <- arg::match_arg(criterion, c("aic", "bic"))
     model_support_crit <- modelsupport[[switch(criterion, aic = "Model_support", bic = "Model_support_BIC")]]
+
+    arg::when_not_null(
+      model,
+      arg::arg_whole_number,
+      arg::arg_between(c(1, nrow(model_support_crit)))
+    )
 
     if (is.null(model)) {
       model <- 1L
-    }
-    else {
-      chk::chk_whole_number(model)
-      chk::chk_range(model, c(1, nrow(model_support_crit)))
     }
 
     keep <- which(startsWith(names(model_support_crit), "breakpoint"))
@@ -108,7 +106,7 @@ plotvertmap <- function(x, type = "count",
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
   }
   else if (!is.null(bpvar)) {
-    chk::chk_is(bpvar, "regions_BPvar")
+    arg::arg_is(bpvar, "regions_BPvar")
     BPs <- round(drop(bpvar$WeightedBP["wMean",]))
 
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
@@ -124,33 +122,30 @@ plotvertmap <- function(x, type = "count",
     BPs <- numeric()
   }
 
-  nreg <- length(BPs) + 1
+  nreg <- length(BPs) + 1L
 
   col.by.block <- !is.null(block.lim)
   if (col.by.block) {
-    chk::chk_numeric(block.lim)
-    chk::chk_not_any_na(block.lim)
-
-    if (anyDuplicated(block.lim) != 0) {
-      chk::err("`block.lim` cannot contain duplicated values")
-    }
+    arg::arg_numeric(block.lim)
+    arg::arg_no_NA(block.lim)
+    arg::arg_unique(block.lim)
 
     if (is.null(block.cols)) {
-      chk::err("`block.cols` must be specified when `block.lim` is specified")
+      arg::err("{.arg block.cols} must be specified when {.arg block.lim} is specified")
     }
 
-    chk::chk_list(block.cols)
+    arg::arg_list(block.cols)
 
-    if (length(block.lim) != length(block.cols) - 1) {
-      chk::err("`block.cols` must have length equal to one greater than that of `block.lim` (i.e., there should be one more region specified than there are region limits)")
+    if (length(block.lim) != length(block.cols) - 1L) {
+      arg::err("{.arg block.cols} must have length equal to one greater than that of {.arg block.lim} (i.e., there should be one more region specified than there are region limits)")
     }
 
     if (!all(vapply(block.cols, function(x) is.character(x) && all(.is_color(x)), logical(1L)))) {
-      chk::err("all entries in `block.cols` must be character vectors containing color names or hex codes")
+      arg::err("all entries in {.arg block.cols} must be character vectors containing color names or hex codes")
     }
 
     if (anyDuplicated(lapply(unlist(block.cols), grDevices::col2rgb)) != 0) {
-      chk::wrn("duplicated colors were found in `block.cols`")
+      arg::wrn("duplicated colors were found in {.arg block.cols}")
     }
   }
 
@@ -162,8 +157,9 @@ plotvertmap <- function(x, type = "count",
   if (!is.null(centraL)) {
     vertmap$centraL <- 0
 
-    if (!inherits(x, "regions_sim"))
+    if (!inherits(x, "regions_sim")) {
       data_combined <- .get_data_without_pos(x, subset = FALSE)
+    }
 
     if (is.numeric(centraL)) {
       if (!inherits(x, "regions_sim") && length(centraL) == nrow(data_combined)) {
@@ -181,32 +177,28 @@ plotvertmap <- function(x, type = "count",
         vertmap$centraL[match(vert.all, eligible_vertebrae)] <- centraL
       }
       else {
-        chk::err(sprintf("`centraL` must have length equal to %s",
+        arg::err(sprintf("{.arg centraL} must have length equal to %s",
                          .word_list(c(
-                           sprintf("the total number of vertebrae (in this case, %s)",
-                                   max.pos),
+                           "the total number of vertebrae (in this case, {max.pos})",
                            if (max.pos != length(unique_vert))
-                             sprintf("the number of unique vertebrae present in the original dataset (in thise case, %s)",
-                                     length(unique_vert)),
+                             "the number of unique vertebrae present in the original dataset (in thise case, {length(unique_vert)})",
                            if (length(unique_vert) != length(eligible_vertebrae))
-                             sprintf("the number of available vertebrae (in this case, %s)",
-                                     length(eligible_vertebrae)),
+                             "the number of available vertebrae (in this case, {length(eligible_vertebrae)})",
                            if (!inherits(x, "regions_sim") && length(unique_vert) != nrow(data_combined))
-                             sprintf("the number of observations across all specimens (in this case, %s)",
-                                     nrow(data_combined))
+                             "the number of observations across all specimens (in this case, {nrow(data_combined)})",
                          ), "or")))
       }
 
-      chk::chk_not_any_na(vertmap$centraL, "`centraL`")
-      chk::chk_gte(vertmap$centraL, 0, "`centraL`")
+      arg::arg_no_NA(vertmap$centraL, .arg = "centraL")
+      arg::arg_gte(vertmap$centraL, 0, .arg = "centraL")
     }
-    else if (chk::vld_string(centraL)) {
+    else if (is.character(centraL) && length(centraL) == 1L) {
       if (inherits(x, "regions_sim")) {
-        chk::err("when `x` is a 'regions_sim' object, `centraL` cannot be specified as a string")
+        arg::err("when {.arg x} is a {.cls regions_sim} object, {.arg centraL} cannot be specified as a string")
       }
 
       if (!centraL %in% names(data_combined)) {
-        chk::err("the value supplied to `centraL` is not the name of a variable in the dataset")
+        arg::err("the value supplied to .arg centraL} is not the name of a variable in the dataset")
       }
 
       # Compute mean centrum length across specimens for each vertebra
@@ -214,21 +206,23 @@ plotvertmap <- function(x, type = "count",
         vertmap$centraL[vertmap$vname == i] <- mean(data_combined[[centraL]][Xvar == i], na.rm = TRUE)
       }
 
-      chk::chk_not_any_na(vertmap$centraL, "the variable named in `centraL`")
-      chk::chk_gte(vertmap$centraL, 0, "the variable named in `centraL`")
+      arg::arg_no_NA(vertmap$centraL,
+                     .msg = "the variable named in {.arg centraL} must not contain {.val {NA}} values")
+      arg::arg_gte(vertmap$centraL, 0,
+                   .msg = "all values in the variable named in {.arg centraL} must be greater than or equal to {.val {0}}")
     }
     else {
-      chk::err("`centraL` must be a vector of centrum lengths or a string containing them name of the centrum length variable")
+      arg::err("{.arg centraL} must be a vector of centrum lengths or a string containing them name of the centrum length variable")
     }
   }
 
   regions <- paste0("Region", seq_len(nreg))
 
   # Place 1st region
-  vertmap$reg <- regions[1]
+  vertmap$reg <- regions[1L]
   # Add other regions
   for (i in seq_along(BPs)) {
-    vertmap$reg[vert.all > BPs[i]] <- regions[i + 1]
+    vertmap$reg[vert.all > BPs[i]] <- regions[i + 1L]
   }
 
   # Assign vertebrae not in data value of "Missing"
@@ -287,12 +281,12 @@ plotvertmap <- function(x, type = "count",
       }
       else if (i == length(block.names)) {
         vertmap$trad.reg[!missing_vert &
-                           vertmap$vname > block.lim[i-1]] <- block.names[i]
+                           vertmap$vname > block.lim[i - 1L]] <- block.names[i]
       }
       else {
         vertmap$trad.reg[!missing_vert &
                            vertmap$vname <= block.lim[i] &
-                           vertmap$vname > block.lim[i-1]] <- block.names[i]
+                           vertmap$vname > block.lim[i - 1L]] <- block.names[i]
       }
     }
 
@@ -336,43 +330,42 @@ plotvertmap <- function(x, type = "count",
 
     # Adjust limit position
     if (is.null(centraL)) {
-      if (type == "count") {
-        reg.lim <- vapply(reg.lim, function(m) {
+      reg.lim <- switch(
+        type,
+        "count" = vapply(reg.lim, function(m) {
           vertmap$ind.end[.last(which(vertmap$vname <= m))]
-        }, numeric(1L))
-      }
-      else if (type == "percent") {
-        reg.lim <- vapply(reg.lim, function(m) {
+        }, numeric(1L)),
+        "percent" = vapply(reg.lim, function(m) {
           vertmap$pct.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
-      }
+      )
     }
     else {
-      if (type == "count") {
-        reg.lim <- vapply(reg.lim, function(m) {
+      reg.lim <- switch(
+        type,
+        "count" = vapply(reg.lim, function(m) {
           vertmap$L.end[.last(which(vertmap$vname <= m))]
-        }, numeric(1L))
-      }
-      else if (type == "percent") {
-        reg.lim <- vapply(reg.lim, function(m) {
+        }, numeric(1L)),
+        "percent" = vapply(reg.lim, function(m) {
           vertmap$L.pct.end[.last(which(vertmap$vname <= m))]
         }, numeric(1L))
-      }
+      )
     }
   }
 
   # Correct BP sd position according to % count and % length:
   if (!is.null(bp.sd)) {
     if (length(BPs) == 0) {
-      chk::err("`bp.sd` cannot be supplied when no breakpoints are present")
+      arg::err("{.arg bp.sd} cannot be supplied when no breakpoints are present")
     }
-    chk::chk_numeric(bp.sd)
-    chk::chk_not_any_na(bp.sd)
+
+    arg::arg_numeric(bp.sd)
+    arg::arg_no_NA(bp.sd)
+
     if (length(bp.sd) != length(BPs)) {
-      chk::err(sprintf("`bp.sd` must have length equal to the number of breakpoints (in this case, %s)",
-                       length(BPs)))
+      arg::err("{.arg bp.sd} must have length equal to the number of breakpoints (in this case, {length(BPs)})")
     }
-    chk::chk_gte(bp.sd, 0)
+    arg::arg_gte(bp.sd, 0)
 
     bp.inds <- vapply(BPs, function(b) {
       vertmap$ind[.last(which(vertmap$vname <= b))]
@@ -434,9 +427,9 @@ plotvertmap <- function(x, type = "count",
 
     # Assign vertical position and deal with overlaps
     y <- rep.int(0, length(BPs))
-    y[1] <- 1
+    y[1L] <- 1
 
-    for (i in seq_along(BPs)[-1]) {
+    for (i in seq_along(BPs)[-1L]) {
       num_ovl <- vapply(seq_len(max(y)), function(l) {
         sum(bp.sd$beg[y == l] < bp.sd$end[i] & bp.sd$end[y == l] >= bp.sd$beg[i])
       }, numeric(1L))
@@ -476,25 +469,27 @@ plotvertmap <- function(x, type = "count",
                       needed.colors[names(block.cols)],
                       row.names = names(block.cols))
       names(d) <- c("# supplied", "# needed")
-      chk::err("not enough colors were supplied for each region specified in `block.cols`:\n\n",
-               paste(utils::capture.output(print(d)), collapse = "\n"),
-               "\n\nPlease supply additional colors for ", .word_list(deficient.regions))
+      arg::err(c("not enough colors were supplied for each region specified in {.arg block.cols}:",
+                 "\n",
+                 paste(utils::capture.output(print(d)), collapse = "\n"),
+                 "\n",
+                 "Please supply additional colors for {deficient.regions}"))
     }
   }
   else {
     if (!is.null(block.cols)) {
-      chk::chk_character(block.cols)
+      arg::arg_character(block.cols)
 
       if (!all(.is_color(block.cols))) {
-        chk::err("all values in `block.cols` must be color names or hex codes")
+        arg::err("all values in {.arg block.cols} must be color names or hex codes")
       }
 
       if (length(block.cols) < nreg) {
-        chk::err(sprintf("`block.cols` must have length greater than or equal to the number of regions (in this case, %s)", nreg))
+        arg::err("{.arg block.cols} must have length greater than or equal to the number of regions (in this case, {nreg})")
       }
 
       if (anyDuplicated(lapply(block.cols, grDevices::col2rgb)) != 0) {
-        chk::wrn("duplicated colors were found in `block.cols`")
+        arg::wrn("duplicated colors were found in {.arg block.cols}")
       }
       pal <- block.cols
     }

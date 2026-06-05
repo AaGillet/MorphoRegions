@@ -43,23 +43,27 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
                         ncombos_file_trigger = 1e7, temp_file_dir = tempdir(TRUE),
                         cl = NULL, verbose = TRUE) {
   # Argument checks
+  arg::arg_is(pco, c("regions_pco", "regions_sim"))
+
   if (inherits(pco, "regions_pco")) {
-    chk::chk_not_missing(scores, "`scores`")
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, ncol(pco[["scores"]])))
+    arg::arg_supplied(scores)
+    arg::arg_whole_numeric(scores)
+    arg::arg_between(scores, c(1L, ncol(pco[["scores"]])))
 
     Xvar <- .get_pos(pco)
     Yvar <- pco[["scores"]][, scores, drop = FALSE]
 
     eligible_vertebrae <- .get_eligible_vertebrae(pco)
   }
-  else if (inherits(pco, "regions_sim")) {
+  else {
+    arg::when_supplied(
+      scores,
+      arg::arg_whole_number,
+      arg::arg_between(c(1, ncol(pco[["Yvar"]])))
+    )
+
     if (missing(scores)) {
       scores <- seq_len(ncol(pco[["Yvar"]]))
-    }
-    else {
-      chk::chk_whole_numeric(scores)
-      chk::chk_range(scores, c(1, ncol(pco[["Yvar"]])))
     }
 
     Xvar <- pco[["Xvar"]]
@@ -67,25 +71,25 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
 
     eligible_vertebrae <- sort(unique(Xvar))
   }
-  else {
-    chk::err("`pco` must be a `regions_pco` or `regions_sim` object")
-  }
 
-  chk::chk_not_missing(noregions, "`noregions`")
-  chk::chk_count(noregions)
-  chk::chk_gte(noregions, 1)
+  arg::arg_supplied(noregions)
+  arg::arg_count(noregions)
+  arg::arg_gte(noregions, 1)
 
-  chk::chk_count(minvert)
-  chk::chk_gte(minvert, 2)
-  chk::chk_flag(cont)
-  chk::chk_flag(exhaus)
-  chk::chk_flag(verbose)
+  arg::arg_count(minvert)
+  arg::arg_gte(minvert, 2)
+  arg::arg_flag(cont)
+  arg::arg_flag(exhaus)
+  arg::arg_flag(verbose)
+
+  arg::when_not_null(
+    includebp,
+    arg::arg_whole_numeric
+  )
 
   if (!is.null(includebp)) {
-    chk::chk_whole_numeric(includebp)
-
     if (!all(includebp %in% eligible_vertebrae)) {
-      chk::err("all breakpoints specified in `includebp` must correspond to measured vertebrae")
+      arg::err("all breakpoints specified in {.arg includebp} must correspond to measured vertebrae")
     }
 
     if (length(includebp) > 1) {
@@ -93,22 +97,22 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
 
       if (sum(eligible_vertebrae < min(includebp)) < 1 ||
           sum(eligible_vertebrae > max(includebp)) < 2) {
-        chk::err("breakpoints specified in `includebp` must be be at least 2 measured vertebrae from the ends")
+        arg::err("breakpoints specified in {.arg includebp} must be be at least 2 measured vertebrae from the ends")
       }
 
       for (i in seq_along(includebp)[-1]) {
         if (sum(eligible_vertebrae > includebp[i - 1] &
                 eligible_vertebrae <= includebp[i]) < 2) {
-          chk::err("breakpoints specified in `includebp` must have at least 2 measured vertebrae between them")
+          arg::err("breakpoints specified in {.arg includebp} must have at least 2 measured vertebrae between them")
         }
       }
 
       if (length(includebp) >= noregions) {
-        chk::err("the length of `includebp` must be less than `noregions`")
+        arg::err("the length of {.arg includebp} must be less than {.arg noregions}")
       }
 
-      if (any(diff(c(eligible_vertebrae[1] - 1, includebp, max(eligible_vertebrae))) < minvert)) {
-        .wrn_immediate("the breakpoints specified in `includebp` do not obey the `minvert` crtierion")
+      if (any(diff(c(eligible_vertebrae[1L] - 1, includebp, max(eligible_vertebrae))) < minvert)) {
+        arg::wrn("the breakpoints specified in {.arg includebp} do not obey the {.arg minvert} crtierion")
       }
     }
   }
@@ -118,11 +122,16 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
     else seq(length(includebp) + 1, noregions)
   }
 
+  arg::when_not_null(
+    omitbp,
+    arg::arg_whole_numeric
+  )
+
   if (!is.null(omitbp)) {
-    chk::chk_whole_numeric(omitbp)
     if (any(omitbp %in% includebp)) {
-      chk::err("breakpoints specified in `omitbp` cannot also be present in `includebp`")
+      arg::err("breakpoints specified in {.arg omitbp} cannot also be present in {.arg includebp}")
     }
+
     eligible_vertebrae <- eligible_vertebrae[!eligible_vertebrae %in% omitbp]
   }
 
@@ -137,23 +146,25 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
 
   if (any(ncombs == 0)) {
     max.regions <- max(which(ncombs > 0))
-    .wrn_immediate(sprintf("models for %s vertebrae cannot be fit with more than %s region%%s and `minvert` of %s",
-                           length(eligible_vertebrae), max.regions, minvert), n = max.regions)
+
+    arg::wrn("models for {length(eligible_vertebrae)} vertebrae cannot be fit with more than {max.regions} region{?s} and {.arg minvert} of {minvert}")
+
     ncombs <- ncombs[eligible_noregions <= max.regions]
     eligible_noregions <- eligible_noregions[eligible_noregions <= max.regions]
   }
 
   if (any(eligible_noregions > 3)) {
-    chk::chk_count(ncombos_file_trigger)
-    chk::chk_gt(ncombos_file_trigger, 0)
+    arg::arg_count(ncombos_file_trigger)
+    arg::arg_gt(ncombos_file_trigger, 0)
+
     if (any(ncombs[eligible_noregions > 3] > ncombos_file_trigger)) {
-      if (!"temp_file_dir" %in% names(match.call())[-1] ||
+      if (!"temp_file_dir" %in% names(match.call())[-1L] ||
           identical(temp_file_dir, tempdir())) {
         fn <- "calcregions"
-        # .wrn_immediate(sprintf("`%s()` will use temporary files stored in the directory supplied to `temp_file_dir`. Because this was unspecified or left as its default, you may see the error \"cannot write to connection\" after a long run of this function. See `help(\"%s\")` for solutions and how to avoid this problem", fn, fn))
+        # arg::wrn(sprintf("`%s()` will use temporary files stored in the directory supplied to `temp_file_dir`. Because this was unspecified or left as its default, you may see the error \"cannot write to connection\" after a long run of this function. See `help(\"%s\")` for solutions and how to avoid this problem", fn, fn))
       }
       else {
-        chk::chk_string(temp_file_dir)
+        arg::arg_string(temp_file_dir)
       }
     }
   }
@@ -197,15 +208,15 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
                        ncombos_file_trigger = 1e7, temp_file_dir = tempdir(TRUE),
                        cl = NULL, verbose = TRUE) {
   # Argument checks
-  chk::chk_is(regions_results, "regions_results")
+  arg::arg_is(regions_results, "regions_results")
 
-  chk::chk_not_missing(noregions, "`noregions`")
-  chk::chk_whole_numeric(noregions)
-  chk::chk_gte(noregions, 1)
+  arg::arg_supplied(noregions)
+  arg::arg_whole_numeric(noregions)
+  arg::arg_gte(noregions, 1)
   noregions <- sort(noregions)
 
-  chk::chk_flag(exhaus)
-  chk::chk_flag(verbose)
+  arg::arg_flag(exhaus)
+  arg::arg_flag(verbose)
 
   opb <- pbapply::pboptions(type = if (verbose) "timer" else "none")
   on.exit(pbapply::pboptions(opb))
@@ -220,23 +231,24 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
 
   if (any(ncombs == 0)) {
     max.regions <- max(noregions[ncombs > 0])
-    .wrn_immediate(sprintf("models for %s vertebrae cannot be fit with more than %s region%%s and `minvert` of %s",
-                           length(eligible_vertebrae), max.regions, minvert), n = max.regions)
+
+    arg::wrn("models for {length(eligible_vertebrae)} vertebrae cannot be fit with more than {max.regions} region{?s} and {.arg minvert} of {minvert}")
+
     ncombs <- ncombs[noregions <= max.regions]
     noregions <- noregions[noregions <= max.regions]
   }
 
   if (any(noregions > 3)) {
-    chk::chk_count(ncombos_file_trigger)
-    chk::chk_gt(ncombos_file_trigger, 0)
+    arg::arg_count(ncombos_file_trigger)
+    arg::arg_gt(ncombos_file_trigger, 0)
     if (any(ncombs[noregions > 3] > ncombos_file_trigger)) {
-      if (!"temp_file_dir" %in% names(match.call())[-1] ||
+      if (!"temp_file_dir" %in% names(match.call())[-1L] ||
           identical(temp_file_dir, tempdir())) {
         fn <- "addregions"
-        # .wrn_immediate(sprintf("`%s()` will use temporary files stored in the directory supplied to `temp_file_dir`. Because this was unspecified or left as its default, you may see the error \"cannot write to connection\" after a long run of this function. See `help(\"%s\")` for solutions and how to avoid this problem", fn, fn))
+        # arg::wrn(sprintf("`%s()` will use temporary files stored in the directory supplied to `temp_file_dir`. Because this was unspecified or left as its default, you may see the error \"cannot write to connection\" after a long run of this function. See `help(\"%s\")` for solutions and how to avoid this problem", fn, fn))
       }
       else {
-        chk::chk_string(temp_file_dir)
+        arg::arg_string(temp_file_dir)
       }
     }
   }
@@ -263,11 +275,11 @@ addregions <- function(regions_results, noregions, exhaus = TRUE,
 print.regions_results <- function(x, ...) {
   cat("A `regions_results` object\n")
   cat(" - number of PCOs used:", ncol(attr(x, "scores")), "\n")
-  cat(" - number of regions:", paste(sort(unique(x$stats[["Nregions"]])), collapse = ", "), "\n")
+  cat(" - number of regions:", toString(sort(unique(x$stats[["Nregions"]]))), "\n")
   cat(" - model type:", if (attr(x, "cont")) "continuous" else "discontinuous", "\n")
   cat(" - min vertebrae per region:", attr(x, "minvert"), "\n")
   if (!is.null(attr(x, "omitbp"))) {
-    cat(" - omitted breakpoints:", paste(attr(x, "omitbp"), collapse = ", "), "\n")
+    cat(" - omitted breakpoints:", toString(attr(x, "omitbp")), "\n")
   }
   cat(" - total models saved:", nrow(x$results), "\n")
   cat("Use `summary()` to examine summaries of the fitting process.\n")
@@ -298,54 +310,57 @@ print.summary.regions_results <- function(x, ...) {
 #' @rdname calcregions
 ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL) {
   # Argument checks
+  arg::arg_is(pco, c("regions_pco", "regions_sim"))
+
   if (inherits(pco, "regions_pco")) {
     eligible_vertebrae <- .get_eligible_vertebrae(pco)
   }
-  else if (inherits(pco, "regions_sim")) {
+  else {
     Xvar <- pco[["Xvar"]]
 
     eligible_vertebrae <- sort(unique(Xvar))
   }
-  else {
-    chk::err("`pco` must be a `regions_pco` or `regions_sim` object")
-  }
 
-  chk::chk_not_missing(noregions, "`noregions`")
-  chk::chk_whole_numeric(noregions)
-  chk::chk_gte(noregions, 1)
+  arg::arg_supplied(noregions)
+  arg::arg_whole_numeric(noregions)
+  arg::arg_gte(noregions, 1)
   noregions <- sort(noregions)
 
-  chk::chk_count(minvert)
-  chk::chk_gte(minvert, 2)
+  arg::arg_count(minvert)
+  arg::arg_gte(minvert, 2)
+
+  arg::when_not_null(
+    includebp,
+    arg::arg_whole_numeric
+  )
 
   if (!is.null(includebp)) {
-    chk::chk_whole_numeric(includebp)
 
     if (!all(includebp %in% eligible_vertebrae)) {
-      chk::err("all breakpoints specified in `includebp` must correspond to measured vertebrae")
+      arg::err("all breakpoints specified in {.arg includebp} must correspond to measured vertebrae")
     }
 
-    if (length(includebp) > 1) {
+    if (length(includebp) > 1L) {
       includebp <- sort(includebp)
 
       if (sum(eligible_vertebrae < min(includebp)) < 1 ||
           sum(eligible_vertebrae > max(includebp)) < 2) {
-        chk::err("breakpoints specified in `includebp` must be be at least 2 measured vertebrae from the ends")
+        arg::err("breakpoints specified in {.arg includebp} must be be at least 2 measured vertebrae from the ends")
       }
 
       for (i in seq_along(includebp)[-1]) {
         if (sum(eligible_vertebrae > includebp[i - 1] &
                 eligible_vertebrae <= includebp[i]) < 2) {
-          chk::err("breakpoints specified in `includebp` must have at least 2 measured vertebrae between them")
+          arg::err("breakpoints specified in {.arg includebp} must have at least 2 measured vertebrae between them")
         }
       }
 
       if (length(includebp) >= noregions) {
-        chk::err("the length of `includebp` must be less than `noregions`")
+        arg::err("the length of {.arg includebp} must be less than {.arg noregions}")
       }
 
       if (any(diff(c(eligible_vertebrae[1] - 1, includebp, max(eligible_vertebrae))) < minvert)) {
-        .wrn_immediate("the breakpoints specified in `includebp` do not obey the `minvert` crtierion")
+        arg::wrn("the breakpoints specified in {.arg includebp} do not obey the {.arg minvert} crtierion")
       }
     }
   }
@@ -355,11 +370,16 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     else noregions[noregions >= length(includebp)]
   }
 
+  arg::when_not_null(
+    omitbp,
+    arg::arg_whole_numeric
+  )
+
   if (!is.null(omitbp)) {
-    chk::chk_whole_numeric(omitbp)
     if (any(omitbp %in% includebp)) {
-      chk::err("breakpoints specified in `omitbp` cannot also be present in `includebp`")
+      arg::err("breakpoints specified in {.arg omitbp} cannot also be present in {.arg includebp}")
     }
+
     eligible_vertebrae <- eligible_vertebrae[!eligible_vertebrae %in% omitbp]
   }
 
@@ -386,11 +406,11 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
   #Calculate weights to ensure each vertebra counts equally
   vert_tab <- tabulate(Xvar)
-  w <- 1/vert_tab[Xvar]
+  w <- 1 / vert_tab[Xvar]
 
   includebp <- attr(regions_results, "includebp")
 
-  nbp <- noregions - 1
+  nbp <- noregions - 1L
 
   noPC <- ncol(Yvar)
 
@@ -416,13 +436,15 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       else RSS
     }
 
-    c((length(BPs) + 1), BPs, RSS, rsq)
+    c(RSS, rsq)
   }
 
   if (nbp == 0) {
     # 1 Regions (0 bp)
 
-    if (!is.null(includebp)) return(regions_results)
+    if (!is.null(includebp)) {
+      return(regions_results)
+    }
 
     if (verbose) {
       cat("Fitting model with 1 region (0 breakpoints)...\n")
@@ -438,20 +460,20 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       else RSS
     }
 
-    res <- as.data.frame(rbind(c(nbp + 1, NA_real_, RSS, rsq)))
+    res <- list2DF(list(nbp + 1L, NA_real_, RSS, rsq))
 
     names(res) <- colhead
 
     bpkeep <- NA_character_
 
-    stats <- data.frame(Nregions = nbp + 1L,
-                        Nmodel_possible = 1L,
-                        Nmodel_tested = 1L,
-                        Nmodel_saved = 1L,
-                        Comp_method = "Exhaustive",
-                        Saving_method = "All")
+    stats <- list2DF(list(Nregions = nbp + 1L,
+                          Nmodel_possible = 1L,
+                          Nmodel_tested = 1L,
+                          Nmodel_saved = 1L,
+                          Comp_method = "Exhaustive",
+                          Saving_method = "All"))
 
-    best_bps <- matrix(bpkeep, nrow = 1, dimnames = list(NULL, "Best_BPs1"))
+    best_bps <- matrix(bpkeep, nrow = 1L, dimnames = list(NULL, "Best_BPs1"))
 
     if (verbose) {
       cat("Done. 1 model tested, 1 model saved.\n")
@@ -463,19 +485,23 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     # Get all possible combinations for 1 breakpoint:
     goodcomb <- .combos(eligible_vertebrae, minvert, nbp, includebp = includebp)
 
-    if (nrow(goodcomb) == 0) return(regions_results)
+    if (nrow(goodcomb) == 0) {
+      return(regions_results)
+    }
 
     if (verbose) {
       cat("Fitting models with 2 regions (1 breakpoint)...\n")
     }
 
     # Run fitting on good combinations:
-    res <- do.call("rbind", pbapply::pbapply(goodcomb, 1, function(bps) {
+    res <- do.call("rbind", pbapply::pbapply(goodcomb, 1L, function(bps) {
       fregions(bps, Xvar = Xvar, Yvar = Yvar, w = w)
-    },
-    simplify = FALSE, cl = cl))
+    }, simplify = FALSE, cl = cl))
 
-    res <- setNames(as.data.frame(res), colhead)
+    res <- setNames(cbind(nbp + 1L,
+                          as.data.frame(goodcomb),
+                          as.data.frame(res)),
+                    colhead)
 
     bpkeep <- {
       NA_character_
@@ -483,14 +509,14 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       # else NA_character_
     }
 
-    stats <- data.frame(Nregions = nbp + 1L,
-                        Nmodel_possible = nrow(res),
-                        Nmodel_tested = nrow(res),
-                        Nmodel_saved = nrow(res),
-                        Comp_method = "Exhaustive",
-                        Saving_method = "All")
+    stats <- list2DF(list(Nregions = nbp + 1L,
+                          Nmodel_possible = nrow(res),
+                          Nmodel_tested = nrow(res),
+                          Nmodel_saved = nrow(res),
+                          Comp_method = "Exhaustive",
+                          Saving_method = "All"))
 
-    best_bps <- matrix(bpkeep, nrow = 1, dimnames = list(NULL, "Best_BPs1"))
+    best_bps <- matrix(bpkeep, nrow = 1L, dimnames = list(NULL, "Best_BPs1"))
 
     if (verbose) {
       cat(sprintf("Done. %s models tested, %s models saved.\n",
@@ -511,7 +537,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
       if (length(bpkeep) == 0 && max_nregion_so_far > 2) {
         # Find best_bps
-        res0 <- regions_results$res[regions_results$res$regions == max_nregion_so_far,, drop = FALSE]
+        res0 <- regions_results$res[regions_results$res$regions == max_nregion_so_far, , drop = FALSE]
         bestBPs <- drop(as.matrix(res0)[which.min(res0$sumRSS), startsWith(names(res0), "breakpoint")])
 
         # Add 3 BPs left and right to best BPs
@@ -524,7 +550,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
         bpkeep <- vapply(seq_along(bestBPs), function(i) {
           paste(
-            sort(.drop_na(unique(c(res0[, i + 1], bestBPs[[i]]), nmax = length(eligible_vertebrae)))),
+            sort(.drop_na(unique(c(res0[, i + 1L], bestBPs[[i]]), nmax = length(eligible_vertebrae)))),
             collapse = "|"
           )
         }, character(1L))
@@ -547,19 +573,23 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
       goodcomb <- .combos(eligible_vertebrae, minvert, nbp, includebp = includebp)
 
-      if (nrow(goodcomb) == 0) return(regions_results)
+      if (nrow(goodcomb) == 0L) {
+        return(regions_results)
+      }
 
       nmodel_possible <- nrow(goodcomb)
 
-      if (!exhaus && length(bpkeep) > 0) {
+      if (!exhaus && length(bpkeep) > 0L) {
         # Keep only probable combinations (non-exhaustive search)
         for (m in strsplit(bpkeep, "|", fixed = TRUE)) {
           mn <- as.numeric(m)
-          goodcomb <- goodcomb[.any_mat_in(goodcomb, mn),, drop = FALSE]
+          goodcomb <- goodcomb[.any_mat_in(goodcomb, mn), , drop = FALSE]
         }
       }
 
-      if (nrow(goodcomb) == 0) return(regions_results)
+      if (nrow(goodcomb) == 0) {
+        return(regions_results)
+      }
 
       if (verbose) {
         cat(sprintf("Fitting models with %s regions (%s breakpoints)...\n",
@@ -567,12 +597,14 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       }
 
       # Run fitting on good combinations:
-      res <- do.call("rbind", pbapply::pbapply(goodcomb, 1, function(bps) {
+      res <- do.call("rbind", pbapply::pbapply(goodcomb, 1L, function(bps) {
         fregions(bps, Xvar = Xvar, Yvar = Yvar, w = w)
-      },
-      simplify = FALSE, cl = cl))
+      }, simplify = FALSE, cl = cl))
 
-      res <- setNames(as.data.frame(res), colhead)
+      res <- setNames(cbind(nbp + 1L,
+                            as.data.frame(goodcomb),
+                            as.data.frame(res)),
+                      colhead)
 
       nmodel_tested <- nrow(res)
 
@@ -581,7 +613,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
         cutoff <- min(res$sumRSS) + sd(res$sumRSS) / 2
         if (!is.na(cutoff)) {
           # Subsample res only if more than 1 option
-          res <- res[res$sumRSS <= cutoff,, drop = FALSE]
+          res <- res[res$sumRSS <= cutoff, , drop = FALSE]
         }
       }
     }
@@ -594,7 +626,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
       # Max number of rows per iteration; keeps sizes small and
       # improves progress bar
-      max_rows <- ceiling(ncombos_file_trigger/100)
+      max_rows <- ceiling(ncombos_file_trigger / 100)
 
       # Required number of splits of combos
       aa <- ceiling(ncombi / max_rows)
@@ -656,7 +688,11 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
           fregions(goodcomb[g,], Xvar = Xvar, Yvar = Yvar, w = w)
         }, cl = cl))
 
-        res <- setNames(as.data.frame(res), colhead)
+        res <- setNames(cbind(nbp + 1L,
+                              as.data.frame(goodcomb),
+                              as.data.frame(res)),
+                        colhead)
+
         nmodel_tested <- nmodel_tested + nrow(res)
 
         # Save intermediate object to disk
@@ -670,8 +706,8 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
         if (!exhaus) {
           #Accumulate values for cutoff
           Xbar_old <- Xbar_total #old mean
-          Xbar_i <- sum(res$sumRSS)/n_i #mean of new subset
-          Xbar_total <- (n_old * Xbar_old + n_i * Xbar_i)/(n_old + n_i) #new mean
+          Xbar_i <- sum(res$sumRSS) / n_i #mean of new subset
+          Xbar_total <- (n_old * Xbar_old + n_i * Xbar_i) / (n_old + n_i) #new mean
 
           delta <- Xbar_i - Xbar_old
 
@@ -690,7 +726,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       pbapply::closepb(pb)
 
       if (!exhaus) {
-        sd_RSS <- sqrt(M2_total/(nmodel_tested - 1))
+        sd_RSS <- sqrt(M2_total / (nmodel_tested - 1))
         cutoff <- min_RSS + sd_RSS / 2
       }
 
@@ -704,19 +740,24 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
         tryCatch({res_tmp <- readRDS(file)},
                  error = function(err) {
                    e <- conditionMessage(err)
+
                    if (!grepl("cannot open connection", e)) {
-                     chk::err(e, tidy = FALSE)
+                     arg::err("{e}")
                    }
+
                    if (!dir.exists(temp_file_dir)) {
-                     chk::err("the directory containing the stored files has been deleted. See `help(\"calcregions\")` for more information. You will likely have to re-run the function")
+                     arg::err("the directory containing the stored files has been deleted. See {.help calcregions} for more information. You will likely have to re-run the function")
                    }
-                   chk::err("at least one of the stored files cannot be found, suggesting that something has happened to the directory in which the files were stored. See `help(\"calcregions\")` for more information. You will likely have to re-run the function")
+
+                   arg::err("at least one of the stored files cannot be found, suggesting that something has happened to the directory in which the files were stored. See {.help calcregions} for more information. You will likely have to re-run the function")
                  })
 
-        if (exhaus) return(res_tmp)
+        if (exhaus) {
+          return(res_tmp)
+        }
 
         # If non-exhaustive search, keep only models with sumRSS <= min(sumRSS)+(0.5*sd(sumRSS))
-        res_tmp[res_tmp$sumRSS <= cutoff,, drop = FALSE]
+        res_tmp[res_tmp$sumRSS <= cutoff, , drop = FALSE]
 
       }, cl = cl))
 
@@ -740,30 +781,30 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
       bpkeep <- vapply(seq_along(bestBPs), function(i) {
         paste(
-          sort(.drop_na(unique(c(res[, i + 1], bestBPs[[i]]), nmax = length(eligible_vertebrae)))),
+          sort(.drop_na(unique(c(res[, i + 1L], bestBPs[[i]]), nmax = length(eligible_vertebrae)))),
           collapse = "|"
         )
       }, character(1L))
 
-      stats <- data.frame(Nregions = noregions,
-                          Nmodel_possible = nmodel_possible,
-                          Nmodel_tested = nmodel_tested,
-                          Nmodel_saved = nmodel_saved,
-                          Comp_method = "Non-exhaus",
-                          Saving_method = "SD/2")
+      stats <- list2DF(list(Nregions = noregions,
+                            Nmodel_possible = nmodel_possible,
+                            Nmodel_tested = nmodel_tested,
+                            Nmodel_saved = nmodel_saved,
+                            Comp_method = "Non-exhaus",
+                            Saving_method = "SD/2"))
     }
     else {
-      bpkeep <- rep(NA_character_, nbp)
+      bpkeep <- rep.int(NA_character_, nbp)
 
-      stats <- data.frame(Nregions = noregions,
-                          Nmodel_possible = nmodel_possible,
-                          Nmodel_tested = nmodel_tested,
-                          Nmodel_saved = nmodel_saved,
-                          Comp_method = "Exhaustive",
-                          Saving_method = "All")
+      stats <- list2DF(list(Nregions = noregions,
+                            Nmodel_possible = nmodel_possible,
+                            Nmodel_tested = nmodel_tested,
+                            Nmodel_saved = nmodel_saved,
+                            Comp_method = "Exhaustive",
+                            Saving_method = "All"))
     }
 
-    best_bps <- matrix(bpkeep, nrow = 1, dimnames = list(NULL, paste0("Best_BPs", 1:nbp)))
+    best_bps <- matrix(bpkeep, nrow = 1L, dimnames = list(NULL, paste0("Best_BPs", 1:nbp)))
 
     if (verbose) {
       cat(sprintf("Done. %s models tested, %s models saved.\n",
@@ -777,18 +818,19 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
   #Remove analysis with same number of regions
   if (any(regions_results$results$regions == noregions)) {
-    regions_results$results <- regions_results$results[regions_results$results$regions != noregions,, drop = FALSE]
+    regions_results$results <- regions_results$results[regions_results$results$regions != noregions, , drop = FALSE]
   }
+
   if (any(regions_results$stats$Nregions == noregions)) {
-    regions_results$stats <- regions_results$stats[regions_results$stats$Nregions != noregions,, drop = FALSE]
+    regions_results$stats <- regions_results$stats[regions_results$stats$Nregions != noregions, , drop = FALSE]
   }
 
   #Combine res and stats with exist components of input object
   regions_results$results <- .rbind_larger(regions_results$results, res)
   regions_results$stats <- .rbind_larger(regions_results$stats, stats)
 
-  regions_results$results <- regions_results$results[order(regions_results$results$regions),, drop = FALSE]
-  regions_results$stats <- regions_results$stats[order(regions_results$stats$Nregions),, drop = FALSE]
+  regions_results$results <- regions_results$results[order(regions_results$results$regions), , drop = FALSE]
+  regions_results$stats <- regions_results$stats[order(regions_results$stats$Nregions), , drop = FALSE]
 
   rownames(regions_results$results) <- NULL
   rownames(regions_results$stats) <- NULL
@@ -798,14 +840,18 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
 # Returns number of combos possible; vectorized across nvert
 .ncombos <- function(nvert, minvert, nbp) {
-  if (nbp == 0) return(rep.int(1, length(nvert)))
+  if (nbp == 0) {
+    return(rep.int(1, length(nvert)))
+  }
 
   # Number of possibilities for each BP
   p <- nvert - minvert * (nbp + 1) + 1
 
-  out <- rep(0, length(nvert))
+  out <- rep.int(0, length(nvert))
 
-  if (all(p <= 0)) return(out)
+  if (all(p <= 0)) {
+    return(out)
+  }
 
   # Number of combinations - this is magic, kind of, but it works
   # prod(p - 1 + 1:nbp)/prod(1:nbp)
@@ -820,7 +866,10 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
                     includebp = NULL) {
 
   maxcombos <- .ncombos(length(vert), minvert, nbp)
-  if (!is.null(last_combo) || ncombos < maxcombos || maxcombos == 0 ||
+
+  if (!is.null(last_combo) ||
+      ncombos < maxcombos ||
+      maxcombos == 0 ||
       (!is.null(includebp) && any(diff(includebp) < minvert))) {
     return(.combosR_slow(vert, minvert, nbp, ncombos, last_combo,
                          includebp))
@@ -829,7 +878,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   out <- .combosR_quick(vert, minvert, nbp)
 
   if (!is.null(includebp)) {
-    out <- out[.all_mat_in(out, includebp),, drop = FALSE]
+    out <- out[.all_mat_in(out, includebp), , drop = FALSE]
   }
 
   out
@@ -871,9 +920,11 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   colnames(combos) <- paste0("breakpoint", seq_len(max(nbp, 1)))
   rownames(combos) <- NULL
 
-  if (ncombos == 0 || nbp == 0) return(combos)
+  if (ncombos == 0 || nbp == 0) {
+    return(combos)
+  }
 
-  reset0 <- rep(FALSE, nbp)
+  reset0 <- rep.int(FALSE, nbp)
 
   if (is.null(last_combo)) {
     counters <- mins
@@ -886,21 +937,21 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     counters[nbp] <- counters[nbp] + 1
 
     i <- nbp
-    while (i > 1 && counters[i] > maxes[i]) {
+    while (i > 1L && counters[i] > maxes[i]) {
       reset[i] <- TRUE
-      counters[i - 1] <- counters[i - 1] + 1
-      i <- i - 1
+      counters[i - 1L] <- counters[i - 1L] + 1
+      i <- i - 1L
     }
     if (any(reset)) {
       for (i in which(reset)) {
-        counters[i] <- counters[i - 1] + minvert_override
+        counters[i] <- counters[i - 1L] + minvert_override
       }
     }
   }
 
-  k <- 1
+  k <- 1L
 
-  while (k <= nrow(combos) && counters[1] <= maxes[1]) {
+  while (k <= nrow(combos) && counters[1L] <= maxes[1L]) {
     reset <- reset0
 
     if (is.null(includebp) || all(includebp %in% counters)) {
@@ -909,7 +960,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       if (minvert_override != minvert) {
         # If any violations of minvert aren't in includebp, move on
         for (i in which(diff(y[counters]) < minvert)) {
-          if (!all(counters[c(i, i + 1)] %in% includebp)) {
+          if (!all(counters[c(i, i + 1L)] %in% includebp)) {
             ok <- FALSE
             break
           }
@@ -918,26 +969,26 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
       if (ok) {
         combos[k, ] <- counters
-        k <- k + 1
+        k <- k + 1L
       }
     }
 
-    counters[nbp] <- counters[nbp] + 1
+    counters[nbp] <- counters[nbp] + 1L
     i <- nbp
-    while (i > 1 && counters[i] > maxes[i]) {
+    while (i > 1L && counters[i] > maxes[i]) {
       reset[i] <- TRUE
-      counters[i - 1] <- counters[i - 1] + 1
-      i <- i - 1
+      counters[i - 1L] <- counters[i - 1L] + 1L
+      i <- i - 1L
     }
 
     if (any(reset)) {
       for (i in which(reset)) {
-        counters[i] <- counters[i - 1] + minvert_override
+        counters[i] <- counters[i - 1L] + minvert_override
       }
     }
   }
 
-  combos <- combos[seq_len(k - 1),, drop = FALSE]
+  combos <- combos[seq_len(k - 1L), , drop = FALSE]
   combos[] <- vert[combos]
 
   combos
@@ -951,15 +1002,17 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
   vn <- y[length(y)]
 
   f0 <- function(v, k, m) {
-    if (k == 1) return(matrix(v))
+    if (k == 1L) {
+      return(matrix(v))
+    }
 
-    d <- Recall(v, k - 1, m)
+    d <- Recall(v, k - 1L, m)
 
-    u <- (m * (k - 1)):(vn - m)
+    u <- (m * (k - 1L)):(vn - m)
 
     lst <- lapply(u, function(i) {
       p <- (i + m):vn
-      dd <- d[d[, k - 1] == i, , drop = FALSE]
+      dd <- d[d[, k - 1L] == i, , drop = FALSE]
       cbind(dd[rep(1:nrow(dd), each = length(p)), , drop = FALSE], p)
     })
 
@@ -970,7 +1023,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 
   colnames(combos) <- paste0("breakpoint", seq_len(nbp))
 
-  combos <- combos[do.call("order", as.data.frame(combos)),, drop = FALSE]
+  combos <- combos[do.call("order", as.data.frame(combos)), , drop = FALSE]
 
   combos[] <- vert[combos]
 

@@ -8,29 +8,31 @@
 #' @param metric string; the distance matrix calculation metric. Allowable options include those support by [cluster::daisy()], which are `"euclidean"`, `"manhattan"`, or `"gower"`. Default is `"gower"`. Abbreviations allowed.
 #' @param scale `logical`; whether to scale the variables prior to including them in the PCO estimation. Default is `TRUE`, which is especially advisable when using the bootstrap to select the number of PCOs to use in downstream analyses. Passed to the `stand` argument of `cluster::daisy()`. Ignored if `metric = "gower"`.
 #'
-#' @return A `regions_pco` object, which contains eigenvectors in the `scores` component and eigenvalues in the `eigen.val` component. The original dataset is stored in the `data` attribute.
+#' @return
+#' A `regions_pco` object, which contains eigenvectors in the `scores` component and eigenvalues in the `eigen.val` component. The original dataset is stored in the `data` attribute.
 #'
 #' @seealso
-#' [plot.regions_pco()] for plotting PCO axes
-#'
-#' [cluster::daisy()], which is used to compute the distance matrix used in the calculation; [stats::cmdscale()] for a spectral decomposition-based implementation
+#' * [plot.regions_pco()] for plotting PCO axes
+#' * [cluster::daisy()], which is used to compute the distance matrix used in the calculation
+#' * [stats::cmdscale()] for a spectral decomposition-based implementation
 #'
 #' @example man/examples/example-svdPCO.R
 #'
 
 #' @export
 svdPCO <- function(x, metric = "gower", scale = TRUE) {
+  arg::arg_supplied(x)
+  arg::arg_is(x, "regions_data")
 
-  chk::chk_is(x, "regions_data")
-  chk::chk_string(metric)
-  metric <- tolower(metric)
-  metric <- .match_arg(metric, eval(formals(cluster::daisy)[["metric"]]))
-  chk::chk_flag(scale)
+  metric <- arg::match_arg(metric, eval(formals(cluster::daisy)[["metric"]]))
+
+  arg::arg_flag(scale)
 
   dat <- .get_data_without_pos(x)
 
   if (metric != "gower" && !all(vapply(dat, is.numeric, logical(1L)))) {
-    .wrn_immediate(sprintf("`metric = \"%s\" cannot be used when non-numeric measurement variables are present. Setting `metric` to `\"gower\"`", metric))
+    arg::wrn('{.code metric = "{metric}"} cannot be used when non-numeric measurement variables are present. Setting {.arg metric} to {.val gower}')
+    metric <- "gower"
   }
 
   #Set distance metric
@@ -90,12 +92,20 @@ svdPCO <- function(x, metric = "gower", scale = TRUE) {
 
 #' @exportS3Method print regions_pco
 print.regions_pco <- function(x, digits = 3, ...) {
-  cat("- Scores:\n")
+  arg::arg_whole_number(digits)
+
+  cat("- Scores:\n\n")
+
   print(as.data.frame(x$scores, row.names = rownames(attr(x, "data")))[1:min(nrow(x$scores), 6),],
         digits = digits, ...)
+
   if (nrow(x$scores) > 6) {
     cat("(First 6 of", nrow(x$scores), "rows displayed.)\n")
   }
-  cat("\n- Eigenvalues:\n")
+
+  cat("\n- Eigenvalues:\n\n")
+
   print(x$eigen.val, digits = digits, ...)
+
+  invisible(x)
 }
