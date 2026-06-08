@@ -6,10 +6,11 @@
 #' @param scores a numeric vector containing the indices of the desired scores.
 #' @param \dots ignored.
 #'
-#' @return `PCOload()` returns a `regions_pco_load` object, which is a matrix with a column for each PCO score requested and a row for each variable in the original dataset; values indicate the correlation between each variable and each PCO score. `plot()` returns a `ggplot` object, which can be manipulated using *ggplot2* syntax, that displays the loadings visually.
+#' @return
+#' `PCOload()` returns a `regions_pco_load` object, which is a matrix with a column for each PCO score requested and a row for each variable in the original dataset; values indicate the correlation between each variable and each PCO score. `plot()` returns a `ggplot` object, which can be manipulated using \pkg{ggplot2} syntax, that displays the loadings visually.
 #'
-#' @details the loadings for a constructed variable, `vert.size`, are also computed and displayed. This is computed as the mean of the features for each vertebra.
-#' This function is not suitable for geometric morphometric data.
+#' @details
+#' The loadings for a constructed variable, `vert.size`, are also computed and displayed. This is computed as the mean of the features for each vertebra. This function is not suitable for geometric morphometric data.
 #'
 #' @seealso
 #' [svdPCO()] for computing the PCOs; [plot.regions_pco()] for visualizing the correlations between PCO scores.
@@ -48,7 +49,7 @@ PCOload <- function(x, scores) {
   data <- cbind(data, vert.size)
 
   load.pco <- lapply(scores, function(i) {
-    cor(data, pco_scores[,i], use = "pairwise.complete.obs")
+    cor(data, pco_scores[, i], use = "pairwise.complete.obs")
   })
 
   load.pco <- do.call("cbind", load.pco)
@@ -60,12 +61,12 @@ PCOload <- function(x, scores) {
 }
 
 #' @exportS3Method print regions_pco_load
-print.regions_pco_load <- function(x, digits = 3, ...) {
+print.regions_pco_load <- function(x, digits = 3L, ...) {
   d <- as.data.frame.matrix(x)
   cat("- PCO loadings:\n\n")
-  print(d[-nrow(x),, drop = FALSE], digits = digits, ...)
+  print(d[-nrow(x), , drop = FALSE], digits = digits, ...)
   cat("\n - Corr w/ vertebra size:\n\n")
-  print(d[nrow(x),, drop = FALSE], digits = digits, ...)
+  print(d[nrow(x), , drop = FALSE], digits = digits, ...)
 
   invisible(x)
 }

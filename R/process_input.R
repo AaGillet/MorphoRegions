@@ -114,7 +114,7 @@ process_measurements <- function(data, pos = 1L, measurements, fillNA = TRUE) {
     all_NA_rows <- which(apply(data[[i]], 1L, function(x) all(is.na(x[-pos_ind]))))
 
     if (length(all_NA_rows) > 0) {
-      data[[i]] <- data[[i]][-all_NA_rows,]
+      data[[i]] <- data[[i]][-all_NA_rows, ]
     }
 
     if (fillNA) {
@@ -165,7 +165,7 @@ process_measurements <- function(data, pos = 1L, measurements, fillNA = TRUE) {
 #' @example man/examples/example-process_PC.R
 
 #' @export
-process_PC <- function(data, pos = 1L, pcscores, eigenvals, posPC){ #, specimen) {
+process_PC <- function(data, pos = 1L, pcscores, eigenvals, posPC) { #, specimen) {
   arg::arg_supplied(data)
   arg::arg_supplied(pcscores)
   arg::arg_supplied(eigenvals)
@@ -280,16 +280,11 @@ process_PC <- function(data, pos = 1L, pcscores, eigenvals, posPC){ #, specimen)
                "i" = "Number of columns in {.arg pcscores}: {ncol(pcscores)}"))
   }
 
-
   # Process data:
   # Note other transformations made to data in process_measurements have been removed here to prevent heavy modifications to data since it won't be used for downstream analyses
-  for (i in seq_along(data)) {
+  for (i in seq_along(data)[-1L]) {
     #Reorder columns to be consistent
-    if (i > 1L) {
-      data[[i]] <- data[[i]][names(data[[1L]])]
-    }
-
-    pos_ind <- match(pos, names(data[[i]]))
+    data[[i]] <- data[[i]][names(data[[1L]])]
   }
 
   # Format 'data' part of output:
@@ -320,7 +315,7 @@ process_PC <- function(data, pos = 1L, pcscores, eigenvals, posPC){ #, specimen)
   out <- list(scores = pcscores,
               eigen.val = eigenvals)
 
-  attr(out,"data") <- data
+  attr(out, "data") <- data
   attr(out, "metric") <- "custom"
   attr(out, "scale") <- "custom"
   attr(out, "specimen") <- factor(rep(seq_along(data), unlist(lapply(data, nrow))),
@@ -429,14 +424,14 @@ process_gmPC <- function(data, pos = "names", pcscores, eigenvals, specimens = N
   if (length(eigenvals) != ncol(pcscores)) {
     arg::err(
       c("{.arg eigenvals} must have one value per column in {.arg pcscores}.",
-      "i" = "Length of {.arg eigenvals}: {.val {length(eigenvals)}}",
-      "i" = "Columns in {.arg pcscores}: {.val {ncol(pcscores)}}")
+        "i" = "Length of {.arg eigenvals}: {.val {length(eigenvals)}}",
+        "i" = "Columns in {.arg pcscores}: {.val {ncol(pcscores)}}")
     )
   }
 
   # Check number of vertebrae in pos and pcscores match:
   if (length(pos) != nrow(pcscores)) {
-    arg::err("the number of vertebrae in {.arg pcscores} must match number of vertebrae in {.arg pos}")
+    arg::err("the number of vertebrae in {.arg pcscores} must match the number of vertebrae in {.arg pos}")
   }
 
   # Check rownames pcscores:
@@ -466,7 +461,7 @@ process_gmPC <- function(data, pos = "names", pcscores, eigenvals, specimens = N
   out <- list(scores = pcscores,
               eigen.val = eigenvals)
 
-  attr(out,"data") <- data
+  attr(out, "data") <- data
   attr(out, "metric") <- "custom"
   attr(out, "scale") <- "custom"
   attr(out, "specimen") <- specimens
@@ -529,10 +524,13 @@ process_gmPC <- function(data, pos = "names", pcscores, eigenvals, specimens = N
     for (fill in seqs) { #Fill each string
       before <- min(fill) - 1
       after <- max(fill) + 1
+
       if (before < 1) before <- after #if at the beginning, use the end points
       if (after > length(dat)) after <- before #if at the end, use beginning points
 
-      if (!is.numeric(dat) && dat[before] != dat[after]) next
+      if (!is.numeric(dat) && dat[before] != dat[after]) {
+        next
+      }
 
       if (is.numeric(dat)) {
         val <- seq(dat[before], dat[after], length.out = length(fill) + 2) #calculate missing as mean of adjacent

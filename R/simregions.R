@@ -50,7 +50,7 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
   arg::arg_numeric(r2)
   arg::arg_between(r2, c(0, 1), inclusive = c(FALSE, TRUE))
 
-  arg::arg_countr(minvert)
+  arg::arg_count(minvert)
   arg::arg_gte(minvert, 2)
 
   arg::arg_flag(cont)
@@ -159,7 +159,7 @@ plot.regions_sim <- function(x, scores = 1, lines = TRUE, ...) {
   arg::arg_between(scores, c(1, ncol(x$Yvar)))
   arg::arg_flag(lines)
 
-  Yvar <- x$Yvar[,scores, drop = FALSE]
+  Yvar <- x$Yvar[, scores, drop = FALSE]
   Xvar <- x$Xvar
 
   yhat <- attr(x, "design") %*% x$coef[, scores, drop = FALSE]

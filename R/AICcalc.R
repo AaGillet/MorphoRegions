@@ -1,6 +1,6 @@
 .AICcalc <- function(RSS, noPC, nvert, noregions, cont) {
   n <- noPC * nvert 	# No of variables used
-  var <- RSS/n 	# Variance calculated ML way
+  var <- RSS / n 	# Variance calculated ML way
   k <- { # Calculating the number of parameters (k) being fitted in the model
     if (cont) {
       # For a continuous fit, a slope is estimated for each region and each PCO,

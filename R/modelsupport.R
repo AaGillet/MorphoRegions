@@ -29,7 +29,7 @@ modelsupport <- function(models) {
 
   for (i in seq_len(nrow(models))) {
     probs <- .AICcalc(models$sumRSS[i], nPC, nvert,
-                     models$regions[i], cont) #Calculate AIC score
+                      models$regions[i], cont) #Calculate AIC score
 
     AICc[i] <- probs["AICc"]
     BIC[i] <- probs["BIC"]
@@ -39,10 +39,10 @@ modelsupport <- function(models) {
   deltaAIC <- AICc - min(AICc)	#Calculate AIC difference
   model_lik <- exp(-deltaAIC / 2)	#Likelihood of the model
 
-  Ak_weight <- model_lik/sum(model_lik)	#Akaike Weights
+  Ak_weight <- model_lik / sum(model_lik)	#Akaike Weights
 
   AIC_models <- cbind(models, AICc, deltaAIC, model_lik, Ak_weight)
-  AIC_models <- AIC_models[order(AIC_models$AICc),, drop = FALSE] #Sort so best at top
+  AIC_models <- AIC_models[order(AIC_models$AICc), , drop = FALSE] #Sort so best at top
 
   Regions_score <- sum(AIC_models$regions * AIC_models$Ak_weight)
 
@@ -50,10 +50,10 @@ modelsupport <- function(models) {
   deltaBIC <- BIC - min(BIC)	#Calculate AIC difference
   model_lik <- exp(-deltaBIC / 2)	#Likelihood of the model
 
-  BIC_weight <- model_lik/sum(model_lik)	#BIC Weights
+  BIC_weight <- model_lik / sum(model_lik)	#BIC Weights
 
   BIC_models <- cbind(models, BIC, deltaBIC, model_lik, BIC_weight)
-  BIC_models <- BIC_models[order(BIC_models$BIC),, drop = FALSE] #Sort so best at top
+  BIC_models <- BIC_models[order(BIC_models$BIC), , drop = FALSE] #Sort so best at top
 
   Regions_scoreB <- sum(BIC_models$regions * BIC_models$BIC_weight)
 
@@ -75,7 +75,7 @@ print.regions_modelsupport <- function(x, digits = 3, ...) {
   for (m in c("Model_support", "Model_support_BIC")) {
     for (i in which(startsWith(names(x[[m]]), "breakpoint"))) {
       x[[m]][[i]] <- ifelse(is.na(x[[m]][[i]]), ".",
-                       format(x[[m]][[i]], justify = "right"))
+                            format(x[[m]][[i]], justify = "right"))
       names(x[[m]]) <- sub("breakpoint", "BP ", names(x[[m]]), fixed = TRUE)
     }
 

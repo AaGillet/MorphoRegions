@@ -42,7 +42,7 @@ subsample <- function(pco, sample = NULL, type = "seq") {
                             "seq" = round(seq(1, length(eligible_vertebrae), length.out = sample)),
                             "random" = sample(seq_along(eligible_vertebrae), sample))
 
-  pco$scores <- pco$scores[pos %in% eligible_vertebrae[sampled_pos_ind],, drop = FALSE]
+  pco$scores <- pco$scores[pos %in% eligible_vertebrae[sampled_pos_ind], , drop = FALSE]
   pco$eigen.val <- pco$eigen.val[pos %in% eligible_vertebrae[sampled_pos_ind]]
 
   attr(attr(pco, "data"), "eligible_vertebrae") <- eligible_vertebrae[sampled_pos_ind]

@@ -48,7 +48,7 @@ plotvertmap <- function(x, type = "count",
 
   arg::arg_is(x, c("regions_pco", "regions_data", "regions_sim"))
 
-  if (inherits(x, "regions_pco") || inherits(x, "regions_data")) {
+  if (inherits(x, c("regions_pco", "regions_data"))) {
     Xvar <- .get_pos(x, subset = FALSE)
     eligible_vertebrae <- .get_eligible_vertebrae(x)
     unique_vert <- .get_eligible_vertebrae(x, subset = FALSE)
@@ -107,12 +107,12 @@ plotvertmap <- function(x, type = "count",
   }
   else if (!is.null(bpvar)) {
     arg::arg_is(bpvar, "regions_BPvar")
-    BPs <- round(drop(bpvar$WeightedBP["wMean",]))
+    BPs <- round(drop(bpvar$WeightedBP["wMean", ]))
 
     names(BPs) <- paste0("breakpoint", seq_along(BPs))
 
     if (is.null(bp.sd)) {
-      bp.sd <- drop(bpvar$WeightedBP["wSD",])
+      bp.sd <- drop(bpvar$WeightedBP["wSD", ])
     }
   }
   else if (inherits(x, "regions_sim")) {
@@ -137,7 +137,8 @@ plotvertmap <- function(x, type = "count",
     arg::arg_list(block.cols)
 
     if (length(block.lim) != length(block.cols) - 1L) {
-      arg::err("{.arg block.cols} must have length equal to one greater than that of {.arg block.lim} (i.e., there should be one more region specified than there are region limits)")
+      arg::err(c("{.arg block.cols} must have length equal to one greater than that of {.arg block.lim} (i.e., there should be one more region specified than there are region limits).",
+                 "x" = "{.arg block.cols} has length {.val {length(block.lim)}}, and {.arg block.lim} has length {.val {length(block.cols)}}."))
     }
 
     if (!all(vapply(block.cols, function(x) is.character(x) && all(.is_color(x)), logical(1L)))) {
@@ -185,7 +186,7 @@ plotvertmap <- function(x, type = "count",
                            if (length(unique_vert) != length(eligible_vertebrae))
                              "the number of available vertebrae (in this case, {length(eligible_vertebrae)})",
                            if (!inherits(x, "regions_sim") && length(unique_vert) != nrow(data_combined))
-                             "the number of observations across all specimens (in this case, {nrow(data_combined)})",
+                             "the number of observations across all specimens (in this case, {nrow(data_combined)})"
                          ), "or")))
       }
 
@@ -229,7 +230,7 @@ plotvertmap <- function(x, type = "count",
   vertmap$reg[!vert.all %in% eligible_vertebrae] <- "Missing"
   if (dropNA) {
     # Drop vertebrae not in data
-    vertmap <- vertmap[vertmap$reg != "Missing",, drop = FALSE]
+    vertmap <- vertmap[vertmap$reg != "Missing", , drop = FALSE]
   }
 
   # Indices of remaining vertebrae
@@ -267,9 +268,11 @@ plotvertmap <- function(x, type = "count",
   ## Define position of blocks if requested:
   if (col.by.block) {
     missing_vert <- vertmap$reg == "Missing"
+
     if (is.null(names(block.cols))) {
       names(block.cols) <- paste0("block", seq_along(block.cols))
     }
+
     block.names <- names(block.cols)
     vertmap$trad.reg <- NA_character_
 
@@ -296,6 +299,7 @@ plotvertmap <- function(x, type = "count",
     # vertebrae in estimated region 1 get assigned traditional region A
     regs <- setdiff(levels(as.factor(vertmap$reg[])), "Missing")
     vertmap$tradreg.corr <- NA_character_
+
     for (i in seq_along(regs)) {
       t <- table(vertmap$trad.reg[vertmap$reg == regs[i]])
       vertmap$tradreg.corr[vertmap$reg == regs[i]] <- names(which.max(t))
@@ -375,13 +379,15 @@ plotvertmap <- function(x, type = "count",
       bp.sd <- data.frame(
         bp = vertmap$ind.end[bp.inds],
         beg = vertmap$ind.end[bp.inds] - bp.sd,
-        end = vertmap$ind.end[bp.inds] + bp.sd)
+        end = vertmap$ind.end[bp.inds] + bp.sd
+      )
 
       if (type == "percent") {
         bp.sd <- data.frame(
           bp = (bp.sd$bp - .5) / nrow(vertmap),
           beg = (bp.sd$beg - .5) / nrow(vertmap),
-          end = (bp.sd$end - .5) / nrow(vertmap))
+          end = (bp.sd$end - .5) / nrow(vertmap)
+        )
       }
     }
     else {
@@ -421,7 +427,8 @@ plotvertmap <- function(x, type = "count",
         bp.sd <- data.frame(
           bp = bp.sd$bp / max.L.pos,
           beg = bp.sd$beg / max.L.pos,
-          end = bp.sd$end / max.L.pos)
+          end = bp.sd$end / max.L.pos
+        )
       }
     }
 
@@ -441,7 +448,7 @@ plotvertmap <- function(x, type = "count",
     }
 
     # Rescale to keep first position at 0 and alternate above and below
-    y <- floor(y / 2) * (-1) ^ y
+    y <- floor(y / 2) * (-1)^y
 
     sd.jit <- .15
 
@@ -465,15 +472,18 @@ plotvertmap <- function(x, type = "count",
     needed.colors <- vapply(unique(reg.nm), function(n) max(reg.ct[reg.nm == n]), integer(1L))
     if (!all(lengths(block.cols) >= needed.colors[names(block.cols)])) {
       deficient.regions <- names(block.cols)[lengths(block.cols) < needed.colors[names(block.cols)]]
-      d <- data.frame(lengths(block.cols),
-                      needed.colors[names(block.cols)],
-                      row.names = names(block.cols))
-      names(d) <- c("# supplied", "# needed")
-      arg::err(c("not enough colors were supplied for each region specified in {.arg block.cols}:",
-                 "\n",
-                 paste(utils::capture.output(print(d)), collapse = "\n"),
-                 "\n",
-                 "Please supply additional colors for {deficient.regions}"))
+
+      msg <- setNames(
+        vapply(deficient.regions, function(dr) {
+          sprintf("{.var %1$s} needs {.val {%2$s}} {cli::qty(%2$s)} color{?s}, but only {.val {%3$s}} {cli::qty(%3$s)} {?was/were} supplied.",
+                  dr, needed.colors[dr], length(block.cols[[dr]]))
+        }, character(1L)),
+        rep.int("x", length(deficient.regions))
+      )
+
+      arg::err(c("Not enough colors were supplied for each region specified in {.arg block.cols}:", "",
+                 msg, "",
+                 "i" = "Please supply additional colors for {.var {deficient.regions}}."))
     }
   }
   else {
@@ -491,14 +501,15 @@ plotvertmap <- function(x, type = "count",
       if (anyDuplicated(lapply(block.cols, grDevices::col2rgb)) != 0) {
         arg::wrn("duplicated colors were found in {.arg block.cols}")
       }
+
       pal <- block.cols
     }
-    else if (nreg < 3) {
-      pal <- RColorBrewer::brewer.pal(3, "Paired")
+    else if (nreg < 3L) {
+      pal <- RColorBrewer::brewer.pal(3L, "Paired")
     }
-    else if (nreg %% 2 != 0){
-      pal <- RColorBrewer::brewer.pal((nreg + 1), "Paired")
-      pal <- pal[-(length(pal)/2)]
+    else if (nreg %% 2 != 0) {
+      pal <- RColorBrewer::brewer.pal((nreg + 1L), "Paired")
+      pal <- pal[-(length(pal) / 2)]
     }
     else {
       pal <- RColorBrewer::brewer.pal(nreg, "Paired")
@@ -539,7 +550,7 @@ plotvertmap <- function(x, type = "count",
         labs(y = name, x = "% Vertebral count")
 
       if (text) {
-        p <- p + geom_text(aes(x = (.data$pct.beg + .data$pct.end)/2,
+        p <- p + geom_text(aes(x = (.data$pct.beg + .data$pct.end) / 2,
                                y = .data$text.y,
                                label = .data$vname))
       }
@@ -547,7 +558,7 @@ plotvertmap <- function(x, type = "count",
   }
   else {
     # Initialize plot with nonzero centrum lengths
-    p <- ggplot(data = vertmap[vertmap$centraL > 0,])
+    p <- ggplot(data = vertmap[vertmap$centraL > 0, ])
 
     if (type == "count") {
       p <- p +
@@ -559,7 +570,7 @@ plotvertmap <- function(x, type = "count",
         labs(y = name, x = "Centrum position")
 
       if (text) {
-        p <- p + geom_text(aes(x = (.data$L.beg + .data$L.end)/2,
+        p <- p + geom_text(aes(x = (.data$L.beg + .data$L.end) / 2,
                                y = .data$text.y,
                                label = .data$vname))
       }
@@ -574,7 +585,7 @@ plotvertmap <- function(x, type = "count",
         labs(y = name, x = "% Total centrum length")
 
       if (text) {
-        p <- p + geom_text(aes(x = (.data$L.pct.beg + .data$L.pct.end)/2,
+        p <- p + geom_text(aes(x = (.data$L.pct.beg + .data$L.pct.end) / 2,
                                y = .data$text.y,
                                label = .data$vname))
       }
@@ -583,7 +594,8 @@ plotvertmap <- function(x, type = "count",
 
   if (!is.null(reg.lim)) {
     p <- p + geom_vline(xintercept = reg.lim,
-                        color = lim.col, lwd = 1)
+                        color = lim.col,
+                        linewidth = 1)
   }
 
   if (!is.null(bp.sd)) {
@@ -593,17 +605,18 @@ plotvertmap <- function(x, type = "count",
                                  xmax = .data$end,
                                  y = .data$y,
                                  x = .data$bp),
-                             linewidth = 1, color = sd.col,
-                             shape = "diamond", size = .8)
+                             color = sd.col,
+                             linewidth = 1,
+                             shape = "diamond",
+                             size = .8)
   }
 
   p <- p +
     scale_fill_manual("Legend", values = colors) +
     scale_x_continuous(expand = c(0, 0),
-                       labels = {
-                         if (type == "percent") scales::percent
-                         else waiver()
-                       }) +
+                       labels = switch(type,
+                                       percent = scales::percent,
+                                       waiver())) +
     theme_classic() +
     theme(axis.text.y = element_blank(),
           axis.ticks.y = element_blank(),

@@ -96,11 +96,11 @@ print.regions_pco <- function(x, digits = 3, ...) {
 
   cat("- Scores:\n\n")
 
-  print(as.data.frame(x$scores, row.names = rownames(attr(x, "data")))[1:min(nrow(x$scores), 6),],
+  print(as.data.frame(x$scores, row.names = rownames(attr(x, "data")))[seq_len(min(nrow(x$scores), 6)), ],
         digits = digits, ...)
 
   if (nrow(x$scores) > 6) {
-    cat("(First 6 of", nrow(x$scores), "rows displayed.)\n")
+    cat(sprintf("(First 6 of %s rows displayed.)\n", nrow(x$scores)))
   }
 
   cat("\n- Eigenvalues:\n\n")

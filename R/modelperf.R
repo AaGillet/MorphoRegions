@@ -157,7 +157,7 @@ modelperf.regions_results_single <- function(x, scores = NULL, ...) {
   )
 
   if (!is.null(scores)) {
-     Yvar <- Yvar[, scores, drop = FALSE]
+    Yvar <- Yvar[, scores, drop = FALSE]
   }
 
   .modelperf_internal(Xvar, Yvar, BPs, cont)
@@ -186,17 +186,17 @@ print.regions_perf <- function(x, digits = 3, ...) {
 
   totrsq <- do.call("rbind", lapply(seq_len(ncol(Yvar)), function(i) {
     x <- .design_matrix(Xvar, BPs, cont)
-    fit <- .fast_lm(x = x, y = Yvar[,i], w = w)
+    fit <- .fast_lm(x = x, y = Yvar[, i], w = w)
 
     n <- length(Xvar)
-    fitted <- Yvar[,i] - fit$residuals
-    mss <- sum(w * (fitted - sum(w * fitted)/sum(w))^2)
+    fitted <- Yvar[, i] - fit$residuals
+    mss <- sum(w * (fitted - sum(w * fitted) / sum(w))^2)
     rss <- sum(w * fit$residuals^2)
     rdf <- n - fit$rank
     r.squared <- mss / (mss + rss)
 
     c(r2 =     r.squared,
-      r2.adj = 1 - (1 - r.squared) * ((n - 1)/rdf),
+      r2.adj = 1 - (1 - r.squared) * ((n - 1) / rdf),
       SSres =  rss,
       df =     fit$rank + rdf - 1,
       SStot =  mss + rss,

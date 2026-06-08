@@ -94,7 +94,7 @@
     out <- paste(word.list, collapse = paste0(" ", and.or, " "))
   }
   else {
-    out <- paste(paste(word.list[seq_len(L - 1)], collapse = ", "),
+    out <- paste(toString(word.list[seq_len(L - 1)]),
                  word.list[L], sep = paste0(", ", and.or, " "))
 
   }
@@ -147,7 +147,7 @@
     return(out)
   }
 
-  out[.get_pos(x, FALSE) %in% .get_eligible_vertebrae(x),]
+  out[.get_pos(x, FALSE) %in% .get_eligible_vertebrae(x), ]
 }
 
 .get_eligible_vertebrae <- function(x, subset = TRUE) {
@@ -185,8 +185,8 @@
 # Test whether each row of matrix contains any elements in vec
 .any_mat_in <- function(m, vec) {
   comp <- {
-    if (length(vec) > 1) function(x, y) {x %in% y}
-    else function(x, y) {x == y}
+    if (length(vec) > 1) function(x, y) x %in% y
+    else function(x, y) x == y
   }
 
   .rowSums(matrix(comp(m, vec), ncol = ncol(m)),
@@ -201,7 +201,7 @@
                   m = nrow(m), n = p) > 0
 
   for (i in seq_along(vec)[-1L]) {
-    out[out][.rowSums(matrix(m[out,] == vec[i], ncol = p),
+    out[out][.rowSums(matrix(m[out, ] == vec[i], ncol = p),
                       m = sum(out), n = p) == 0] <- FALSE
   }
 

@@ -13,7 +13,7 @@
 #' @param ncombos_file_trigger `numeric`; when the number of eligible combinations of breakpoints exceeds this number, the problem will be split into smaller problems, with the results of each stored in its own temporary file in the directory supplied to `temp_file_dir` before being re-read into memory. The primary purpose of this is to preserve memory when `exhaus = FALSE` by delegating storage of the results to disk instead of RAM.
 #' @param temp_file_dir string; the directory where the temporary files will be saved (and then deleted) when the number of breakpoint combinations exceeds `ncombos_file_trigger`. Default is the directory produced by [tempdir()], but it is much safer to provide your own directory, which must already exist on your machine. See Details.
 #' @param cl a cluster object created by [parallel::makeCluster()], an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations, or `"future"` to use a future backend. `NULL` (the default) refers to sequential evaluation (no parallelization). See [pbapply::pbapply()] for details.
-#' @param verbose `logical`; whether to print information about the fitting process, including a progress bar. Default is `TRUE`.
+#' @param verbose `logical`; whether to print information about the fitting process, including a progress bar. Default is `TRUE` when running interactively and `FALSE` otherwise.
 #' @param regions_results,object a `regions_results` object; the output of a call to `calcregions()` or `addregions()`.
 #' @param \dots ignored.
 #'
@@ -41,7 +41,7 @@
 calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
                         exhaus = TRUE, includebp = NULL, omitbp = NULL,
                         ncombos_file_trigger = 1e7, temp_file_dir = tempdir(TRUE),
-                        cl = NULL, verbose = TRUE) {
+                        cl = NULL, verbose = interactive()) {
   # Argument checks
   arg::arg_is(pco, c("regions_pco", "regions_sim"))
 
@@ -58,7 +58,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
   else {
     arg::when_supplied(
       scores,
-      arg::arg_whole_number,
+      arg::arg_whole_numeric,
       arg::arg_between(c(1, ncol(pco[["Yvar"]])))
     )
 
@@ -206,7 +206,7 @@ calcregions <- function(pco, scores, noregions, minvert = 3, cont = TRUE,
 #' @rdname calcregions
 addregions <- function(regions_results, noregions, exhaus = TRUE,
                        ncombos_file_trigger = 1e7, temp_file_dir = tempdir(TRUE),
-                       cl = NULL, verbose = TRUE) {
+                       cl = NULL, verbose = interactive()) {
   # Argument checks
   arg::arg_is(regions_results, "regions_results")
 
@@ -394,7 +394,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
 .addregions_internal <- function(regions_results, noregions, exhaus = FALSE,
                                  ncombos_file_trigger = 1e6,
                                  temp_file_dir = tempdir(TRUE),
-                                 cl = NULL, verbose = TRUE) {
+                                 cl = NULL, verbose = FALSE) {
 
   minvert <- attr(regions_results, "minvert")
 
@@ -460,9 +460,11 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
       else RSS
     }
 
-    res <- list2DF(list(nbp + 1L, NA_real_, RSS, rsq))
-
-    names(res) <- colhead
+    res <- setNames(list2DF(c(as.list(nbp + 1L),
+                              as.list(NA_real_),
+                              as.list(RSS),
+                              as.list(rsq))),
+                    colhead)
 
     bpkeep <- NA_character_
 
@@ -669,13 +671,13 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
           pb <- pbapply::startpb(0, ncombi)
         }
 
-        last_combo <- goodcomb[nrow(goodcomb),]
+        last_combo <- goodcomb[nrow(goodcomb), ]
         nmodel_possible <- nmodel_possible + nrow(goodcomb)
 
         if (!exhaus) {
           for (m in strsplit(bpkeep, "|", fixed = TRUE)) {
             mn <- as.numeric(m)
-            goodcomb <- goodcomb[.any_mat_in(goodcomb, mn),, drop = FALSE]
+            goodcomb <- goodcomb[.any_mat_in(goodcomb, mn), , drop = FALSE]
           }
         }
 
@@ -685,7 +687,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
         }
 
         res <- do.call("rbind", .lapply_selector(seq_len(nrow(goodcomb)), function(g) {
-          fregions(goodcomb[g,], Xvar = Xvar, Yvar = Yvar, w = w)
+          fregions(goodcomb[g, ], Xvar = Xvar, Yvar = Yvar, w = w)
         }, cl = cl))
 
         res <- setNames(cbind(nbp + 1L,
@@ -1013,7 +1015,7 @@ ncombos <- function(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL
     lst <- lapply(u, function(i) {
       p <- (i + m):vn
       dd <- d[d[, k - 1L] == i, , drop = FALSE]
-      cbind(dd[rep(1:nrow(dd), each = length(p)), , drop = FALSE], p)
+      cbind(dd[rep(seq_len(nrow(dd)), each = length(p)), , drop = FALSE], p)
     })
 
     unname(do.call("rbind", lst))

@@ -21,7 +21,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
   arg::arg_is(regions_results, "regions_results")
 
   arg::arg_supplied(noregions)
-  arg::arg_whole_number(noregions)
+  arg::arg_count(noregions)
   arg::arg_between(noregions, range(regions_results$stats$Nregions))
 
   arg::arg_number(pct)
@@ -50,7 +50,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
     dat <- dat[seq_len(ntop), , drop = FALSE]
   }
   else {
-    pct_calc <- round(nrow(dat)/nmodel*100, 2)
+    pct_calc <- round(nrow(dat) / nmodel * 100, 2L)
     arg::wrn("number of models provided lower than percentage requested. Weighted means and SD calculated on {pct_calc}% of total number of models")
   }
 
@@ -63,7 +63,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
   deltaIC <- IC - min(IC)	#Calculate AIC difference
   model_lik <- exp(-deltaIC / 2)	#Likelihood of the model
 
-  IC_weight <- model_lik/sum(model_lik)	#Akaike Weights
+  IC_weight <- model_lik / sum(model_lik)	#Akaike Weights
 
   # Calculate weighted mean and weighted SD of each BP position using
   # Akaike weights: (formulae from Symonds & Moussalli, Behav Ecol Sociobiol 2011)
@@ -72,7 +72,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
   # Weighted mean is the sum of bps values multiplied by the corresponding Akaike weight
   wMean <- colSums(bps * IC_weight)
   wSD <- vapply(seq_len(ncol(bps)), function(i) {
-    sqrt(sum(IC_weight * (bps[,i] - wMean[i])^2))
+    sqrt(sum(IC_weight * (bps[, i] - wMean[i])^2))
   }, numeric(1L))
 
   WeightedBP <- rbind(wMean, wSD)
@@ -82,7 +82,7 @@ calcBPvar <- function(regions_results, noregions, pct = .05, criterion = "aic") 
 
   out <- list(WeightedBP = WeightedBP, BestModels = cbind(dat, wt_dat))
 
-  attr(out, "pct") <- nrow(dat)/nmodel
+  attr(out, "pct") <- nrow(dat) / nmodel
 
   class(out) <- "regions_BPvar"
 
