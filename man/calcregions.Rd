@@ -19,7 +19,7 @@ calcregions(
   ncombos_file_trigger = 1e+07,
   temp_file_dir = tempdir(TRUE),
   cl = NULL,
-  verbose = TRUE
+  verbose = interactive()
 )
 
 addregions(
@@ -29,7 +29,7 @@ addregions(
   ncombos_file_trigger = 1e+07,
   temp_file_dir = tempdir(TRUE),
   cl = NULL,
-  verbose = TRUE
+  verbose = interactive()
 )
 
 \method{summary}{regions_results}(object, ...)
@@ -59,7 +59,7 @@ ncombos(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL)
 
 \item{cl}{a cluster object created by \code{\link[parallel:makeCluster]{parallel::makeCluster()}}, an integer to indicate number of child-processes (integer values are ignored on Windows) for parallel evaluations, or \code{"future"} to use a future backend. \code{NULL} (the default) refers to sequential evaluation (no parallelization). See \code{\link[pbapply:pbapply]{pbapply::pbapply()}} for details.}
 
-\item{verbose}{\code{logical}; whether to print information about the fitting process, including a progress bar. Default is \code{TRUE}.}
+\item{verbose}{\code{logical}; whether to print information about the fitting process, including a progress bar. Default is \code{TRUE} when running interactively and \code{FALSE} otherwise.}
 
 \item{regions_results, object}{a \code{regions_results} object; the output of a call to \code{calcregions()} or \code{addregions()}.}
 
@@ -105,8 +105,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = TRUE,
-                             exhaus = FALSE,
-                             verbose = FALSE)
+                             exhaus = FALSE)
 
 regionresults
 
@@ -117,8 +116,7 @@ summary(regionresults)
 # exhaustive search this time
 regionresults <- addregions(regionresults,
                             noregions = 6:7,
-                            exhaus = TRUE,
-                            verbose = FALSE)
+                            exhaus = TRUE)
 
 regionresults
 
@@ -133,8 +131,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = FALSE,
-                             omitbp = c(10, 15),
-                             verbose = FALSE)
+                             omitbp = c(10, 15))
 
 regionresults
 

@@ -14,8 +14,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = TRUE,
-                             exhaus = FALSE,
-                             verbose = FALSE)
+                             exhaus = FALSE)
 
 regionresults
 
@@ -26,8 +25,7 @@ summary(regionresults)
 # exhaustive search this time
 regionresults <- addregions(regionresults,
                             noregions = 6:7,
-                            exhaus = TRUE,
-                            verbose = FALSE)
+                            exhaus = TRUE)
 
 regionresults
 
@@ -42,8 +40,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = FALSE,
-                             omitbp = c(10, 15),
-                             verbose = FALSE)
+                             omitbp = c(10, 15))
 
 regionresults
 

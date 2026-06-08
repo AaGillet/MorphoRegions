@@ -27,11 +27,12 @@ A \code{regions_pco} object, which contains user-provided eigenvectors in the \c
 Unlike \code{process_measurements()}, \code{process_PC()} does not fill in missing values and these should have been removed or replaced by numeric values before running \code{process_PC()}.
 }
 \examples{
-# Load dataset; vertebral index in first column ('Vertebra' column)
+# Load dataset; vertebral index in first column
+# ('Vertebra' column)
 data("dolphin")
 
 # Compute PC scores with prcomp:
-PCA <- prcomp(dolphin[-1], scale=T)
+PCA <- prcomp(dolphin[-1], scale = TRUE)
 
 # Extract PC scores and eigenvalues:
 PCA_scores <- as.data.frame(PCA$x)
@@ -39,9 +40,11 @@ PCA_eigenval <- PCA$sdev^2
 
 
 # Process PC scores and morphological data:
-pco_dolphin <- process_PC(data=dolphin, pos='Vertebra',
-                          pcscores=PCA_scores, eigenvals=PCA_eigenval,
-                          posPC = dolphin[,1])
+pco_dolphin <- process_PC(data = dolphin,
+                          pos = "Vertebra",
+                          pcscores = PCA_scores,
+                          eigenvals = PCA_eigenval,
+                          posPC = dolphin[[1]])
 }
 \seealso{
 \itemize{

@@ -14,7 +14,7 @@ PCOselect(
   nreps = 500,
   results = NULL,
   criterion = "aic",
-  verbose = TRUE
+  verbose = interactive()
 )
 
 \method{plot}{regions_pco_select}(x, ...)
@@ -36,7 +36,7 @@ PCOselect(
 
 \item{criterion}{when \code{method = "max"}, which criterion should be used to select the number of scores. Allowable options include \code{"aic"} and \code{"bic"}. Abbreviations allowed.}
 
-\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE}.}
+\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE} when running interactively and \code{FALSE} otherwise.}
 
 \item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"} or \code{"max"}.}
 

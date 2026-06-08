@@ -24,18 +24,6 @@ al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126)
 with improved computational methods and expanded fitting and plotting
 options.
 
-## New features (development version)
-
-The current development version of *MorphoRegions* (available on GitHub)
-includes new functionality to allow users to input **principal component
-(PC) scores computed externally**, including support for **geometric
-morphometric data**, via the newly added functions `process_PC` and
-`process_gmPC`.
-
-See section below to install the most recent version of the package.
-Note that this is a development version whic may chnage before next CRAN
-release.
-
 ## Installing *MorphoRegions*
 
 You can install the released version of *MorphoRegions* from
@@ -45,13 +33,12 @@ You can install the released version of *MorphoRegions* from
 install.packages("MorphoRegions")
 ```
 
-Or the development version (0.2.0.9000), including support for geometric
-morphometric data, from the `developGMM` branch on
+Or the development version on
 [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions", ref = "developGMM")
+# install.packages("pak")
+pak::pak("AaGillet/MorphoRegions")
 ```
 
 ## Example
@@ -64,12 +51,11 @@ of the package and its functionalities.
 
 ``` r
 library(MorphoRegions)
-#> Warning: package 'MorphoRegions' was built under R version 4.5.3
 ```
 
 #### Preparing the data
 
-Data should be provided as a dataframe where each row is an element of
+Data should be provided as a data frame where each row is an element of
 the serially homologous structure (e.g., a vertebra). One column should
 contain positional information of each element (e.g., vertebral number)
 and other columns should contain variables that will be used to
@@ -120,23 +106,27 @@ PCOs
 #> - Method: variance (cutoff: 0.05)
 ```
 
+Alternatively, externally computed PCOs can be included using
+`process_PC()` for traditional morphometric data and `process_gmPC()`
+for 2D or 3D geometric morphometric data.
+
 #### Fitting regressions and selecting the best model
 
-The `calcregions()` function allows fitting all possible combinations of
-segmented linear regressions from 1 region (no breakpoint) to the number
-of regions specified in the `noregions` argument. In this example, up to
-5 regions (4 breakpoints) will be fitted along the backbone, however,
+`calcregions()` allows fitting all possible combinations of segmented
+linear regressions from 1 region (no breakpoint) to the number of
+regions specified in the `noregions` argument. In this example, up to 5
+regions (4 breakpoints) will be fitted along the backbone, however,
 there is no limit for this value and it is possible to fit as many
 regions as you would like. For this example, regions will be fitted with
 a minimum of 3 vertebrae per region (`minvert = 3`) and using a
-continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or
+continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or the
 [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for
 details about fitting options).
 
 ``` r
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, verbose = FALSE)
+                             exhaus = TRUE)
 regionresults
 #> A `regions_results` object
 #>  - number of PCOs used: 2 
@@ -194,7 +184,7 @@ region here is made of vertebrae 8 to 23 included and the second region
 is made of vertebrae 24 to 27.* The function also returns the **region
 score**, a continuous value reflecting the level of regionalization
 while accounting for uncertainty in the best number of regions (see
-`vignette("MorphoRegions")` or [*MorphoRegions*
+`vignette("MorphoRegions")` or the [*MorphoRegions*
 website](https://aagillet.github.io/MorphoRegions/) for more details).
 
 #### Plotting results

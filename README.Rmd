@@ -22,14 +22,6 @@ knitr::opts_chunk$set(
 
 This package was first presented in [Gillet et al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an updated version of the [*regions* R package](https://github.com/katrinajones/regions) from [Jones et al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126) with improved computational methods and expanded fitting and plotting options.
 
-
-## New features (development version)
-
-The current development version of *MorphoRegions* (available on GitHub) includes new functionality to allow users to input **principal component (PC) scores computed externally**, including support for **geometric morphometric data**, via the newly added functions `process_PC()` and `process_gmPC()`.
-
-See section below to install the most recent version of the package. Note that this is a development version whic may chnage before next CRAN release.
-
-
 ## Installing *MorphoRegions*
 
 You can install the released version of *MorphoRegions* from [CRAN](https://CRAN.R-project.org/package=MorphoRegions) with:
@@ -38,13 +30,12 @@ You can install the released version of *MorphoRegions* from [CRAN](https://CRAN
 install.packages("MorphoRegions")
 ```
 
-Or the development version (0.2.0.9000), including support for geometric morphometric data, from the `developGMM` branch on [GitHub](https://github.com/AaGillet/MorphoRegions) with:
+Or the development version on [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ```{r eval=F}
-# install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions", ref = "developGMM")
+# install.packages("pak")
+pak::pak("AaGillet/MorphoRegions")
 ```
-
 
 ## Example
 
@@ -57,7 +48,7 @@ library(MorphoRegions)
 
 #### Preparing the data
 
-Data should be provided as a dataframe where each row is an element of the serially homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The `dolphin` dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.
+Data should be provided as a data frame where each row is an element of the serially homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The `dolphin` dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.
 
 ```{r loaData}
 data("dolphin")
@@ -66,9 +57,7 @@ data("dolphin")
 knitr::kable(head(dolphin))
 ```
 
-
 Prior to analysis, data must be processed into an object usable by *MorphoRegions* using `process_measurements()`. The `pos` argument is used to specify the name or index of the column containing positional information and the `fillNA` argument allows to fill missing values in the dataset (up to two successive elements).
-
 
 ```{r processData}
 dolphin_data <- process_measurements(dolphin, pos = 1)
@@ -86,16 +75,16 @@ PCOs <- PCOselect(dolphin_pco, method = "variance",
 PCOs
 ```
 
+Alternatively, externally computed PCOs can be included using `process_PC()` for traditional morphometric data and `process_gmPC()` for 2D or 3D geometric morphometric data.
 
 #### Fitting regressions and selecting the best model
 
-
-The `calcregions()` function allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
+`calcregions()` allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or the [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
 
 ```{r calcregions}
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, verbose = FALSE)
+                             exhaus = TRUE)
 regionresults
 ```
 
@@ -113,7 +102,7 @@ supp <- modelsupport(models)
 supp
 ```
 
-Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. *The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.* The function also returns the **region score**, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for more details).
+Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. *The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.* The function also returns the **region score**, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions (see `vignette("MorphoRegions")` or the [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for more details).
 
 
 #### Plotting results

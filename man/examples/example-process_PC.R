@@ -1,4 +1,5 @@
-# Load dataset; vertebral index in first column ('Vertebra' column)
+# Load dataset; vertebral index in first column
+# ('Vertebra' column)
 data("dolphin")
 
 # Compute PC scores with prcomp:
@@ -14,4 +15,4 @@ pco_dolphin <- process_PC(data = dolphin,
                           pos = "Vertebra",
                           pcscores = PCA_scores,
                           eigenvals = PCA_eigenval,
-                          posPC = dolphin[, 1])
+                          posPC = dolphin[[1]])

@@ -17,14 +17,13 @@ PCOload(x, scores)
 \item{\dots}{ignored.}
 }
 \value{
-\code{PCOload()} returns a \code{regions_pco_load} object, which is a matrix with a column for each PCO score requested and a row for each variable in the original dataset; values indicate the correlation between each variable and each PCO score. \code{plot()} returns a \code{ggplot} object, which can be manipulated using \emph{ggplot2} syntax, that displays the loadings visually.
+\code{PCOload()} returns a \code{regions_pco_load} object, which is a matrix with a column for each PCO score requested and a row for each variable in the original dataset; values indicate the correlation between each variable and each PCO score. \code{plot()} returns a \code{ggplot} object, which can be manipulated using \pkg{ggplot2} syntax, that displays the loadings visually.
 }
 \description{
 \code{PCOload()} computes the loadings for each principal coordinates (PCOs) analysis score, which are the correlations between the features used to compute the PCOs and the PCOs.
 }
 \details{
-the loadings for a constructed variable, \code{vert.size}, are also computed and displayed. This is computed as the mean of the features for each vertebra.
-This function is not suitable for geometric morphometric data.
+The loadings for a constructed variable, \code{vert.size}, are also computed and displayed. This is computed as the mean of the features for each vertebra. This function is not suitable for geometric morphometric data.
 }
 \examples{
 data("alligator")

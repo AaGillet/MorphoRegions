@@ -11,6 +11,7 @@
 - Added new function `process_PC()` to allow direct input of PC scores from traditional morphometric data
 - Added new data to demonstrate new GMM features
 - Added a `NEWS.md` file to track changes to the package
+- The `verbose` argument is now set to `FALSE` when not in an interactive session
 
 ### Notes
 - This is a development version; functionality may change before CRAN release
