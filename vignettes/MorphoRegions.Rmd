@@ -75,9 +75,9 @@ library(MorphoRegions)
 
 ## Preparing the data
 
-Data should be provided as a dataframe where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements).
+Data should be provided as a data frame where each row is an element of the serially-homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements).
 
-The package comes with **four built-in datasets**. `alligator`, `musm`, and `dolphin` contain measurements on the vertebrae of an alligator, mouse, and dolphin. `porpoise` contains vertebral measurements of three specimens of harbor porpoises and can be used to test fitting a single model for multiple specimens together   ([see below](#IntraSp)). *Alligator and mouse data are from @Jones2018; dolphin and porpoise data are from @Gillet2022.*
+The package comes with **six built-in datasets**. `alligator`, `musm`, and `dolphin` contain measurements on the vertebrae of an alligator, mouse, and dolphin. `porpoise` contains vertebral measurements of three specimens of harbor porpoises and can be used to test fitting a single model for multiple specimens together ([see below](#IntraSp)). `seal_gmm` and `wolves_gmm` contain GMM data. ### *Alligator and mouse data are from @Jones2018; dolphin and porpoise data are from @Gillet2022.*
 
 
 ```{r, results="hold"}
@@ -141,29 +141,34 @@ PCOs
 ```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve."}
 # Max:
 regionresults <- calcregions(dolphin_pco, scores = 1:39, noregions = 4, 
-                             minvert = 3, cont = TRUE, exhaus = TRUE,
-                             verbose = FALSE)
+                             minvert = 3, cont = TRUE, exhaus = TRUE)
+
 PCOs <- PCOselect(dolphin_pco, method = "max",
                   results = regionresults,
                   criterion = "bic")
+
 PCOs
+
 plot(PCOs)
 ```
 
 ```{r, fig.show='all', out.width = '60%',fig.align='center', fig.cap="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses."}
 # Bootstrap:
 PCOs <- PCOselect(dolphin_pco, method = "boot")
+
 PCOs
+
 plot(PCOs)
 ```
 
 
 ### Loadings
 
-Correlations between original variables and each PCO axis are obtained through the `PCOload` function. The additional 'Size' variable corresponds to the mean value of the variables.
+Correlations between original variables and each PCO axis are obtained using `PCOload()`. The additional 'Size' variable corresponds to the mean value of the variables.
 
 ```{r, out.width = '70%',fig.align='center', fig.cap="**Fig.4.** Correlations between original variables and PCO axes 1 and 2."}
 loadings <- PCOload(dolphin_pco, scores = PCOs)
+
 plot(loadings)
 ```
 
@@ -197,11 +202,10 @@ The function also offers **several optional arguments** (see the [Model fitting 
 ```{r}
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, cl = NULL,
-                             verbose = FALSE)
+                             exhaus = TRUE, cl = NULL)
 ```
 
-The output of the function contains information on the parameters used to run the analysis and total number of models tested while using the `summary` function allows to see how many models are possible and how many have been tested for each given number of regions.
+The output of the function contains information on the parameters used to run the analysis and total number of models tested while using `summary()` allows one to see how many models are possible and how many have been tested for each given number of regions.
 
 ```{r}
 regionresults
@@ -242,8 +246,8 @@ In addition to returning the best models, the function also calculates the **reg
 In the example above, the model with 5 regions is by far the best one (AICc/BIC weight = 1). In such cases where the most complex model is the best model, it's likely that more complex models fit the data better. `addregions()` allows one to **fit additional models without the need to recompute models with fewer regions**.
 
 ```{r}
-regionresults <- addregions(regionresults, noregions = 6:7, exhaus = TRUE,
-                            verbose = FALSE)
+regionresults <- addregions(regionresults, noregions = 6:7, exhaus = TRUE)
+
 summary(regionresults)
 ```
 
@@ -354,8 +358,6 @@ plotvertmap(dolphin_pco, name = "Dolphin",
             sd.col="#636363", dropNA = TRUE)
 ```
 
-
-
 To facilitate the interpretation of the regions, the function offers some plotting options.
 
 It is possible to **add other boundaries on the plot**, such as the boundaries between traditional anatomical regions (thoraco-lumbar, lumbo-caudal, etc). Boundary positions can be supplied as a vector to the `reg.lim` argument, with each numeric value corresponding to the position of the last element before the boundary. For example, in the dolphin dataset, the thoraco-lumbar, lumbo-caudal, and caudal-fluke transitions fall between vertebrae 17-18, 25-26, and 35-36, respectively.
@@ -409,7 +411,7 @@ Alternatively, it's also possible to *define a set of colors per block*, each bl
 ```{r, eval = requireNamespace("viridisLite", quietly = TRUE), message=FALSE, fig.width=7, fig.height=0.7, fig.show='hold', fig.align='center', fig.cap="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*."}
 # Manually color-coding each region using the viridis palette:
 library(viridisLite)
-nreg <- supp$Model_support_BIC[1,1]  # get nbr of regions
+nreg <- supp$Model_support_BIC[1, 1]  # get nbr of regions
 cols <- viridis(n = nreg)
 
 plotvertmap(dolphin_pco, name = "Dolphin",
@@ -438,15 +440,21 @@ Vertebral maps are created using *ggplot2* meaning that they can be modified sim
 ```{r, eval = requireNamespace("patchwork", quietly = TRUE), message=FALSE, fig.width=7, fig.height=1.7, fig.show='hold', fig.align='center', fig.cap="**Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a single figure."}
 # Run regions analysis on alligator and mouse data:
 dat_alligator <- process_measurements(alligator, pos = 1)
+
 pco_alligator <- svdPCO(dat_alligator, "gower")
+
 regions_alligator <- calcregions(pco_alligator, scores = 1:3,
-                                 noregions = 5, verbose = FALSE)
+                                 noregions = 5)
+
 supp_alligator <- modelsupport(modelselect(regions_alligator))
 
 dat_mouse <- process_measurements(musm, pos = 1)
+
 pco_mouse <- svdPCO(dat_mouse, "gower")
+
 regions_mouse <- calcregions(pco_mouse, scores = 1:3,
-                             noregions = 5, verbose = FALSE)
+                             noregions = 5)
+
 supp_mouse <- modelsupport(modelselect(regions_mouse))
 
 # Create vertebral maps:
@@ -471,7 +479,6 @@ for (i in seq_along(vertmaps)[-length(vertmaps)]){
 # Stack plots together:
 library(patchwork)
 wrap_plots(vertmaps) + plot_layout(ncol = 1, byrow = FALSE)
-
 ```
 
 ## Model fitting parameters {#FittingOptions}
@@ -497,19 +504,23 @@ plotsegreg(dolphin_pco, scores = 1:2,
 
 ### Minimum number of elements per region {#MinVert}
 
-By default, the minimum number of elements (vertebrae) in each region is set to 3. This parameter can, however, be changed with the `minvert` argument in the `calcregions` function. *Note that setting the minimum value to 2 might results in linear segments made of only two points, which will have a perfect fit (RSS=0 for these segments) and might artificially increase the goodness of fit.*
+By default, the minimum number of elements (vertebrae) in each region is set to 3. This parameter can, however, be changed with the `minvert` argument in `calcregions()`. *Note that setting the minimum value to 2 might results in linear segments made of only two points, which will have a perfect fit (RSS=0 for these segments) and might artificially increase the goodness of fit.*
 
 ```{r, fig.show='hold', out.width = "48%", fig.align='center', fig.cap="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)."}
 # Fitting up to 5 regions for alligator data with 2 vertebrae minimum per segment:
-reg.all.2 <- calcregions(pco_alligator, scores = 1, minvert = 2, noregions = 5,
-                         cont = FALSE, verbose = FALSE)
+reg.all.2 <- calcregions(pco_alligator, scores = 1,
+                         minvert = 2, noregions = 5,
+                         cont = FALSE)
+
 plotsegreg(pco_alligator, scores = 1,
            modelsupport = modelsupport(modelselect(reg.all.2)),
            criterion = "bic")
 
 # Fitting up to 5 regions for alligator data with 4 vertebrae minimum per segment:
-reg.all.4 <- calcregions(pco_alligator, scores = 1, minvert = 4, noregions = 5,
-                         cont = FALSE, verbose = FALSE)
+reg.all.4 <- calcregions(pco_alligator, scores = 1,
+                         minvert = 4, noregions = 5,
+                         cont = FALSE)
+
 plotsegreg(pco_alligator, scores = 1,
            modelsupport = modelsupport(modelselect(reg.all.4)),
            criterion = "bic")
@@ -519,7 +530,6 @@ When setting the minimum number of vertebrae per region to 2, the best fit model
 
 When forcing the minimum number of vertebrae per region to 4, the best fit model (using BIC) is the 4 regions model with RSS = 0.002 and BIC weight = 0.61. The 5 regions model is only the 3^rd^ best model (after the 3 regions model) with RSS = 0.002 and BIC weight = 0.02.
 
-
 ### Forcing or preventing specific breakpoint positions {#ForceBP}
 
 The `omitbp` and `includebp` arguments of `calcregions` allows one to prevent or force breakpoint(s) at specific position(s), respectively.
@@ -527,15 +537,17 @@ The `omitbp` and `includebp` arguments of `calcregions` allows one to prevent or
 ```{r, fig.show='hold', out.width = "48%", fig.align='center', fig.cap="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*."}
 # Fit models for dolphin preventing any BP in the thoracic and lumbar regions:
 reg.dol.noBP <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                            omitbp = 8:25, verbose = FALSE)
+                            omitbp = 8:25)
+
 plotsegreg(dolphin_pco, scores = PCOs,
            modelsupport = modelsupport(modelselect(reg.dol.noBP)),
            criterion = "bic")
 
 # Fit models for dolphin forcing BPs at anatomical region boundaries:
 reg.dol.forceBP <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                               includebp = c(17, 25, 35), verbose = FALSE)
-plotsegreg(dolphin_pco, scores=PCOs,
+                               includebp = c(17, 25, 35))
+
+plotsegreg(dolphin_pco, scores = PCOs,
            modelsupport = modelsupport(modelselect(reg.dol.forceBP)),
            criterion = "bic")
 ```
@@ -549,22 +561,25 @@ When a non-exhaustive search is used, all possible models for 1 and 2 regions mo
 
 ```{r}
 reg.dol.Nex <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                           exhaus = FALSE, verbose = FALSE)
+                           exhaus = FALSE)
+
 summary(reg.dol.Nex)
 ```
 
-In a non-exhaustive search, the `summary()` function used on `calcregions()` returns, for each number of regions, the total number of possible models, the number of models actually fitted, and the number of models saved to output in order to limit memory usage.
+In a non-exhaustive search, using `summary()` the `calcregions()` output returns, for each number of regions, the total number of possible models, the number of models actually fitted, and the number of models saved to output in order to limit memory usage.
 
 If the variability of breakpoint positions is calculated on non-exhaustive search output, the proportion of best models used to calculate the variability corresponds to the given percentage of all possible models. It's therefore possible that in some cases the number of models saved by the non-exhaustive search is lower than the requested percentage. In such cases, the variability will be calculated on all saved models and a warning message is returned.
 
 ```{r}
-calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1, criterion = "bic")
+calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1,
+          criterion = "bic")
 ```
 
 Because average and variability of breakpoint position is calculated using weighted means and SD, respectively, results usually remain similar to those obtained using full top 10% (models fitted with an exhaustive search) unless there are numerous models which fit the data well.
 
 ```{r}
-calcBPvar(regionresults, noregions = 5, pct = 0.1, criterion = "bic")
+calcBPvar(regionresults, noregions = 5, pct = 0.1,
+          criterion = "bic")
 ``` 
 
 
@@ -575,7 +590,7 @@ For specimens with a high number of elements and/or numerous regions and for whi
 ```{r, eval=F}
 # Exhaustive search with parallel computing using 6 cores:
 calcregions(dolphin_pco, scores = 2, noregions = 10, exhaus = TRUE,
-            cl = 6, verbose = FALSE)
+            cl = 6)
 ```
 
 Note that parallel computing will only be significantly faster on heavy computing specimens.
@@ -602,7 +617,10 @@ The total number of elements (vertebrae) can differ among specimens, but the num
 
 ```{r, fig.show='hold', fig.align="center", out.width="65%", fig.cap="**Fig.15.** PCO plots of the three specimens of harbor porpoise."}
 # Process measurements data
-porpoise_data <- process_measurements(list(porpoise1, porpoise2, porpoise3), pos = "Vertebra")
+porpoise_data <- process_measurements(list(porpoise1,
+                                           porpoise2,
+                                           porpoise3),
+                                      pos = "Vertebra")
 
 # Compute PCOs
 porpoise_pco <- svdPCO(porpoise_data, "gower")
@@ -612,7 +630,7 @@ plot(porpoise_pco, 1:2)
 plot(porpoise_pco, pco_x = 1, pco_y = 2)
 ```
 
-Once data of each specimen have been supplied to the `process_measurements` function, **the process to run the analysis is similar to running the analysis on a single specimen at a time**.
+Once data of each specimen have been supplied to `process_measurements()`, **the process to run the analysis is similar to running the analysis on a single specimen at a time**.
 
 ```{r, warning=FALSE}
 # Calculate number of PCOs to use in subsequent analyses
@@ -620,11 +638,11 @@ PCOs <- PCOselect(porpoise_pco, "variance", cutoff = .05)
 
 # Performance for all models across all breakpoint combos
 regionresults <- calcregions(porpoise_pco, scores = PCOs,
-                             noregions = 3, verbose = FALSE)
+                             noregions = 3)
 
 # Adding more models to existing results
 regionresults <- addregions(regionresults, noregions = 4:5,
-                            exhaus = FALSE, verbose = FALSE)
+                            exhaus = FALSE)
 
 # Select best model
 models <- modelselect(regionresults)
@@ -709,11 +727,10 @@ sim <- simregions(nvert = 40, nregions = 5, nvar = 4, r2 = .92,
 plot(sim, scores = 1:2)
 ```
 
-
 The regionalization analysis can then be run on the simulated dataset.
 
 ```{r, out.width='65%', fig.show='hold', fig.cap="**Fig.21.** Plot on PCO 1 and 2 of the **recovered best fit** on regionalization analysis ran on the simulated dataset."}
-simresults <- calcregions(sim, scores = 1:4, noregions = 6, verbose = FALSE)
+simresults <- calcregions(sim, scores = 1:4, noregions = 6)
 
 simmodels <- modelselect(simresults)
 simmodels
@@ -721,7 +738,8 @@ simmodels
 simsupport <- modelsupport(simmodels)
 simsupport
 
-modelperf(sim, modelsupport = simsupport, criterion = "aic", model = 1)
+modelperf(sim, modelsupport = simsupport,
+          criterion = "aic", model = 1)
 
 #Plot best model fit
 plotsegreg(sim, scores = 1:2, modelsupport = simsupport,
@@ -739,10 +757,11 @@ The AICc best fit model recovered breakpoints at vertebrae 15, 21, 28, 34. The r
 sim$BPs
 
 # Recovered best fit breakpoints:
-simsupport$Model_support[1,2:5]
+simsupport$Model_support[1, 2:5]
 
 # Variability of recovered best fit breakpoints:
-calcBPvar(simresults, noregions = 5, pct = 0.1, criterion = "aic")
+calcBPvar(simresults, noregions = 5, pct = 0.1,
+          criterion = "aic")
 ```
 
 ## References

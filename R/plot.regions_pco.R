@@ -23,12 +23,12 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
   if (identical(pco_y, formals()$pco_y)) {
     dotnames <- ...names()
     if ("scores" %in% dotnames) {
-      scores <- ...elt(which(dotnames == "scores")[1])
-      chk::chk_whole_numeric(scores)
-      if (!is.null(pco_x) && length(pco_y) > 1) {
-        chk::err("`scores` can only have length 1 when `pco_x` is specified")
+      scores <- ...elt(which(dotnames == "scores")[1L])
+      arg::arg_whole_numeric(scores)
+      if (!is.null(pco_x) && length(pco_y) > 1L) {
+        arg::err("{.arg scores} can only have length 1 when {.arg pco_x} is specified")
       }
-      chk::chk_range(scores, c(1, ncol(x[["scores"]])))
+      arg::arg_between(scores, c(1, ncol(x[["scores"]])))
       pco_y <- scores
     }
   }
@@ -37,8 +37,8 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
   specimen <- attr(x, "specimen")
 
   if (is.null(pco_x)) {
-    chk::chk_whole_numeric(pco_y)
-    chk::chk_range(pco_y, c(1, ncol(x[["scores"]])))
+    arg::arg_whole_numeric(pco_y)
+    arg::arg_between(pco_y, c(1, ncol(x[["scores"]])))
 
     pco_y <- sort(pco_y)
 
@@ -49,16 +49,16 @@ plot.regions_pco <- function(x, pco_y = 1, pco_x = NULL, ...) {
                              scores = pco_y, specimen = specimen))
   }
 
-  chk::chk_whole_numeric(pco_y)
+  arg::arg_whole_numeric(pco_y)
   if (length(pco_y) > 1) {
-    chk::err("`pco_y` can only have length 1 when `pco_x` is specified")
+    arg::err("{.arg pco_y} can only have length 1 when {.arg pco_x} is specified")
   }
-  chk::chk_range(pco_y, c(1, ncol(x[["scores"]])))
+  arg::arg_between(pco_y, c(1, ncol(x[["scores"]])))
 
   Yvar <- x[["scores"]][, pco_y]
 
-  chk::chk_whole_number(pco_x)
-  chk::chk_range(pco_x, c(1, ncol(x[["scores"]])))
+  arg::arg_whole_number(pco_x)
+  arg::arg_between(pco_x, c(1, ncol(x[["scores"]])))
 
   Xvar <- x[["scores"]][, pco_x]
 

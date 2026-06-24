@@ -14,7 +14,8 @@
 #' @param lines `logical`; whether to display the simulated regression lines on the plot. Default is `TRUE`.
 #' @param \dots ignored.
 #'
-#' @returns `simregions()` returns a `regions_sim` object, which contains the vertebra indices in the `Xvar` entry, the PCO scores in the `Yvar` entry, the simulated breakpoints in the `BPs` entry, the simulated model coefficients in the `coefs` entry, and the simulated error standard deviation in the `ersd` entry. The attribute `"design"` contains the design matrix, which when multiplied by the coefficients and added to a random normal variate with standard deviation equal to the error standard deviation yields the observed PCO scores.
+#' @return
+#' `simregions()` returns a `regions_sim` object, which contains the vertebra indices in the `Xvar` entry, the PCO scores in the `Yvar` entry, the simulated breakpoints in the `BPs` entry, the simulated model coefficients in the `coefs` entry, and the simulated error standard deviation in the `ersd` entry. The attribute `"design"` contains the design matrix, which when multiplied by the coefficients and added to a random normal variate with standard deviation equal to the error standard deviation yields the observed PCO scores.
 #'
 #' `plot()` returns a `ggplot` object that can be manipulated using `ggplot2` syntax. The plot is similar to that produced by [plot.regions_pco()] and to that produced by [plotsegreg()] except that the displayed lines (if requested) are the true rather than fitted regression lines.
 #'
@@ -36,40 +37,40 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
                        minvert = 3, cont = TRUE, sl.dif = 0) {
 
   #Checks
-  chk::chk_not_missing(nvert, "`nvert`")
-  chk::chk_whole_number(nvert)
-  chk::chk_gte(nvert, 4)
+  arg::arg_supplied(nvert)
+  arg::arg_count(nvert)
+  arg::arg_gte(nvert, 4)
 
-  chk::chk_not_missing(nregions, "`nregions`")
-  chk::chk_count(nregions)
+  arg::arg_supplied(nregions)
+  arg::arg_count(nregions)
 
-  chk::chk_count(nvar)
-  chk::chk_gte(nvar, 1)
+  arg::arg_count(nvar)
+  arg::arg_gte(nvar, 1)
 
-  chk::chk_numeric(r2)
-  chk::chk_gt(r2, 0)
-  chk::chk_lte(r2, 1)
+  arg::arg_numeric(r2)
+  arg::arg_between(r2, c(0, 1), inclusive = c(FALSE, TRUE))
 
-  chk::chk_whole_number(minvert)
-  chk::chk_gte(minvert, 2)
+  arg::arg_count(minvert)
+  arg::arg_gte(minvert, 2)
 
-  chk::chk_flag(cont)
+  arg::arg_flag(cont)
 
-  chk::chk_number(sl.dif)
-  chk::chk_gte(sl.dif, 0)
-  chk::chk_lt(sl.dif, 1)
+  arg::arg_number(sl.dif)
+  arg::arg_between(r2, c(0, 1), inclusive = c(TRUE, FALSE))
 
-  chk::chk_lte(minvert * nregions, nvert)
+  arg::arg_lte(minvert * nregions, nvert,
+               .msg = "the product of {.arg minvert} and {.arg nregions} must not be greater than {.arg nvert}")
 
   Xvar <- seq_len(nvert)
 
   nbp <- nregions - 1
 
   if (length(r2) == 1L) {
-    r2 <- rep(r2, nvar)
+    r2 <- rep.int(r2, nvar)
   }
-
-  chk::chk_equivalent(length(r2), nvar)
+  else if (length(r2) != nvar) {
+    arg::err("{.arg r2} must have length equal to 1 or {.arg nvar}")
+  }
 
   #Draw possible combination of breakpoints
   bp <- .sample_combosR(Xvar, minvert, nbp)
@@ -83,63 +84,46 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
   rownames(coefs) <- {
     if (cont) c("int1", paste0("slope", seq_len(nregions)))
     else paste0(rep(c("int", "slope"), each = nregions),
-                rep(seq_len(nregions), 2))
+                rep(seq_len(nregions), 2L))
 
   }
+
   colnames(coefs) <- paste0("PC.", seq_len(nvar))
 
-  if (cont) {
-    for (i in seq_len(nvar)) {
-      # Rejection sampling for slopes
-      repeat {
-        if (sl.dif > .5) {
-          test_slopes <- rep(0, nregions)
-          test_slopes[1] <- (-1)^rbinom(1, 1, .5) * runif(1, min = sl.dif - .5, max = .5)
+  for (i in seq_len(nvar)) {
+    # Rejection sampling for slopes
+    repeat {
+      if (sl.dif > .5) {
+        test_slopes <- rep.int(0, nregions)
+        test_slopes[1L] <- (-1)^rbinom(1, 1, .5) * runif(1, min = sl.dif - .5, max = .5)
 
-          for (j in seq_along(test_slopes)[-1]) {
-            test_slopes[j] <- -sign(test_slopes[j - 1]) * runif(1, min = sl.dif - .5, max = .5)
-          }
+        for (j in seq_along(test_slopes)[-1L]) {
+          test_slopes[j] <- -sign(test_slopes[j - 1L]) * runif(1, min = sl.dif - .5, max = .5)
         }
-        else {
-          test_slopes <- runif(nregions, min = -.5, max = .5)
-        }
-
-        if (all(abs(diff(test_slopes)) >= sl.dif)) break
+      }
+      else {
+        test_slopes <- runif(nregions, min = -.5, max = .5)
       }
 
-      for (j in seq_along(test_slopes)[-1]) {
+      if (all(abs(diff(test_slopes)) >= sl.dif)) {
+        break
+      }
+    }
+
+    if (cont) {
+      for (j in seq_along(test_slopes)[-1L]) {
         test_slopes[j] <- test_slopes[j] - test_slopes[j - 1]
       }
 
-      coefs[startsWith(rownames(coefs), "slope"), i] <- test_slopes
-
-      coefs["int1", i] <- runif(1, -nbp/4, nbp/4)
+      coefs["int1", i] <- runif(1, -nbp / 4, nbp / 4)
     }
-  }
-  else {
-    for (i in seq_len(nvar)) {
-      # Rejection sampling for slopes
-      repeat {
-        if (sl.dif > .5) {
-          test_slopes <- rep(0, nregions)
-          test_slopes[1] <- (-1)^rbinom(1, 1, .5) * runif(1, min = sl.dif - .5, max = .5)
-
-          for (j in seq_along(test_slopes)[-1]) {
-            test_slopes[j] <- -sign(test_slopes[j - 1]) * runif(1, min = sl.dif - .5, max = .5)
-          }
-        }
-        else {
-          test_slopes <- runif(nregions, min = -.5, max = .5)
-        }
-
-        if (all(abs(diff(test_slopes)) >= sl.dif)) break
-      }
-
-      coefs[startsWith(rownames(coefs), "slope"), i] <- test_slopes
-
-      ints <- runif(nregions, -nbp/4, nbp/4)
+    else {
+      ints <- runif(nregions, -nbp / 4, nbp / 4)
       coefs[startsWith(rownames(coefs), "int"), i] <- ints - test_slopes * c(0, bp)
     }
+
+    coefs[startsWith(rownames(coefs), "slope"), i] <- test_slopes
+
   }
 
   #Generate structural outcomes from coefs and design
@@ -148,18 +132,22 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
   #Generate actual outcomes by adding error
   ersd <- numeric(nvar)
   y <- array(dim = dim(ypred), dimnames = dimnames(ypred))
+
   for (i in seq_len(nvar)) {
     #SD(error) required to make requested R2
-    ersd[i] <- sqrt((1 - r2[i]) * var(ypred[,i]) / r2[i])
+    ersd[i] <- sqrt((1 - r2[i]) * var(ypred[, i]) / r2[i])
 
-    y[,i] <- ypred[,i] + rnorm(nvert, 0, ersd[i])
+    y[, i] <- ypred[, i] + rnorm(nvert, sd = ersd[i])
   }
 
-  out <- list(Xvar = Xvar, Yvar = y, BPs = bp, coefs = coefs, ersd = ersd)
+  out <- list(Xvar = Xvar, Yvar = y, BPs = bp,
+              coefs = coefs, ersd = ersd)
+
   attr(out, "cont") <- cont
   attr(out, "design") <- x
 
   class(out) <- "regions_sim"
+
   out
 }
 
@@ -167,14 +155,14 @@ simregions <- function(nvert, nregions, nvar = 1, r2 = .95,
 #' @rdname simregions
 plot.regions_sim <- function(x, scores = 1, lines = TRUE, ...) {
 
-  chk::chk_whole_numeric(scores)
-  chk::chk_range(scores, c(1, ncol(x$Yvar)))
-  chk::chk_flag(lines)
+  arg::arg_whole_numeric(scores)
+  arg::arg_between(scores, c(1, ncol(x$Yvar)))
+  arg::arg_flag(lines)
 
-  Yvar <- x$Yvar[,scores, drop = FALSE]
+  Yvar <- x$Yvar[, scores, drop = FALSE]
   Xvar <- x$Xvar
 
-  yhat <- attr(x, "design") %*% x$coef[,scores, drop = FALSE]
+  yhat <- attr(x, "design") %*% x$coef[, scores, drop = FALSE]
 
   .plotreg_internal(Xvar, Yvar, yhat, x$BPs, lines, scores = scores,
                     linescolor = "gray30")
@@ -184,11 +172,13 @@ plot.regions_sim <- function(x, scores = 1, lines = TRUE, ...) {
 print.regions_sim <- function(x, ...) {
   cat("A `regions_sim` object\n")
   cat(" - number of vertebrae:", length(x$Xvar), "\n")
-  cat(" - number of regions:", length(x$BPs) + 1, "\n")
-  cat(" - breakpoints:", paste(x$BPs, collapse = ", "), "\n")
+  cat(" - number of regions:", length(x$BPs) + 1L, "\n")
+  cat(" - breakpoints:", toString(x$BPs), "\n")
   cat(" - model type:", if (attr(x, "cont")) "continuous" else "discontinuous", "\n")
   cat(" - number of PCO scores:", ncol(x$Yvar), "\n")
   cat("Use `plot()` to display the true lines and simulated data.")
+
+  invisible(x)
 }
 
 # Sample combos without needing to store all combos

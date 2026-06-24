@@ -75,4 +75,3 @@
 #' @references Schwab, J., Figueirido, B., & Jones, K. E. (2026). Ecological Inference From Isolated Vertebrae: Evaluating Functional Signal Across the Carnivoran Spine. Journal of Morphology, 287(1), e70109.
 #' @name wolves_gmm
 "wolves_gmm"
-

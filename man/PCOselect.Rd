@@ -14,7 +14,7 @@ PCOselect(
   nreps = 500,
   results = NULL,
   criterion = "aic",
-  verbose = TRUE
+  verbose = interactive()
 )
 
 \method{plot}{regions_pco_select}(x, ...)
@@ -36,7 +36,7 @@ PCOselect(
 
 \item{criterion}{when \code{method = "max"}, which criterion should be used to select the number of scores. Allowable options include \code{"aic"} and \code{"bic"}. Abbreviations allowed.}
 
-\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE}.}
+\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE} when running interactively and \code{FALSE} otherwise.}
 
 \item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"} or \code{"max"}.}
 
@@ -61,7 +61,7 @@ This simply returns the number supplied to \code{scores} after running some chec
 
 \subsection{\code{method = "boot"}}{
 
-Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so \code{scale = TRUE} should be set in the call to \code{\link[=svdPCO]{svdPCO()}}, which is the default; the data are scaled in the same way prior to bootstrapping. The \code{plot()} method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO.
+Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so \code{scale = TRUE} should be set in the call to \code{\link[=svdPCO]{svdPCO()}}, which is the default; the data are scaled in the same way prior to bootstrapping. The \code{plot()} method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO. The \code{boot} method is unavailable for user-supplied PC scores (\code{regions_pco} object obtained from \code{process_PC} or \code{process_gmPC} functions).
 }
 
 \subsection{\code{method = "variance"}}{

@@ -9,7 +9,7 @@
 #' @param cutoff when `method = "variance"`, the cutoff for the variance explained by each PCO score.
 #' @param results when `method = "max"`, a `regions_results` object, the output of a call to [calcregions()].
 #' @param criterion when `method = "max"`, which criterion should be used to select the number of scores. Allowable options include `"aic"` and `"bic"`. Abbreviations allowed.
-#' @param verbose when `method = "boot"`, whether to display a progress bar. Default is `TRUE`.
+#' @param verbose when `method = "boot"`, whether to display a progress bar. Default is `TRUE` when running interactively and `FALSE` otherwise.
 #' @param x for `plot.regions_pco_select()`, a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "boot"` or `"max"`.
 #' @param object a `regions_pco_select` object, the output of a call to `PCOselect()` with `method = "max"`.
 #' @param \dots ignored.
@@ -42,24 +42,25 @@
 
 #' @export
 PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps = 500,
-                      results = NULL, criterion = "aic", verbose = TRUE) {
-  chk::chk_is(pco, "regions_pco")
+                      results = NULL, criterion = "aic", verbose = interactive()) {
+  arg::arg_is(pco, "regions_pco")
 
-  chk::chk_string(method)
-  method <- tolower(method)
-  method <- .match_arg(method, c("manual", "boot", "variance", "max"))
+  method <- arg::match_arg(method, c("manual", "boot", "variance", "max"))
 
   boot <- pcomax <- NULL
   info <- list(method = method)
   if (method == "manual") {
-    chk::chk_not_null(scores)
-    chk::chk_count(scores)
-    chk::chk_range(scores, c(1, ncol(pco$scores)))
+    arg::arg_non_null(scores)
+    arg::arg_count(scores,
+                   .msg = "{.arg scores} must be the number of PCO scores to select")
+    arg::arg_between(scores, c(1, ncol(pco$scores)),
+                     .msg = sprintf("{.arg scores} must be between 1 and the total number of principal coordinates (i.e., %s)",
+                                    ncol(pco$scores)))
   }
   else if (method == "boot") {
-    chk::chk_count(nreps)
-    chk::chk_gte(nreps, 1)
-    chk::chk_flag(verbose)
+    arg::arg_count(nreps)
+    arg::arg_gte(nreps, 1)
+    arg::arg_flag(verbose)
 
     boot <- .PCOboot(pco, nreps, verbose)
     scores <- boot$sigpco
@@ -67,20 +68,17 @@ PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps
     info$nreps <- nreps
   }
   else if (method == "variance") {
-    chk::chk_number(cutoff)
-    chk::chk_gt(cutoff, 0)
-    chk::chk_lt(cutoff, 1)
+    arg::arg_number(cutoff)
+    arg::arg_between(cutoff, c(0, 1), inclusive = FALSE)
 
-    scores <- sum(pco$eigen.val/sum(pco$eigen.val) > cutoff)
+    scores <- sum(pco$eigen.val / sum(pco$eigen.val) > cutoff)
     info$cutoff <- cutoff
   }
   else {
-    chk::chk_not_null(results)
-    chk::chk_is(results, "regions_results")
+    arg::arg_non_null(results)
+    arg::arg_is(results, "regions_results")
 
-    chk::chk_string(criterion)
-    criterion <- tolower(criterion)
-    criterion <- .match_arg(criterion, c("aic", "bic"))
+    criterion <- arg::match_arg(criterion, c("aic", "bic"))
 
     pcomax <- .PCOmax(results)
 
@@ -109,7 +107,7 @@ PCOselect <- function(pco, method = "manual", scores = NULL, cutoff = .05, nreps
 print.regions_pco_select <- function(x, ...) {
   info <- attr(x, "info")
   cat("A `regions_pco_select` object\n")
-  cat(sprintf("- PCO scores selected: %s\n", paste(x[], collapse = ", ")))
+  cat(sprintf("- PCO scores selected: %s\n", toString(x[])))
   cat(sprintf("- Method: %s\n",
               switch(info$method,
                      "boot" = sprintf("boot (%s replications)", info$nreps),
@@ -124,7 +122,7 @@ print.regions_pco_select <- function(x, ...) {
 plot.regions_pco_select <- function(x, ...) {
   if (!identical(attr(x, "info")$method, "boot") &&
       !identical(attr(x, "info")$method, "max")) {
-    chk::err("`plot()` can only be used on `regions_pco_select` objects when `method` is `\"boot\"` or `\"max\"`")
+    arg::err("{.fun plot} can only be used on {.cls regions_pco_select} objects when {.arg method} is {.val boot} or {.val max}")
   }
 
   if (identical(attr(x, "info")$method, "boot")) {
@@ -156,7 +154,7 @@ plot.regions_pco_select <- function(x, ...) {
 summary.regions_pco_select <- function(object, ...) {
   if (!identical(attr(object, "info")$method, "max") ||
       is.null(attr(object, "pcomax"))) {
-    chk::err("`summary()` can only be used on `regions_pco_select` objects when `method = \"max\"`")
+    arg::err("{.fun summary} can only be used on {.cls regions_pco_select} objects when {.arg method} is {.val max}")
   }
 
   results <- attr(object, "pcomax")$results
@@ -167,7 +165,7 @@ summary.regions_pco_select <- function(object, ...) {
   nPCO <- sum(startsWith(colnames(results$results), "RSS."))
 
   # Calculate variance of each PCO:
-  var.exp <- cumsum(eigenvals/sum(eigenvals))[seq_len(nPCO)]
+  var.exp <- cumsum(eigenvals / sum(eigenvals))[seq_len(nPCO)]
 
   pco.no.test <- data.frame(PCO = seq_len(nPCO),
                             RSind.AICc = NA_real_,
@@ -177,7 +175,6 @@ summary.regions_pco_select <- function(object, ...) {
                             CumulVar = var.exp)
 
   for (a in seq_len(nPCO)) {
-
     #Run for individual PCs
     models.ind <- modelselect(results, scores = a)
     support.ind <- modelsupport(models.ind)
@@ -199,7 +196,9 @@ summary.regions_pco_select <- function(object, ...) {
 }
 
 #' @exportS3Method print summary.regions_pco_select
-print.summary.regions_pco_select <- function(x, digits = 3, ...) {
+print.summary.regions_pco_select <- function(x, digits = 3L, ...) {
+  arg::arg_whole_number(digits)
+
   x0 <- x
   for (i in seq_len(ncol(x))[-1]) {
     x[[i]] <- round(x[[i]], digits)
@@ -208,20 +207,20 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   invisible(x0)
 }
 
-.PCOboot <- function(pco, nreps = 500, verbose = TRUE) {
+.PCOboot <- function(pco, nreps = 500, verbose = FALSE) {
 
-  if (!verbose) {
-    opb <- pbapply::pboptions(type = "none")
-    on.exit(pbapply::pboptions(opb))
+  if (verbose) {
+    cat("Bootstrapping...\n")
   }
   else {
-    cat("Bootstrapping...\n")
+    opb <- pbapply::pboptions(type = "none")
+    on.exit(pbapply::pboptions(opb))
   }
 
   #### Edited code to add support for GMM data: ##
   metric <- attr(pco, "metric")
-  if(metric=='custom'){
-    chk::err("method `boot` not allowed for user-supplied PC scores")
+  if (identical(metric, "custom")) {
+    arg::err("method {.val boot} is not allowed for user-supplied PC scores")
   }
 
   #calculate 'true' eigenvalues as percentage variance
@@ -234,7 +233,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   eigen.boot <- do.call("cbind", pbapply::pblapply(seq_len(nreps), function(i) {
     #Shuffle each row of the dataset
     for (j in seq_len(nrow(data))) {
-      randdata[j,] <- sample(data[j,])
+      randdata[j, ] <- sample(data[j, ])
     }
 
     dist <- cluster::daisy(randdata, metric = metric, stand = attr(pco, "scale"))
@@ -251,7 +250,7 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
   }))
 
   eigen.mean <- rowMeans(eigen.boot)  #calculate mean and SD of bootstrapped values
-  eigen.sd <- apply(eigen.boot, 1, sd)
+  eigen.sd <- apply(eigen.boot, 1L, sd)
   diff <- eigen.true - eigen.mean  #figure out which PCOs have greater eigenvalues for the 'true' dataset
   diff[diff < 0] <- 0
 
@@ -263,7 +262,6 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
        eigen.sd = eigen.sd,
        sigpco = sigpco,
        eigen.boot = eigen.boot)
-
 }
 
 .PCOmax <- function(results, tol = .001) {
@@ -285,8 +283,8 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
     pco.no.test[["RS_BIC"]][i] <- support.cum$Region_score_BIC
   }
 
-  pco.max.AICc <- which(.equiv(pco.no.test[["RS_AICc"]], max(pco.no.test[["RS_AICc"]]), tol = tol))[1]
-  pco.max.BIC <- which(.equiv(pco.no.test[["RS_BIC"]], max(pco.no.test[["RS_BIC"]]), tol = tol))[1]
+  pco.max.AICc <- which(.equiv(pco.no.test[["RS_AICc"]], max(pco.no.test[["RS_AICc"]]), tol = tol))[1L]
+  pco.max.BIC <- which(.equiv(pco.no.test[["RS_BIC"]], max(pco.no.test[["RS_BIC"]]), tol = tol))[1L]
 
   list(pco.max.AICc = pco.max.AICc,
        pco.max.BIC = pco.max.BIC,
@@ -294,9 +292,9 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
 }
 
 .plot_summary_regions_pco_select <- function(x, ...) {
-  chk::chk_is(x, "summary.regions_pco_select")
+  arg::arg_is(x, "summary.regions_pco_select")
 
-  pco.no.test.long <- reshape(x, direction = "long", idvar = "PCO", varying = list(c(2, 3), c(4,5)),
+  pco.no.test.long <- reshape(x, direction = "long", idvar = "PCO", varying = list(c(2, 3), c(4, 5)),
                               timevar = "PCOtype", times = c("Single PCO", "Cumulated PCOs"),
                               v.names = c("RS.AICc", "RS.BIC"))
   pco.no.test.long <- reshape(pco.no.test.long, direction = "long", varying = 4:5,
@@ -305,20 +303,21 @@ print.summary.regions_pco_select <- function(x, digits = 3, ...) {
 
   noregions <- attr(x, "noregions")
 
-  p <- ggplot(pco.no.test.long, aes())+
-    geom_point(data = pco.no.test.long, aes(x = .data$PCO, y = .data$value,
-                                            color = .data$PCOtype, shape = .data$PCOtype)) +
+  p <- ggplot(pco.no.test.long) +
+    geom_point(data = pco.no.test.long,
+               aes(x = .data$PCO, y = .data$value,
+                   color = .data$PCOtype, shape = .data$PCOtype)) +
     scale_color_manual(values = c("#fc8d62", "#8da0cb")) +
     geom_line(data = x, aes(x = .data$PCO, y = (.data$CumulVar * (noregions - 1) + 1)),
               color = "darkgrey", linewidth = 1) +
     scale_y_continuous(name = "Region score",
-                       sec.axis = sec_axis(~ (. - 1)/(noregions - 1), labels = scales::percent,
+                       sec.axis = sec_axis(~ (. - 1) / (noregions - 1), labels = scales::percent,
                                            # limits = c(0, 1),
                                            name = "Cumulated variance explained")) +
     scale_x_continuous(breaks = scales::breaks_extended(Q = c(0:5))) +
     facet_wrap(~Testtype) +
     theme_bw() +
-    theme(panel.grid.minor=element_blank(), legend.position = "bottom") +
+    theme(panel.grid.minor = element_blank(), legend.position = "bottom") +
     labs(color = "Region score", shape = "Region score")
 
   p
