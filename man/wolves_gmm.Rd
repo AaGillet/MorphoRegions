@@ -12,9 +12,9 @@ a numeric vector with the eigenvalues from the PCA (\code{eigenvals}), a numeric
 data("wolves_gmm")
 }
 \description{
-Procrusted aligned 3d landmarks (\code{coord_gpa}) and PC scores (\code{scores}) from  10 subsampled vertebrae along the backbone of two specimens of Canis lupus (MU 071 and MU 073).
+Procrustes aligned 3d landmarks (\code{coord_gpa}) and PC scores (\code{scores}) from  10 subsampled vertebrae along the backbone of two specimens of Canis lupus (MU 071 and MU 073).
 }
 \references{
-Schwab, J., Figueirido, B., & Jones, K. E. (2026). Ecological Inference From Isolated Vertebrae: Evaluating Functional Signal Across the Carnivoran Spine. Journal of Morphology, 287(1), e70109.
+Schwab, J., Figueirido, B., & Jones, K. E. (2026). Ecological inference from isolated vertebrae: Evaluating functional signal across the carnivoran spine. Journal of Morphology, 287(1), e70109.
 }
 \keyword{datasets}

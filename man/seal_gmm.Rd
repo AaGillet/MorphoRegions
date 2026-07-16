@@ -12,9 +12,9 @@ and a numeric vector with the eigenvalues from the PCA (\code{eigenvals}).
 data("seal_gmm")
 }
 \description{
-Procrusted aligned 3d landmarks (\code{coord_gpa}) and PC scores (\code{scores}) of the backbone of Phoca vitulina (ZMUC 160).
+Procrustes aligned 3d landmarks (\code{coord_gpa}) and PC scores (\code{scores}) of the backbone of Phoca vitulina (ZMUC 160).
 }
 \references{
-Esteban, J. M., Martín-Serra, A., Pérez-Ramos, A., Mulot, B., Jones K. E., & Figueirido, B.  (2023). The impact of the land-to-sea transition on evolutionary integration and modularity of the pinniped backbone. Nature Communications, 6, 1141.
+Esteban, J. M., Martín-Serra, A., Pérez-Ramos, A., Mulot, B., Jones, K. E., & Figueirido, B.  (2023). The impact of the land-to-sea transition on evolutionary integration and modularity of the pinniped backbone. Communications Biology, 6, 1141.
 }
 \keyword{datasets}

@@ -16,6 +16,11 @@ corresponding to changes along the serially homologous structure. The
 optimal number of regions and their breakpoint positions are identified
 using maximum-likelihood methods without *a priori* assumptions.
 
+Since version 0.2.0, *MorphoRegions* can now be applied to both
+**traditional morphometric** and **geometric morphometric** data,
+providing a unified workflow for identifying regionalization patterns in
+serially homologous structures.
+
 This package was first presented in [Gillet et
 al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an
 updated version of the [*regions* R
@@ -54,6 +59,8 @@ library(MorphoRegions)
 ```
 
 #### Preparing the data
+
+##### Traditional morphometrics
 
 Data should be provided as a data frame where each row is an element of
 the serially homologous structure (e.g., a vertebra). One column should
@@ -102,13 +109,40 @@ PCOs <- PCOselect(dolphin_pco, method = "variance",
                   cutoff = .05)
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2
+#> - PC scores selected: 1, 2
 #> - Method: variance (cutoff: 0.05)
 ```
 
-Alternatively, externally computed PCOs can be included using
-`process_PC()` for traditional morphometric data and `process_gmPC()`
-for 2D or 3D geometric morphometric data.
+##### Geometric morphometrics and ordinated data
+
+Alternatively to computing PCO scores in *MorphoRegions*, externally
+computed PC scores can be provided. Use `process_PC()` for traditional
+morphometric data or `process_gmPC()` for 2D or 3D geometric
+morphometric data.
+
+The `seal_gmm` dataset contains coordinates of Procrustes aligned 3D
+landmarks taken on presacral vertebrae, PC scores of each vertebra, and
+eigenvalues of each PC axis.
+
+``` r
+data("seal_gmm")
+seal_pca <- process_gmPC(data = seal_gmm$coord_gpa,
+                         pcscores = seal_gmm$scores,
+                         eigenvals = seal_gmm$eigenvals)
+
+# Select PCs with variance > 0.05 :
+PCs <- PCOselect(seal_pca, method = "variance",
+                  cutoff = .05)
+PCs
+#> A `regions_pco_select` object
+#> - PC scores selected: 1, 2, 3
+#> - Method: variance (cutoff: 0.05)
+```
+
+See `vignette("MorphoRegions")` or the [*MorphoRegions*
+website](https://aagillet.github.io/MorphoRegions/) for complete
+workflow, including the use of `process_PC()` for externally computed PC
+scores on traditional morphometric datasets.
 
 #### Fitting regressions and selecting the best model
 

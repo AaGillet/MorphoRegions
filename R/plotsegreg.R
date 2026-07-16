@@ -3,7 +3,7 @@
 #' `plotsegreg()` plots the fitted lines resulting from a segmented regression model.
 #'
 #' @inheritParams modelperf
-#' @param scores `numeric`; the indices of the PCO scores for which the fitted lines should be plotted.
+#' @param scores `numeric`; the indices of the PC scores for which the fitted lines should be plotted.
 #' @param model `numeric`; for which model among the best as determined by `criterion` should fitted lines be plotted. 1 is the best model, 2 the second best, etc. Default is 1. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.
 #' @param bps `numeric`; a vector of breakpoints for which model fitted lines should be plotted. When `x` is a `regions_pco` object, either `modelsupport`, `criterion`, and `model` must be supplied or `bps` and `cont` must be supplied. See Details.
 #' @param \dots ignored.
@@ -180,7 +180,7 @@ plotsegreg.regions_results_single <- function(x, scores, ...) {
                               weights = NULL) {
 
   plot_data <- data.frame(
-    PCO = factor(rep(paste("PCO", scores), each = length(Xvar))),
+    PCO = factor(rep(paste("PC", scores), each = length(Xvar))),
     Xvar = rep(Xvar, ncol(Yvar))
   )
 

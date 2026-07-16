@@ -36,7 +36,7 @@ plotsegreg(x, scores, ...)
 \arguments{
 \item{x}{a \code{regions_pco} object, the output of a call to \code{\link[=svdPCO]{svdPCO()}}, or a \code{regions_results_single} object, the output of a call to \code{\link[=calcmodel]{calcmodel()}}.}
 
-\item{scores}{\code{numeric}; the indices of the PCO scores for which the fitted lines should be plotted.}
+\item{scores}{\code{numeric}; the indices of the PC scores for which the fitted lines should be plotted.}
 
 \item{\dots}{ignored.}
 

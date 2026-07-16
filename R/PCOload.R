@@ -53,7 +53,7 @@ PCOload <- function(x, scores) {
   })
 
   load.pco <- do.call("cbind", load.pco)
-  colnames(load.pco) <- paste("PCO", scores, sep = ".")
+  colnames(load.pco) <- paste("PC", scores, sep = ".")
 
   class(load.pco) <- c("regions_pco_load", class(load.pco))
 
@@ -63,7 +63,7 @@ PCOload <- function(x, scores) {
 #' @exportS3Method print regions_pco_load
 print.regions_pco_load <- function(x, digits = 3L, ...) {
   d <- as.data.frame.matrix(x)
-  cat("- PCO loadings:\n\n")
+  cat("- PC loadings:\n\n")
   print(d[-nrow(x), , drop = FALSE], digits = digits, ...)
   cat("\n - Corr w/ vertebra size:\n\n")
   print(d[nrow(x), , drop = FALSE], digits = digits, ...)
@@ -81,14 +81,14 @@ plot.regions_pco_load <- function(x, ...) {
   d$featuren <- as.numeric(d$feature)
   d$featuren[nrow(d)] <- .7
 
-  d_long <- reshape(d, direction = "long", varying = startsWith(names(d), "PCO"),
+  d_long <- reshape(d, direction = "long", varying = startsWith(names(d), "PC"),
                     idvar = "feature", v.names = "value",
-                    timevar = "PCO")
+                    timevar = "PC")
 
   ggplot(d_long) +
-    geom_tile(aes(x = .data$PCO, y = .data$featuren, fill = .data$value)) +
-    labs(y = NULL, x = "PCO", fill = "Loading") +
-    scale_x_continuous(position = "top", breaks = seq_len(max(d_long$PCO))) +
+    geom_tile(aes(x = .data$PC, y = .data$featuren, fill = .data$value)) +
+    labs(y = NULL, x = "PC", fill = "Loading") +
+    scale_x_continuous(position = "top", breaks = seq_len(max(d_long$PC))) +
     scale_y_continuous(labels = rev(rownames(d)),
                        breaks = sort(unique(d$featuren)),
                        expand = c(0, 0)) +
