@@ -55,7 +55,7 @@ plotvertmap(
 
 \item{lim.col}{when \code{reg.lim} is specified, the color of the lines separating the regions. Default is black.}
 
-\item{block.cols}{when breakpoints are specified (i.e., using \code{bps}, \code{modelsupport}, or \code{bpvar}) and \code{block.lim} is not specified, a vector of color names or hex codes, one for each region. If not specified, \code{\link[RColorBrewer:ColorBrewer]{RColorBrewer::brewer.pal()}} with \code{name = "paired"} will be used to generate colors. When \code{block.lim} is specified, a named list of vectors of color names or hex codes. See Details.}
+\item{block.cols}{when breakpoints are specified (i.e., using \code{bps}, \code{modelsupport}, or \code{bpvar}) and \code{block.lim} is not specified, a vector of color names or hex codes, one for each region. If not specified, \code{\link[RColorBrewer:brewer.pal]{RColorBrewer::brewer.pal()}} with \code{name = "paired"} will be used to generate colors. When \code{block.lim} is specified, a named list of vectors of color names or hex codes. See Details.}
 
 \item{block.lim}{a vector of breakpoints indicating the limits of traditional regions, which will be colored using \code{block.cols}. See Details.}
 }
@@ -66,7 +66,7 @@ A \code{ggplot} object that can be manipulated using \code{ggplot2} syntax.
 \code{plotvertmap()} plots a map of the supplied vertebrae, optionally adding colors, marks, and text to identify existing and estimated features of the vertebrae.
 }
 \details{
-\code{plotvertmap()} uses \code{\link[ggplot2:geom_tile]{ggplot2::geom_rect()}} to create the plot. The plots are best viewed with a short height and a long width.
+\code{plotvertmap()} uses \code{\link[ggplot2:geom_rect]{ggplot2::geom_rect()}} to create the plot. The plots are best viewed with a short height and a long width.
 \subsection{Specifying breakpoints:}{
 
 There are three ways to specify regions in \code{plotvertmap()}. First is to supply the vector of breakpoints directly to \code{bps}. Second is to supply a \code{regions_modelsupport} object to \code{modelsupport}. When supplied, the \code{criterion} and \code{model} arguments can be used to select which of the sets of breakpoints in the object is to be used. \code{model} selects which breakpoint model is to be used (1 for first best, 2 for second best, etc.), and \code{criterion} determines which criterion (AICc or BIC) is used to rank the models. Third is to supply \code{ regions_BPvar} object to \code{bpvar}. The weighted average breakpoints will be used after rounding (e.g., a weighted average breakpoint of 3.3 will place vertebrae 1, 2, and 3 in a region, and a weighted average breakpoint of 3.9 will place vertebrae 1, 2, 3, and 4 in a region).

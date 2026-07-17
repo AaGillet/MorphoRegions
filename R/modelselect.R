@@ -15,16 +15,20 @@
 #' @export
 modelselect <- function(results, scores = NULL) {
 
-  chk::chk_is(results, "regions_results")
+  arg::arg_supplied(results)
+  arg::arg_is(results, "regions_results")
 
   regiondata <- results$results
 
   noregions <- sort(unique(results$stats$Nregions))
 
-  if (!is.null(scores)) {
-    chk::chk_whole_numeric(scores)
-    chk::chk_range(scores, c(1, sum(startsWith(names(regiondata), "RSS."))))
+  arg::when_not_null(
+    scores,
+    arg::arg_whole_numeric,
+    arg::arg_between(c(1, sum(startsWith(names(regiondata), "RSS."))))
+  )
 
+  if (!is.null(scores)) {
     keep.pcos <- paste0("RSS.", sort(scores))
     regiondata$sumRSS <- rowSums(regiondata[keep.pcos])
 
@@ -32,8 +36,8 @@ modelselect <- function(results, scores = NULL) {
   }
 
   models <- do.call("rbind", lapply(noregions, function(i) {
-    allmodels <- regiondata[regiondata$regions == i,, drop = FALSE]	#select only models with correct region no
-    allmodels[which.min(allmodels$sumRSS),, drop = FALSE]
+    allmodels <- regiondata[regiondata$regions == i, , drop = FALSE]	#select only models with correct region no
+    allmodels[which.min(allmodels$sumRSS), , drop = FALSE]
   }))
 
   attr(models, "cont") <- attr(results, "cont")
@@ -45,9 +49,12 @@ modelselect <- function(results, scores = NULL) {
 }
 
 #' @exportS3Method print regions_modelselect
-print.regions_modelselect <- function(x, digits = 3, ...) {
+print.regions_modelselect <- function(x, digits = 3L, ...) {
+  arg::arg_whole_number(digits)
+
   x0 <- x
   class(x) <- setdiff(class(x), "regions_modelselect")
+
   for (i in which(startsWith(names(x), "breakpoint"))) {
     x[[i]] <- ifelse(is.na(x[[i]]), ".",
                      format(x[[i]], justify = "right"))

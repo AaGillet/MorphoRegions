@@ -14,7 +14,7 @@ PCOselect(
   nreps = 500,
   results = NULL,
   criterion = "aic",
-  verbose = TRUE
+  verbose = interactive()
 )
 
 \method{plot}{regions_pco_select}(x, ...)
@@ -36,7 +36,7 @@ PCOselect(
 
 \item{criterion}{when \code{method = "max"}, which criterion should be used to select the number of scores. Allowable options include \code{"aic"} and \code{"bic"}. Abbreviations allowed.}
 
-\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE}.}
+\item{verbose}{when \code{method = "boot"}, whether to display a progress bar. Default is \code{TRUE} when running interactively and \code{FALSE} otherwise.}
 
 \item{x}{for \code{plot.regions_pco_select()}, a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "boot"} or \code{"max"}.}
 
@@ -45,7 +45,7 @@ PCOselect(
 \item{object}{a \code{regions_pco_select} object, the output of a call to \code{PCOselect()} with \code{method = "max"}.}
 }
 \value{
-For \code{PCOselect()}, a \code{regions_pco_select} object, which is a numeric vector containing the indices of the chosen PCOs, with attributes containing information about the PCO scores chosen by the specified method. When \code{method = "boot"}, the bootstrap results are stored in the \code{"boot"} attribute. When \code{method = "max"}, the \code{regions_results} object passed to \code{regions} and other information about the quality of fit for each number of PCOs are stored in the \code{"pcomax"} attribute.
+For \code{PCOselect()}, a \code{regions_pco_select} object, which is a numeric vector containing the indices of the chosen PCs, with attributes containing information about the PC scores chosen by the specified method. When \code{method = "boot"}, the bootstrap results are stored in the \code{"boot"} attribute. When \code{method = "max"}, the \code{regions_results} object passed to \code{regions} and other information about the quality of fit for each number of PCs are stored in the \code{"pcomax"} attribute.
 
 The \code{plot()} methods each return a \code{ggplot} object that can manipulated using \pkg{ggplot2} syntax. The \code{summary()} method returns a data.frame of results.
 }
@@ -61,17 +61,17 @@ This simply returns the number supplied to \code{scores} after running some chec
 
 \subsection{\code{method = "boot"}}{
 
-Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so \code{scale = TRUE} should be set in the call to \code{\link[=svdPCO]{svdPCO()}}, which is the default; the data are scaled in the same way prior to bootstrapping. The \code{plot()} method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO.
+Bootstrapping works by comparing the eigenvalue distributions of PCOs to those with randomized data in order to extract PCO axes with significant signal, which are defined as those with eigenvalues greater than those from randomized data. The returned PCO cutoff is the largest PCO axis whose eigenvalues fall below the mean eigenvalue for that axis from the randomized data. Data are randomly sampled by row. Bootstrapping is sensitive to unequal variances of columns, so \code{scale = TRUE} should be set in the call to \code{\link[=svdPCO]{svdPCO()}}, which is the default; the data are scaled in the same way prior to bootstrapping. The \code{plot()} method displays the eigenvalues of the true PCOs and boxplots summarizing the distribution of the bootstrapped eigenvalues for each PCO. The \code{boot} method is unavailable for user-supplied PC scores (\code{regions_pco} object obtained from \code{process_PC} or \code{process_gmPC} functions).
 }
 
 \subsection{\code{method = "variance"}}{
 
-This method works by computing the ratio of each eigenvalue to the sum of the eigenvalues (i.e., to compute the proportion of variance explained by each PCO score) and select the number of scores with ratios greater than the cutoff value supplied to \code{cutoff}.
+This method works by computing the ratio of each eigenvalue to the sum of the eigenvalues (i.e., to compute the proportion of variance explained by each PC score) and select the number of scores with ratios greater than the cutoff value supplied to \code{cutoff}.
 }
 
 \subsection{\code{method = "max"}}{
 
-This method works by selecting the smallest number of PCOs that gives a region score within .001 of the maximum possible region score for the segmented models fit in the object supplied to \code{results}. Which criterion is maximized (AIC or BIC) is determined by the value supplied to \code{criterion}. The \code{summary()} method displays the region score (estimated number of regions) for each PCO (\code{RSind}) and for PCOs cumulatively (\code{RScum}) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCOs. The \code{plot()} method displays this information graphically, with the left y-axis displaying the region score for the PCOs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCOs.
+This method works by selecting the smallest number of PCs that gives a region score within .001 of the maximum possible region score for the segmented models fit in the object supplied to \code{results}. Which criterion is maximized (AIC or BIC) is determined by the value supplied to \code{criterion}. The \code{summary()} method displays the region score (estimated number of regions) for each PC (\code{RSind}) and for PCs cumulatively (\code{RScum}) selected using the AICc or BIC as well as the cumulative proportion of variance explained by the PCs. The \code{plot()} method displays this information graphically, with the left y-axis displaying the region score for the PCs individually (pale blue triangles) and cumulatively (orange circles) using each of the two criteria, and the right y-axis displaying the cumulative percentage of variance explained by the PCs.
 }
 }
 \examples{

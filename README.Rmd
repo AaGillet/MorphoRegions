@@ -20,8 +20,9 @@ knitr::opts_chunk$set(
 
 *MorphoRegions* is an R package built to computationally identify regions (morphological, functional, etc.) in serially homologous structures such as, but not limited to, the vertebrate backbone. Regions are modeled as segmented linear regressions with each segment corresponding to a region and region boundaries (or breakpoints) corresponding to changes along the serially homologous structure. The optimal number of regions and their breakpoint positions are identified using maximum-likelihood methods without *a priori* assumptions.
 
-This package was first presented in [Gillet et al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an updated version of the [*regions* R package](https://github.com/katrinajones/regions) from [Jones et al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126) with improved computational methods and expanded fitting and plotting options.
+Since version 0.2.0, *MorphoRegions* can now be applied to both **traditional morphometric** and **geometric morphometric** data, providing a unified workflow for identifying regionalization patterns in serially homologous structures.
 
+This package was first presented in [Gillet et al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an updated version of the [*regions* R package](https://github.com/katrinajones/regions) from [Jones et al. (2018)](https://www.science.org/doi/abs/10.1126/science.aar3126) with improved computational methods and expanded fitting and plotting options.
 
 ## Installing *MorphoRegions*
 
@@ -31,11 +32,11 @@ You can install the released version of *MorphoRegions* from [CRAN](https://CRAN
 install.packages("MorphoRegions")
 ```
 
-Or the development version from [GitHub](https://github.com/AaGillet/MorphoRegions) with:
+Or the development version on [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ```{r eval=F}
-# install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions")
+# install.packages("pak")
+pak::pak("AaGillet/MorphoRegions")
 ```
 
 ## Example
@@ -49,7 +50,9 @@ library(MorphoRegions)
 
 #### Preparing the data
 
-Data should be provided as a dataframe where each row is an element of the serially homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The `dolphin` dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.
+##### Traditional morphometrics
+
+Data should be provided as a data frame where each row is an element of the serially homologous structure (e.g., a vertebra). One column should contain positional information of each element (e.g., vertebral number) and other columns should contain variables that will be used to calculate regions (e.g., morphological measurements). The `dolphin` dataset contains vertebral measurements of a dolphin with the positional information (vertebral number) in the first column.
 
 ```{r loaData}
 data("dolphin")
@@ -58,9 +61,7 @@ data("dolphin")
 knitr::kable(head(dolphin))
 ```
 
-
 Prior to analysis, data must be processed into an object usable by *MorphoRegions* using `process_measurements()`. The `pos` argument is used to specify the name or index of the column containing positional information and the `fillNA` argument allows to fill missing values in the dataset (up to two successive elements).
-
 
 ```{r processData}
 dolphin_data <- process_measurements(dolphin, pos = 1)
@@ -79,15 +80,35 @@ PCOs
 ```
 
 
+##### Geometric morphometrics and ordinated data
+
+Alternatively to computing PCO scores in *MorphoRegions*, externally computed PC scores can be provided. Use `process_PC()` for traditional morphometric data or `process_gmPC()` for 2D or 3D geometric morphometric data.
+
+The `seal_gmm` dataset contains coordinates of Procrustes aligned 3D landmarks taken on presacral vertebrae, PC scores of each vertebra, and eigenvalues of each PC axis.
+
+```{r loadGMM}
+data("seal_gmm")
+seal_pca <- process_gmPC(data = seal_gmm$coord_gpa,
+                         pcscores = seal_gmm$scores,
+                         eigenvals = seal_gmm$eigenvals)
+
+# Select PCs with variance > 0.05 :
+PCs <- PCOselect(seal_pca, method = "variance",
+                  cutoff = .05)
+PCs
+```
+
+See `vignette("MorphoRegions")` or the [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for complete workflow, including the use of `process_PC()` for externally computed PC scores on traditional morphometric datasets.
+
+
 #### Fitting regressions and selecting the best model
 
-
-The `calcregions()` function allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
+`calcregions()` allows fitting all possible combinations of segmented linear regressions from 1 region (no breakpoint) to the number of regions specified in the `noregions` argument. In this example, up to 5 regions (4 breakpoints) will be fitted along the backbone, however, there is no limit for this value and it is possible to fit as many regions as you would like. For this example, regions will be fitted with a minimum of 3 vertebrae per region (`minvert = 3`) and using a continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or the [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for details about fitting options).
 
 ```{r calcregions}
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, verbose = FALSE)
+                             exhaus = TRUE)
 regionresults
 ```
 
@@ -105,7 +126,7 @@ supp <- modelsupport(models)
 supp
 ```
 
-Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. *The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.* The function also returns the **region score**, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions (see `vignette("MorphoRegions")` or [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for more details).
+Here, for both criteria, the best model is the 5 regions models with breakpoints at vertebrae 23, 27, 34, and 40. *The breakpoint value corresponds to the last vertebra included in the region, so the first region here is made of vertebrae 8 to 23 included and the second region is made of vertebrae 24 to 27.* The function also returns the **region score**, a continuous value reflecting the level of regionalization while accounting for uncertainty in the best number of regions (see `vignette("MorphoRegions")` or the [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for more details).
 
 
 #### Plotting results

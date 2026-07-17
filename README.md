@@ -4,6 +4,7 @@
 # *MorphoRegions*: Analysis of Regionalization Patterns in Serially Homologous Structures
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 *MorphoRegions* is an R package built to computationally identify
@@ -14,6 +15,11 @@ corresponding to a region and region boundaries (or breakpoints)
 corresponding to changes along the serially homologous structure. The
 optimal number of regions and their breakpoint positions are identified
 using maximum-likelihood methods without *a priori* assumptions.
+
+Since version 0.2.0, *MorphoRegions* can now be applied to both
+**traditional morphometric** and **geometric morphometric** data,
+providing a unified workflow for identifying regionalization patterns in
+serially homologous structures.
 
 This package was first presented in [Gillet et
 al. (2024)](https://doi.org/10.1038/s41467-024-51963-w) and is an
@@ -32,12 +38,12 @@ You can install the released version of *MorphoRegions* from
 install.packages("MorphoRegions")
 ```
 
-Or the development version from
+Or the development version on
 [GitHub](https://github.com/AaGillet/MorphoRegions) with:
 
 ``` r
-# install.packages("remotes")
-remotes::install_github("AaGillet/MorphoRegions")
+# install.packages("pak")
+pak::pak("AaGillet/MorphoRegions")
 ```
 
 ## Example
@@ -54,7 +60,9 @@ library(MorphoRegions)
 
 #### Preparing the data
 
-Data should be provided as a dataframe where each row is an element of
+##### Traditional morphometrics
+
+Data should be provided as a data frame where each row is an element of
 the serially homologous structure (e.g., a vertebra). One column should
 contain positional information of each element (e.g., vertebral number)
 and other columns should contain variables that will be used to
@@ -101,27 +109,58 @@ PCOs <- PCOselect(dolphin_pco, method = "variance",
                   cutoff = .05)
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2
+#> - PC scores selected: 1, 2
 #> - Method: variance (cutoff: 0.05)
 ```
 
+##### Geometric morphometrics and ordinated data
+
+Alternatively to computing PCO scores in *MorphoRegions*, externally
+computed PC scores can be provided. Use `process_PC()` for traditional
+morphometric data or `process_gmPC()` for 2D or 3D geometric
+morphometric data.
+
+The `seal_gmm` dataset contains coordinates of Procrustes aligned 3D
+landmarks taken on presacral vertebrae, PC scores of each vertebra, and
+eigenvalues of each PC axis.
+
+``` r
+data("seal_gmm")
+seal_pca <- process_gmPC(data = seal_gmm$coord_gpa,
+                         pcscores = seal_gmm$scores,
+                         eigenvals = seal_gmm$eigenvals)
+
+# Select PCs with variance > 0.05 :
+PCs <- PCOselect(seal_pca, method = "variance",
+                  cutoff = .05)
+PCs
+#> A `regions_pco_select` object
+#> - PC scores selected: 1, 2, 3
+#> - Method: variance (cutoff: 0.05)
+```
+
+See `vignette("MorphoRegions")` or the [*MorphoRegions*
+website](https://aagillet.github.io/MorphoRegions/) for complete
+workflow, including the use of `process_PC()` for externally computed PC
+scores on traditional morphometric datasets.
+
 #### Fitting regressions and selecting the best model
 
-The `calcregions()` function allows fitting all possible combinations of
-segmented linear regressions from 1 region (no breakpoint) to the number
-of regions specified in the `noregions` argument. In this example, up to
-5 regions (4 breakpoints) will be fitted along the backbone, however,
+`calcregions()` allows fitting all possible combinations of segmented
+linear regressions from 1 region (no breakpoint) to the number of
+regions specified in the `noregions` argument. In this example, up to 5
+regions (4 breakpoints) will be fitted along the backbone, however,
 there is no limit for this value and it is possible to fit as many
 regions as you would like. For this example, regions will be fitted with
 a minimum of 3 vertebrae per region (`minvert = 3`) and using a
-continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or
+continuous fit (`cont = TRUE`) (see `vignette("MorphoRegions")` or the
 [*MorphoRegions* website](https://aagillet.github.io/MorphoRegions/) for
 details about fitting options).
 
 ``` r
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, verbose = FALSE)
+                             exhaus = TRUE)
 regionresults
 #> A `regions_results` object
 #>  - number of PCOs used: 2 
@@ -179,7 +218,7 @@ region here is made of vertebrae 8 to 23 included and the second region
 is made of vertebrae 24 to 27.* The function also returns the **region
 score**, a continuous value reflecting the level of regionalization
 while accounting for uncertainty in the best number of regions (see
-`vignette("MorphoRegions")` or [*MorphoRegions*
+`vignette("MorphoRegions")` or the [*MorphoRegions*
 website](https://aagillet.github.io/MorphoRegions/) for more details).
 
 #### Plotting results
@@ -197,7 +236,7 @@ plotsegreg(dolphin_pco, scores = 1:2, modelsupport = supp,
            criterion = "bic", model = 1)
 ```
 
-<img src="man/figures/README-scatterplot-1.png" width="55%" style="display: block; margin: auto;" />
+<img src="man/figures/README-scatterplot-1.png" alt="" width="55%" style="display: block; margin: auto;" />
 
 In the **vertebral map** plot, each vertebra is represented by a
 rectangle color-coded according to the region to which it belongs.
@@ -212,7 +251,7 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
             criterion = "bic", model = 1, dropNA = TRUE)
 ```
 
-<img src="man/figures/README-vertebralmap-1.png" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-vertebralmap-1.png" alt="" width="80%" style="display: block; margin: auto;" /><img src="man/figures/README-vertebralmap-2.png" alt="" width="80%" style="display: block; margin: auto;" />
 
 The variability around breakpoint positions can be calculated using
 `calcBPvar()` and then displayed on the vertebral map. The weighted
@@ -227,7 +266,7 @@ plotvertmap(dolphin_pco, name = "Dolphin",
             dropNA = TRUE, bpvar = bpvar)
 ```
 
-<img src="man/figures/README-vertebralmapBPvar-1.png" width="80%" style="display: block; margin: auto;" />
+<img src="man/figures/README-vertebralmapBPvar-1.png" alt="" width="80%" style="display: block; margin: auto;" />
 
 ## Citation
 
