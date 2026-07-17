@@ -52,26 +52,26 @@
 
 #' Geometric morphometric data and PC scores of the vertebral column a seal
 #'
-#' Procrusted aligned 3d landmarks (`coord_gpa`) and PC scores (`scores`) of the backbone of Phoca vitulina (ZMUC 160).
+#' Procrustes aligned 3d landmarks (`coord_gpa`) and PC scores (`scores`) of the backbone of Phoca vitulina (ZMUC 160).
 #' @docType data
 #' @usage data("seal_gmm")
 #' @format A list containing: a 3D array of Procrustes aligned 3D landmarks (`coord_gpa`) of 25 presacral vertebrae with 40 landmarks per vertebra, a matrix of PC scores from a PCA performed on Procrustes aligned landmarks (`scores`),
 #' and a numeric vector with the eigenvalues from the PCA (`eigenvals`).
 #'
 #' @keywords datasets
-#' @references Esteban, J. M., Martín-Serra, A., Pérez-Ramos, A., Mulot, B., Jones K. E., & Figueirido, B.  (2023). The impact of the land-to-sea transition on evolutionary integration and modularity of the pinniped backbone. Nature Communications, 6, 1141.
+#' @references Esteban, J. M., Martín-Serra, A., Pérez-Ramos, A., Mulot, B., Jones, K. E., & Figueirido, B.  (2023). The impact of the land-to-sea transition on evolutionary integration and modularity of the pinniped backbone. Communications Biology, 6, 1141.
 #' @name seal_gmm
 "seal_gmm"
 
 #' Geometric morphometric data and PC scores of the vertebral column two wolves
 #'
-#' Procrusted aligned 3d landmarks (`coord_gpa`) and PC scores (`scores`) from  10 subsampled vertebrae along the backbone of two specimens of Canis lupus (MU 071 and MU 073).
+#' Procrustes aligned 3d landmarks (`coord_gpa`) and PC scores (`scores`) from  10 subsampled vertebrae along the backbone of two specimens of Canis lupus (MU 071 and MU 073).
 #' @docType data
 #' @usage data("wolves_gmm")
 #' @format A list containing: a 3D array of Procrustes aligned 3D landmarks (`coord_gpa`) of 10 subsampled vertebrae per specimen, and 30 landmarks per vertebra, a matrix of PC scores from a PCA performed on Procrustes aligned landmarks (`scores`),
 #' a numeric vector with the eigenvalues from the PCA (`eigenvals`), a numeric vector with the position information of vertebrae (`vertebrae`), and a vector with the names of the specimens (`specimens`).
 #'
 #' @keywords datasets
-#' @references Schwab, J., Figueirido, B., & Jones, K. E. (2026). Ecological Inference From Isolated Vertebrae: Evaluating Functional Signal Across the Carnivoran Spine. Journal of Morphology, 287(1), e70109.
+#' @references Schwab, J., Figueirido, B., & Jones, K. E. (2026). Ecological inference from isolated vertebrae: Evaluating functional signal across the carnivoran spine. Journal of Morphology, 287(1), e70109.
 #' @name wolves_gmm
 "wolves_gmm"
