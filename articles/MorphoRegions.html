@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">MorphoRegions</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,7 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/MorphoRegions.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -53,7 +54,7 @@
       <h1>MorphoRegions</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/aagillet/MorphoRegions/blob/v0.1.1/vignettes/MorphoRegions.Rmd" class="external-link"><code>vignettes/MorphoRegions.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/aagillet/MorphoRegions/blob/master/vignettes/MorphoRegions.Rmd" class="external-link"><code>vignettes/MorphoRegions.Rmd</code></a></small>
       <div class="d-none name"><code>MorphoRegions.Rmd</code></div>
     </div>
 
@@ -104,6 +105,10 @@ computing, choose between continuous and discontinuous fitting methods,
 define the minimum number of vertebrae in each region, select the best
 model using either AICc or BIC, and fit a model to multiple specimens.
 Plotting options have also been expanded.</p>
+<p>Since version 0.2.0, <em>MorphoRegions</em> can now be applied to
+both <strong>traditional morphometric</strong> and <strong>geometric
+morphometric</strong> data, providing a unified workflow for identifying
+regionalization patterns in serially homologous structures.</p>
 <p><br></p>
 </div>
 <div class="section level2">
@@ -116,21 +121,72 @@ using the following code:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aagillet.github.io/MorphoRegions/">MorphoRegions</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="overview-of-morphoregions-worflow">Overview of <em>MorphoRegions</em> worflow<a class="anchor" aria-label="anchor" href="#overview-of-morphoregions-worflow"></a>
+</h2>
+<p>Working with <em>MorphoRegions</em> requires three main steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Providing and formatting the data</p></li>
+<li><p>Performing the regionalization analyses</p></li>
+<li><p>Visualizing the results</p></li>
+</ol>
+<p>The workflow and functions used to input data into
+<em>MorphoRegions</em> depend on the type of data as shown in the figure
+below.</p>
+<div class="figure" style="text-align: center">
+<img src="images/Pipeline_v.2_HD.png" class="r-plt" alt="Overview of *MorphoRegions* workflow and key functions to use. Functions to use for data input depend on the type of data provided." width="100%"><p class="caption">
+Overview of <em>MorphoRegions</em> workflow and key functions to use.
+Functions to use for data input depend on the type of data provided.
+</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="preparing-the-data">Preparing the data<a class="anchor" aria-label="anchor" href="#preparing-the-data"></a>
 </h2>
-<p>Data should be provided as a dataframe where each row is an element
+<p><em>MorphoRegions</em> can process the following type of data:</p>
+<ul>
+<li>Raw traditional morphometrics datasets (or other similar dataset
+where each row is an observation (i.e, serial element) and each column
+is a variable) (<a href="#Pipe1">Pipeline 1</a>)</li>
+<li>PC scores (or other type of ordinated data) of traditional
+morphometric datasets (or similar) (<a href="#Pipe2">Pipeline
+2</a>)</li>
+<li>PC scores of geometric morphometric datasets (<a href="#Pipe3">Pipeline 3</a>)</li>
+</ul>
+<p>The package comes with <strong>six built-in datasets</strong>.</p>
+<ul>
+<li>
+<code>alligator</code>, <code>musm</code>, and <code>dolphin</code>
+contain measurements on the vertebrae of an alligator, mouse, and
+dolphin</li>
+<li>
+<code>porpoise</code> contains vertebral measurements of three
+specimens of harbor porpoises and can be used to test fitting a single
+model for multiple specimens together (<a href="#IntraSp">see
+Intraspecific variability</a>)</li>
+<li>
+<code>seal_gmm</code> contains Procrustes aligned 3d landmarks on
+the vertebrae of a seal as well as PC scores</li>
+<li>
+<code>wolves_gmm</code> contains Procrustes aligned 3d landmarks and
+PC scores from 10 subsampled vertebrae along the backbone of two wolves
+and can be used to test fitting a single model on multiple specimens (<a href="#IntraSp">see Intraspecific variability</a>)</li>
+</ul>
+<p><em>Dolphin and porpoise data are from <span class="citation">Gillet
+et al. (<a href="#ref-Gillet2022">2022</a>)</span>; alligator and mouse
+data are from <span class="citation">Jones et al. (<a href="#ref-Jones2018">2018</a>)</span>; seal 3D landmark data are from
+<span class="citation">Esteban et al. (<a href="#ref-Esteban2023">2023</a>)</span>; wolf 3D landmarks are from
+<span class="citation">Schwab et al. (<a href="#ref-Schwab2025">2025</a>)</span>.</em></p>
+<div class="section level3">
+<h3 id="Pipe1">Raw morphometrics <em>(Pipeline 1)</em><a class="anchor" aria-label="anchor" href="#Pipe1"></a>
+</h3>
+<div class="section level4">
+<h4 id="data-input">Data input<a class="anchor" aria-label="anchor" href="#data-input"></a>
+</h4>
+<p>Data should be provided as a data frame where each row is an element
 of the serially-homologous structure (e.g., a vertebra). One column
 should contain positional information of each element (e.g., vertebral
 number) and other columns should contain variables that will be used to
 calculate regions (e.g., morphological measurements).</p>
-<p>The package comes with <strong>four built-in datasets</strong>.
-<code>alligator</code>, <code>musm</code>, and <code>dolphin</code>
-contain measurements on the vertebrae of an alligator, mouse, and
-dolphin. <code>porpoise</code> contains vertebral measurements of three
-specimens of harbor porpoises and can be used to test fitting a single
-model for multiple specimens together (<a href="#IntraSp">see
-below</a>). <em>Alligator and mouse data are from <span class="citation">Jones et al. (<a href="#ref-Jones2018">2018</a>)</span>; dolphin and porpoise data are
-from <span class="citation">Gillet et al. (<a href="#ref-Gillet2022">2022</a>)</span>.</em></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dolphin"</span><span class="op">)</span></span>
 <span></span>
@@ -170,9 +226,9 @@ et al. (<a href="#ref-Jones2018">2018</a>)</span> for more details). The
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">dolphin_data</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "regions_data"</span></span></code></pre></div>
 </div>
-<div class="section level2">
-<h2 id="PCO">Data ordination<a class="anchor" aria-label="anchor" href="#PCO"></a>
-</h2>
+<div class="section level4">
+<h4 id="PCO">Data ordination<a class="anchor" aria-label="anchor" href="#PCO"></a>
+</h4>
 <p>To allow the analysis of high dimensional datasets, including a
 variety of data types, a <strong>Principal Coordinates Analysis
 (PCO)</strong>, a distance-based data ordination method, is implemented
@@ -192,7 +248,7 @@ position in backbone (left) or as a morphospace (right).</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot morphospace of PC1 and 2:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, pco_x <span class="op">=</span> <span class="fl">1</span>, pco_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, pc_x <span class="op">=</span> <span class="fl">1</span>, pc_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="MorphoRegions_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><p class="caption">
 <strong>Fig.2.</strong> <em>Left</em>: PCO scores of each vertebra along
@@ -202,30 +258,108 @@ numbers corresponding to the position of each vertebra along the
 backbone.
 </p>
 </div>
+</div>
+</div>
 <div class="section level3">
-<h3 id="data-reduction">Data reduction<a class="anchor" aria-label="anchor" href="#data-reduction"></a>
+<h3 id="Pipe2">PCs from traditional morphometrics <em>(Pipeline 2)</em><a class="anchor" aria-label="anchor" href="#Pipe2"></a>
 </h3>
-<p>While the regionalization analysis can be performed on all PCO axes,
-it’s likely that lower PCO axes mostly contain noise. The number of PCO
+<p>Instead of providing raw data and performing a principal coordinates
+ordination, it is possible to directly provide PC scores that have been
+computed outside of <em>MorphoRegions</em>, for instance using the
+<code><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp()</a></code> function.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Load dolphin data:</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"dolphin"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute PCA on correlation matrix:</span></span>
+<span><span class="va">PCA</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">dolphin</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, scale<span class="op">=</span><span class="cn">T</span>, center<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<p>The function <code><a href="../reference/process_PC.html">process_PC()</a></code> will then convert the PC
+scores into a <code>regions_pco</code> object usable for downstream
+analyses. The function requires the PC scores, the eigenvalues, and the
+original (raw) data. The positional information of the vertebrae in the
+original data and the PC data can be provided with the arguments
+<code>pos</code> and <code>posPC</code>, respectively. If these
+arguments are not provided, the function will assume that the first
+column of the raw data contains the positional information and that the
+order of vertebrae in the PC scores data matches the order in the raw
+data.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Extract PC scores and eigenvalues:</span></span>
+<span><span class="va">PCA_scores</span> <span class="op">&lt;-</span> <span class="va">PCA</span><span class="op">$</span><span class="va">x</span></span>
+<span><span class="va">PCA_eigenval</span> <span class="op">&lt;-</span> <span class="va">PCA</span><span class="op">$</span><span class="va">sdev</span><span class="op">^</span><span class="fl">2</span></span>
+<span></span>
+<span><span class="co"># Input data in MorphoRegions:</span></span>
+<span><span class="va">dolphin_pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_PC.html">process_PC</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dolphin</span>, pos <span class="op">=</span> <span class="st">'Vertebra'</span>,</span>
+<span>                          pcscores <span class="op">=</span> <span class="va">PCA_scores</span>, eigenvals <span class="op">=</span> <span class="va">PCA_eigenval</span>, </span>
+<span>                          posPC <span class="op">=</span> <span class="va">dolphin</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>PC scores can then be plotted with the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> function
+as <a href="#PCO">above</a></p>
+</div>
+<div class="section level3">
+<h3 id="Pipe3">PCs from geometric morphometrics <em>(Pipeline 3)</em><a class="anchor" aria-label="anchor" href="#Pipe3"></a>
+</h3>
+<p>Since v.0.2.0 of the package it also possible to run
+<em>MorphoRegions</em> on geometric morphometric datasets. As for <a href="#Pipe2">pipeline 2 above</a>, the data ordination (e.g., PCA)
+should be performed outside of <em>MorphoRegions</em>.</p>
+<p>The <code>seal_gmm</code> dataset is a list containing the 3D
+coordinates of 40 Procrustes aligned landmarks from vertebrae 3 to 27 of
+a seal (aligned with <code>gpagen</code> from the <code>geomorph</code>
+R-package); the PC scores of each vertebrae (obtained using
+<code>gm.prcomp()</code> from <code>geomorph</code>), and the eigenvalue
+of each PC axis. The positional info of the vertebrae are stored as
+dimension names of the landmark coordinates array.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"seal_gmm"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">seal_gmm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "coord_gpa" "scores"    "eigenvals"</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dimnames.html" class="external-link">dimnames</a></span><span class="op">(</span><span class="va">seal_gmm</span><span class="op">$</span><span class="va">coord_gpa</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt;  [1] "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12" "13" "14" "15"</span></span>
+<span><span class="co">#&gt; [16] "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30"</span></span>
+<span><span class="co">#&gt; [31] "31" "32" "33" "34" "35" "36" "37" "38" "39" "40"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [1] "X" "Y" "Z"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt;  [1] "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12" "13" "14" "15" "16" "17"</span></span>
+<span><span class="co">#&gt; [16] "18" "19" "20" "21" "22" "23" "24" "25" "26" "27"</span></span></code></pre></div>
+<p>The function <code><a href="../reference/process_gmPC.html">process_gmPC()</a></code> will then convert the PC
+scores into a <code>regions_pco</code> object usable for downstream
+analyses. The function requires the PC scores, the eigenvalues, and the
+landmark coordinates. The positional information of the vertebrae can be
+provided as a numeric vector with the <code>pos</code> argument. If no
+positional information is provided, the function will extract vertebral
+position info form the names of the landmark coordinate array (default)
+and convert them to numeric values.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seal_pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_gmPC.html">process_gmPC</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">seal_gmm</span><span class="op">$</span><span class="va">coord_gpa</span>,</span>
+<span>                         pcscores <span class="op">=</span> <span class="va">seal_gmm</span><span class="op">$</span><span class="va">scores</span>,</span>
+<span>                         eigenvals <span class="op">=</span> <span class="va">seal_gmm</span><span class="op">$</span><span class="va">eigenvals</span><span class="op">)</span></span></code></pre></div>
+<p>PC scores can then be plotted with the <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> function
+as <a href="#PCO">above</a></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="data-reduction">Data reduction<a class="anchor" aria-label="anchor" href="#data-reduction"></a>
+</h2>
+<p>While the regionalization analysis can be performed on all PC axes,
+it’s likely that lower PC axes mostly contain noise. The number of PC
 axes to retain for analysis can be selected using
 <code><a href="../reference/PCOselect.html">PCOselect()</a></code>.</p>
-<p><strong>Four different methods to select PCOs</strong> are available
+<p><strong>Four different methods to select PCs</strong> are available
 and be specified using the <code>method</code> argument:</p>
 <ul>
 <li>
-<code>"manual"</code>: the number of PCOs is directly defined via
-the <code>scores</code> argument</li>
+<code>"manual"</code>: the number of PCs is directly defined by the
+user</li>
 <li>
-<code>"variance"</code>: PCO axes with a variance (defined as the
-ratio between the eigenvalue of the given axis and the sum of all
-eigenvalues) higher to the <code>cutoff</code> value (expressed as a
-value between 0 and 1) are retained</li>
+<code>"variance"</code>: PC axes with a variance above a given
+threshold are retained</li>
 <li>
-<code>"max"</code>: PCOs axes needed to obtain the maximum number of
-regions in the segmented models tested which must be supplied to
-<code>results</code>. The criterion (AICc or BIC) used to maximize the
-region score should be defined with <code>criterion</code>
-</li>
+<code>"max"</code>: computes the minimum number of PCs axes needed
+to maximize the number of regions</li>
 <li>
 <code>"boot"</code>: PCO axes are selected through bootstrapping by
 comparing observed eigenvalues to eigenvalues from randomized data and
@@ -237,37 +371,62 @@ data that have been scaled (setting <code>scale = TRUE</code> in the
 original call to <code><a href="../reference/svdPCO.html">svdPCO()</a></code>).</em>
 </li>
 </ul>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Manual (keeping axes 1 to 3):</span></span>
-<span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"manual"</span>,</span>
-<span>                  scores <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<div class="section level4">
+<h4 id="manual-selection">Manual selection:<a class="anchor" aria-label="anchor" href="#manual-selection"></a>
+</h4>
+<p>The number of PCs is directly defined via the <code>scores</code>
+argument. For instance, selecting PC axes 1 to 5:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"manual"</span>,</span>
+<span>                  scores <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">PCOs</span></span>
 <span><span class="co">#&gt; A `regions_pco_select` object</span></span>
-<span><span class="co">#&gt; - PCO scores selected: 1, 2, 3</span></span>
-<span><span class="co">#&gt; - Method: manual</span></span>
-<span></span>
-<span><span class="co"># Variance (selecting axes with variance &gt; 0.05):</span></span>
-<span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"variance"</span>,</span>
+<span><span class="co">#&gt; - PC scores selected: 1, 2, 3, 4, 5</span></span>
+<span><span class="co">#&gt; - Method: manual</span></span></code></pre></div>
+</div>
+<div class="section level4">
+<h4 id="variance-cutoff">Variance cutoff:<a class="anchor" aria-label="anchor" href="#variance-cutoff"></a>
+</h4>
+<p>PC axes with a variance (defined as the ratio between the eigenvalue
+of the given axis and the sum of all eigenvalues) higher to the
+<code>cutoff</code> value (expressed as a value between 0 and 1) are
+retained. For instance, selecting PC axes with variance above 5%:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pca</span>, method <span class="op">=</span> <span class="st">"variance"</span>,</span>
 <span>                  cutoff <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
 <span><span class="va">PCOs</span></span>
 <span><span class="co">#&gt; A `regions_pco_select` object</span></span>
-<span><span class="co">#&gt; - PCO scores selected: 1, 2</span></span>
+<span><span class="co">#&gt; - PC scores selected: 1, 2, 3</span></span>
 <span><span class="co">#&gt; - Method: variance (cutoff: 0.05)</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+</div>
+<div class="section level4">
+<h4 id="maximizing-the-number-of-regions">Maximizing the number of regions:<a class="anchor" aria-label="anchor" href="#maximizing-the-number-of-regions"></a>
+</h4>
+<p>PCs axes needed to obtain the maximum number of regions will be
+retained. The segmented models (output from <code>calcregions</code>)
+must be supplied to the <code>results</code> argument. The criterion
+(AICc or BIC) used to maximize the region score should be defined with
+<code>criterion</code> (see the section <a href="#RegAn">Regionalization
+analysis</a> below for details on running <code>calcregions</code> and
+criterion selection) For instance, maximizing the number of PC axes to
+retain for the seal geometric morphometric dataset:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Max:</span></span>
-<span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">39</span>, noregions <span class="op">=</span> <span class="fl">4</span>, </span>
-<span>                             minvert <span class="op">=</span> <span class="fl">3</span>, cont <span class="op">=</span> <span class="cn">TRUE</span>, exhaus <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                             verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"max"</span>,</span>
+<span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">seal_pca</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">24</span>, noregions <span class="op">=</span> <span class="fl">4</span>, </span>
+<span>                             minvert <span class="op">=</span> <span class="fl">3</span>, cont <span class="op">=</span> <span class="cn">TRUE</span>, exhaus <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">seal_pca</span>, method <span class="op">=</span> <span class="st">"max"</span>,</span>
 <span>                  results <span class="op">=</span> <span class="va">regionresults</span>,</span>
 <span>                  criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">PCOs</span></span>
 <span><span class="co">#&gt; A `regions_pco_select` object</span></span>
-<span><span class="co">#&gt; - PCO scores selected: 1</span></span>
+<span><span class="co">#&gt; - PC scores selected: 1</span></span>
 <span><span class="co">#&gt; - Method: max (criterion: BIC)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">PCOs</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve." width="60%"><p class="caption">
 <strong>Fig.3a.</strong> Graph of region scores (left y-axis) and
 cumulative variance (right y-axis) obtained with varying number of PCO
 axes included for AICc (left graph) and BIC (right graph). Blue
@@ -277,17 +436,33 @@ of PCO axes. The cumulated variance explained by PCO axes is represented
 by the grey curve.
 </p>
 </div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+</div>
+<div class="section level4">
+<h4 id="bootstrap">Bootstrap:<a class="anchor" aria-label="anchor" href="#bootstrap"></a>
+</h4>
+<p>PC axes are selected through bootstrapping by comparing observed
+eigenvalues to eigenvalues from randomized data. PC axes with
+eigenvalues higher than values from randomized data are retained. When
+using this method, the screeplot showing observed and simulated
+eigenvalues can be plotted. Because the function needs to recompute the
+ordination based on randomized data, this option is <strong>only
+available for PCO axes computed within <em>MorphoRegions</em> </strong>
+(pipeline 1). <em>Note that bootstrapping is sensitive to unequal
+variances of variables and should only be used on data that have been
+scaled (setting <code>scale = TRUE</code> in the original call to
+<code><a href="../reference/svdPCO.html">svdPCO()</a></code>).</em></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Bootstrap:</span></span>
 <span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, method <span class="op">=</span> <span class="st">"boot"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Bootstrapping...</span></span>
+<span></span>
 <span><span class="va">PCOs</span></span>
 <span><span class="co">#&gt; A `regions_pco_select` object</span></span>
-<span><span class="co">#&gt; - PCO scores selected: 1, 2</span></span>
+<span><span class="co">#&gt; - PC scores selected: 1, 2</span></span>
 <span><span class="co">#&gt; - Method: boot (500 replications)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">PCOs</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses." width="60%"><p class="caption">
 <strong>Fig.3b.</strong> Screeplot of observed eigenvalues (line) and
 eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are
 retained for subsequent analyses.
@@ -295,16 +470,19 @@ retained for subsequent analyses.
 </div>
 </div>
 <div class="section level3">
-<h3 id="loadings">Loadings<a class="anchor" aria-label="anchor" href="#loadings"></a>
+<h3 id="variable-loadings">Variable loadings<a class="anchor" aria-label="anchor" href="#variable-loadings"></a>
 </h3>
 <p>Correlations between original variables and each PCO axis are
-obtained through the <code>PCOload</code> function. The additional
-‘Size’ variable corresponds to the mean value of the variables.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+obtained using <code><a href="../reference/PCOload.html">PCOload()</a></code>. The additional ‘Size’ variable
+corresponds to the mean value of the variables. <em>Note that This
+function is not available for geometric morphometric datasets (pipeline
+3).</em></p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loadings</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOload.html">PCOload</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="**Fig.4.** Correlations between original variables and PCO axes 1 and 2." width="70%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="**Fig.4.** Correlations between original variables and PCO axes 1 and 2." width="70%"><p class="caption">
 <strong>Fig.4.</strong> Correlations between original variables and PCO
 axes 1 and 2.
 </p>
@@ -313,7 +491,7 @@ axes 1 and 2.
 </div>
 </div>
 <div class="section level2">
-<h2 id="regionalization-analysis">Regionalization analysis<a class="anchor" aria-label="anchor" href="#regionalization-analysis"></a>
+<h2 id="RegAn">Regionalization analysis<a class="anchor" aria-label="anchor" href="#RegAn"></a>
 </h2>
 <p>The regionalization analysis is performed in three steps:</p>
 <ol style="list-style-type: decimal">
@@ -357,17 +535,15 @@ to reduce computing time (<a href="#Exhaus">see here</a>)</li>
 <li>
 <code>cl</code>: option to use parallel computation (<a href="#Para">see here</a>)</li>
 </ul>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>                             minvert <span class="op">=</span> <span class="fl">3</span>, cont <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>                             exhaus <span class="op">=</span> <span class="cn">TRUE</span>, cl <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                             verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>                             exhaus <span class="op">=</span> <span class="cn">TRUE</span>, cl <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
 <p>The output of the function contains information on the parameters
 used to run the analysis and total number of models tested while using
-the <code>summary</code> function allows to see how many models are
-possible and how many have been tested for each given number of
-regions.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> allows one to see how many models are possible
+and how many have been tested for each given number of regions.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">regionresults</span></span>
 <span><span class="co">#&gt; A `regions_results` object</span></span>
 <span><span class="co">#&gt;  - number of PCOs used: 2 </span></span>
@@ -390,7 +566,7 @@ regions.</p>
 <p><code><a href="../reference/modelselect.html">modelselect()</a></code> retains the best model for each number of
 regions tested. The best models are selected as the ones with the lowest
 residual sum of squares (RSS).</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regionresults</span><span class="op">)</span></span>
 <span><span class="va">models</span></span>
 <span><span class="co">#&gt;  Regions BP 1 BP 2 BP 3 BP 4 sumRSS RSS.1 RSS.2</span></span>
@@ -419,7 +595,7 @@ the models returned by <code><a href="../reference/modelselect.html">modelselect
 <strong>calculated using AICc or BIC</strong> which allows the selection
 of the best fit model while penalizing for models that are too complex.
 <em>See <span class="citation">Jones et al. (<a href="#ref-Jones2018">2018</a>)</span> for AICc calculations and <span class="citation">Gillet et al. (<a href="#ref-Gillet2024">2024</a>)</span> for BIC calculations.</em></p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">supp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="va">supp</span></span>
 <span><span class="co">#&gt; - Model support (AICc)</span></span>
@@ -460,9 +636,9 @@ weight. In this example, the region score for BIC is calculated as
 best model, it’s likely that more complex models fit the data better.
 <code><a href="../reference/calcregions.html">addregions()</a></code> allows one to <strong>fit additional models
 without the need to recompute models with fewer regions</strong>.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">addregions</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, exhaus <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                            verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">addregions</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">6</span><span class="op">:</span><span class="fl">7</span>, exhaus <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">regionresults</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Regions Possible Tested  Saved Comp. method Saving method</span></span>
 <span><span class="co">#&gt;        1        1      1      1   Exhaustive           All</span></span>
@@ -474,7 +650,7 @@ without the need to recompute models with fewer regions</strong>.</p>
 <span><span class="co">#&gt;        7   177100 177100 177100   Exhaustive           All</span></span></code></pre></div>
 <p>Identifying the best model now that models with 6 and 7 regions have
 been added:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regionresults</span><span class="op">)</span></span>
 <span><span class="va">supp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="va">supp</span></span>
@@ -521,8 +697,7 @@ model, additional model(s) with more than seven regions should be fitted
 (not run here for computational reasons).</p>
 </div>
 <div class="section level3">
-<h3 id="model-performance-r2">Model performance
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>R</mi><mn>2</mn></msup><annotation encoding="application/x-tex">R^2</annotation></semantics></math>)<a class="anchor" aria-label="anchor" href="#model-performance-r2"></a>
+<h3 id="model-performance">Model performance<a class="anchor" aria-label="anchor" href="#model-performance"></a>
 </h3>
 <p><code><a href="../reference/modelperf.html">modelperf()</a></code> returns the univariate (for each PC axis
 individually) and multivariate (all PC axes)
@@ -536,7 +711,7 @@ given criterion (<code>criterion</code> argument), but also the second
 best (<code>model = 2</code>), third best (<code>model = 3</code>), etc.
 In this case, the output of <code><a href="../reference/modelsupport.html">modelsupport()</a></code> must be
 supplied.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/modelperf.html">modelperf</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>          criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Breakpoints: 19, 24, 27, 35, 38, 41 </span></span>
@@ -554,7 +729,7 @@ supplied.</p>
 for a user-defined model using the <code>bps</code> argument specifying
 the position of breakpoints (region boundaries) of the model to
 test.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/modelperf.html">modelperf</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
 <span>          bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>, criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Breakpoints: 15, 24, 37 </span></span>
@@ -581,7 +756,7 @@ models from this number of regions (<code>pct</code> argument).</p>
 <p>Here is an example of calculating the variability of breakpoint
 positions for models with 7 regions, using the top 10% best models
 evaluated with the BIC criterion.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">bpvar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">7</span>,</span>
 <span>                   pct <span class="op">=</span> <span class="fl">0.1</span>, criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
 <span><span class="va">bpvar</span></span>
@@ -618,7 +793,7 @@ third best, etc.) model (<code>model</code> argument) for a given
 criterion, by supplying the output of <code><a href="../reference/modelsupport.html">modelsupport()</a></code>.
 Alternatively, a specific model can also be plotted by providing the
 position of the breakpoints (<code>bps</code> argument).</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot regressions for best model:</span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
 <span>           modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
@@ -630,7 +805,7 @@ position of the breakpoints (<code>bps</code> argument).</p>
 <span>           bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>,</span>
 <span>           cont <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-21-2.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-23-2.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><p class="caption">
 <strong>Fig.5.</strong> Scatterplots showing PCO scores and segmented
 regressions on PC1 and PC2 for the best model <em>(left)</em> and on PC1
 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37
@@ -655,7 +830,7 @@ from one of these objects.</p>
 providing a <code>regions_modelsupport</code> object (from
 <code><a href="../reference/modelsupport.html">modelsupport()</a></code>) or by directly specifying the position of
 breakpoints of a model.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Plot vertebral map using best BPs from modelsupport (BIC)</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin A"</span>,</span>
 <span>            modelsupport <span class="op">=</span> <span class="va">supp</span>, criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -668,7 +843,7 @@ breakpoints of a model.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin C"</span>,</span>
 <span>            bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">17</span>, <span class="fl">20</span>, <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-2.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-3.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-24-2.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-24-3.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><p class="caption">
 <strong>Fig.6.</strong> Vertebral maps of the best fit model using BIC
 criterion <em>(top)</em>, the 2<sup>nd</sup> best fit model using AICc
 criterion <em>(middle)</em>, a user-defined model with breakpoints at
@@ -685,7 +860,7 @@ object (from <code><a href="../reference/calcBPvar.html">calcBPvar()</a></code>)
 <code>regions_BPvar</code> object is supplied, the position of
 breakpoints corresponds to the weighted mean position computed by
 <code><a href="../reference/calcBPvar.html">calcBPvar()</a></code>.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># BP variability from calcBPvar:</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>,</span>
 <span>           bpvar <span class="op">=</span> <span class="va">bpvar</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -697,7 +872,7 @@ breakpoints corresponds to the weighted mean position computed by
 <span>            bp.sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.2</span>, <span class="fl">1.4</span>, <span class="fl">2.5</span>, <span class="fl">1.5</span>, <span class="fl">2.1</span>, <span class="fl">0.8</span><span class="op">)</span>,</span>
 <span>            sd.col<span class="op">=</span><span class="st">"#636363"</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-23-2.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-2.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><p class="caption">
 <strong>Fig.7.</strong> Vertebral maps showing breakpoint position
 variability calculated from <em>calcBPvar (top)</em> and with values
 directly supplied to the function <em>(bottom)</em>. Dots correspond to
@@ -717,7 +892,7 @@ lumbo-caudal, and caudal-fluke transitions fall between vertebrae 17-18,
 25-26, and 35-36, respectively.</p>
 <p>It is also possible to plot the <strong>positional info</strong> of
 each element (vertebra) as a number on the corresponding rectangle.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Remove missing vertebrae, add vertebrae number </span></span>
 <span>  <span class="co"># and add thoraco-lumbar, lumbo-caudal, and caudal-fluke boundaries:</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
@@ -729,7 +904,7 @@ each element (vertebra) as a number on the corresponding rectangle.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span>, text <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-24-2.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-26-2.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><p class="caption">
 <strong>Fig.8.</strong> Vertebral maps with anatomical region boundaries
 represented by vertical bars <em>(top)</em> and vertebral position
 labelled on corresponding rectangle <em>(bottom)</em>.
@@ -746,7 +921,7 @@ vector containing size information to the <code>centraL</code> argument.
 In the example below, rectangles are scaled according to the centrum
 length of each vertebra (supplied in the <code>Lc</code> column of the
 original dataset).</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot vertebrae as percentage of total count:</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>,</span>
 <span>            type <span class="op">=</span> <span class="st">"percent"</span>,</span>
@@ -766,7 +941,7 @@ original dataset).</p>
 <span>            dropNA <span class="op">=</span> <span class="cn">TRUE</span>, reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span>,</span>
 <span>            lim.col <span class="op">=</span> <span class="st">"grey"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-2.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-3.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-27-2.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-27-3.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><p class="caption">
 <strong>Fig.9.</strong> Vertebral maps plotting vertebrae as percentage
 of total vertebral count <em>(top)</em>, scaled to their centrum length
 relative to total length in absolute value <em>(middle)</em>, and scaled
@@ -787,10 +962,10 @@ block (thoracic + lumbar) to be colors in shades of beige/brown, while
 regions in the caudal block (caudal + fluke) to be color in shades of
 blue. Since the lumbo-caudal transition falls between vertebrae 25 and
 26, we’ll define two blocks with a limit at vertebra 25.</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Manually color-coding each region using the viridis palette:</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://sjmgarnier.github.io/viridisLite/" class="external-link">viridisLite</a></span><span class="op">)</span></span>
-<span><span class="va">nreg</span> <span class="op">&lt;-</span> <span class="va">supp</span><span class="op">$</span><span class="va">Model_support_BIC</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">1</span><span class="op">]</span>  <span class="co"># get nbr of regions</span></span>
+<span><span class="va">nreg</span> <span class="op">&lt;-</span> <span class="va">supp</span><span class="op">$</span><span class="va">Model_support_BIC</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">]</span>  <span class="co"># get nbr of regions</span></span>
 <span><span class="va">cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://sjmgarnier.github.io/viridisLite/reference/viridis.html" class="external-link">viridis</a></span><span class="op">(</span>n <span class="op">=</span> <span class="va">nreg</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>,</span>
@@ -811,7 +986,7 @@ blue. Since the lumbo-caudal transition falls between vertebrae 25 and
 <span>            reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span>,</span>
 <span>            block.cols <span class="op">=</span> <span class="va">blockcols</span>, block.lim <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-26-2.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-28-2.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><p class="caption">
 <strong>Fig.10.</strong> Vertebral maps with regions colored with a
 user-defined palette using <em>viridis</em> <em>(top)</em> and custom
 palettes for different blocks <em>(bottom)</em>.
@@ -827,18 +1002,24 @@ block.</em></p>
 can be modified similarly to <code>ggplot</code> plots. For instance, it
 is possible to create a single plot with multiple vertebral maps with
 the <em>patchwork</em> package.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Run regions analysis on alligator and mouse data:</span></span>
 <span><span class="va">dat_alligator</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_measurements.html">process_measurements</a></span><span class="op">(</span><span class="va">alligator</span>, pos <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">pco_alligator</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svdPCO.html">svdPCO</a></span><span class="op">(</span><span class="va">dat_alligator</span>, <span class="st">"gower"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">regions_alligator</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>                                 noregions <span class="op">=</span> <span class="fl">5</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                                 noregions <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">supp_alligator</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regions_alligator</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">dat_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_measurements.html">process_measurements</a></span><span class="op">(</span><span class="va">musm</span>, pos <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">pco_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svdPCO.html">svdPCO</a></span><span class="op">(</span><span class="va">dat_mouse</span>, <span class="st">"gower"</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">regions_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_mouse</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>,</span>
-<span>                             noregions <span class="op">=</span> <span class="fl">5</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                             noregions <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">supp_mouse</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regions_mouse</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create vertebral maps:</span></span>
@@ -864,7 +1045,7 @@ the <em>patchwork</em> package.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">vertmaps</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">1</span>, byrow <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="**Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a single figure." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-29-1.png" class="r-plt" alt="**Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a single figure." width="672"><p class="caption">
 <strong>Fig.11.</strong> Vertebral maps of alligator, mouse, and dolphin
 stacked in a single figure.
 </p>
@@ -891,7 +1072,7 @@ compared to a discontinuous fit. Depending on the dataset, one or the
 other fitting method might be appropriate. It’s advised to visually
 inspect the distributions of elements along the structure using the PCO
 scores that will be implemented in the analysis (as in <a href="#PCO">Fig.2</a>) before choosing an option.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot a discontinuous model:</span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>,</span>
 <span>           bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>,</span>
@@ -902,7 +1083,7 @@ scores that will be implemented in the analysis (as in <a href="#PCO">Fig.2</a>)
 <span>           bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>,</span>
 <span>           cont <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-28-2.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-30-2.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><p class="caption">
 <strong>Fig.12.</strong> Best fit on PCOs 1 and 2 of a 4 region models
 with breakpoints at 15, 24, and 37, using a discontinuous model
 (<em>left</em>) and a continuous model (<em>right</em>).
@@ -914,27 +1095,30 @@ with breakpoints at 15, 24, and 37, using a discontinuous model
 </h3>
 <p>By default, the minimum number of elements (vertebrae) in each region
 is set to 3. This parameter can, however, be changed with the
-<code>minvert</code> argument in the <code>calcregions</code> function.
-<em>Note that setting the minimum value to 2 might results in linear
-segments made of only two points, which will have a perfect fit (RSS=0
-for these segments) and might artificially increase the goodness of
-fit.</em></p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code>minvert</code> argument in <code><a href="../reference/calcregions.html">calcregions()</a></code>. <em>Note
+that setting the minimum value to 2 might results in linear segments
+made of only two points, which will have a perfect fit (RSS=0 for these
+segments) and might artificially increase the goodness of fit.</em></p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fitting up to 5 regions for alligator data with 2 vertebrae minimum per segment:</span></span>
-<span><span class="va">reg.all.2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>, minvert <span class="op">=</span> <span class="fl">2</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                         cont <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">reg.all.2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                         minvert <span class="op">=</span> <span class="fl">2</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                         cont <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.all.2</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fitting up to 5 regions for alligator data with 4 vertebrae minimum per segment:</span></span>
-<span><span class="va">reg.all.4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>, minvert <span class="op">=</span> <span class="fl">4</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                         cont <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="va">reg.all.4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                         minvert <span class="op">=</span> <span class="fl">4</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>                         cont <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">pco_alligator</span>, scores <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.all.4</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-29-1.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-29-2.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-31-1.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-31-2.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><p class="caption">
 <strong>Fig.13.</strong> Best fit on PCO 1 of models up to 5 regions
 with a minimum of 2 vertebrae per region (<em>left</em>) or 4 vertebrae
 per region (<em>right</em>).
@@ -955,22 +1139,24 @@ model (after the 3 regions model) with RSS = 0.002 and BIC weight =
 <p>The <code>omitbp</code> and <code>includebp</code> arguments of
 <code>calcregions</code> allows one to prevent or force breakpoint(s) at
 specific position(s), respectively.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Fit models for dolphin preventing any BP in the thoracic and lumbar regions:</span></span>
 <span><span class="va">reg.dol.noBP</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                            omitbp <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">25</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                            omitbp <span class="op">=</span> <span class="fl">8</span><span class="op">:</span><span class="fl">25</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>,</span>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.dol.noBP</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fit models for dolphin forcing BPs at anatomical region boundaries:</span></span>
 <span><span class="va">reg.dol.forceBP</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                               includebp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores<span class="op">=</span><span class="va">PCOs</span>,</span>
+<span>                               includebp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>,</span>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.dol.forceBP</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-30-2.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-32-2.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><p class="caption">
 <strong>Fig.14.</strong> Best fit on PCO 1 and 2 of models up to 5
 regions preventing any breakpoint in the thoraco-lumbar region
 (vertebrae 8 to 25) <em>(top)</em> and forcing breakpoints at anatomical
@@ -996,9 +1182,10 @@ the optimal positions of breakpoints of the models with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">n-1</annotation></semantics></math>
 regions are used as a starting point to define the subset of models to
 fit.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reg.dol.Nex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>, noregions <span class="op">=</span> <span class="fl">5</span>,</span>
-<span>                           exhaus <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                           exhaus <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">reg.dol.Nex</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Regions Possible Tested Saved Comp. method Saving method</span></span>
 <span><span class="co">#&gt;        1        1      1     1   Exhaustive           All</span></span>
@@ -1006,11 +1193,11 @@ fit.</p>
 <span><span class="co">#&gt;        3      528    528   115   Non-exhaus          SD/2</span></span>
 <span><span class="co">#&gt;        4     4495   3220   421   Non-exhaus          SD/2</span></span>
 <span><span class="co">#&gt;        5    23751  11648   424   Non-exhaus          SD/2</span></span></code></pre></div>
-<p>In a non-exhaustive search, the <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> function used
-on <code><a href="../reference/calcregions.html">calcregions()</a></code> returns, for each number of regions, the
-total number of possible models, the number of models actually fitted,
-and the number of models saved to output in order to limit memory
-usage.</p>
+<p>In a non-exhaustive search, using <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> the
+<code><a href="../reference/calcregions.html">calcregions()</a></code> output returns, for each number of regions,
+the total number of possible models, the number of models actually
+fitted, and the number of models saved to output in order to limit
+memory usage.</p>
 <p>If the variability of breakpoint positions is calculated on
 non-exhaustive search output, the proportion of best models used to
 calculate the variability corresponds to the given percentage of all
@@ -1018,10 +1205,11 @@ possible models. It’s therefore possible that in some cases the number
 of models saved by the non-exhaustive search is lower than the requested
 percentage. In such cases, the variability will be calculated on all
 saved models and a warning message is returned.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">reg.dol.Nex</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>, criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Number of models provided lower than percentage requested.</span></span>
-<span><span class="co">#&gt; Weighted means and SD calculated on: 1.79% of total number of models.</span></span>
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">reg.dol.Nex</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>          criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1, criterion = "bic"): Number of models provided lower than percentage requested. Weighted means and</span></span>
+<span><span class="co">#&gt; SD calculated on 1.79% of total number of models.</span></span>
 <span><span class="co">#&gt;         BP 1   BP 2   BP 3   BP 4</span></span>
 <span><span class="co">#&gt; wMean 23.154 27.354 33.985 39.722</span></span>
 <span><span class="co">#&gt; wSD    0.524  0.509  0.677  0.630</span></span>
@@ -1031,8 +1219,9 @@ using weighted means and SD, respectively, results usually remain
 similar to those obtained using full top 10% (models fitted with an
 exhaustive search) unless there are numerous models which fit the data
 well.</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>, criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>          criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         BP 1   BP 2   BP 3   BP 4</span></span>
 <span><span class="co">#&gt; wMean 23.154 27.354 33.985 39.722</span></span>
 <span><span class="co">#&gt; wSD    0.524  0.509  0.678  0.630</span></span>
@@ -1048,22 +1237,27 @@ allows one to implement parallel computing. See the <code>cl</code>
 argument to <code><a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply::pblapply()</a></code> for more details on how it
 can be specified. Below, we request 6 cores to be used (supplying a
 number is not available on Windows).</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Exhaustive search with parallel computing using 6 cores:</span></span>
 <span><span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">2</span>, noregions <span class="op">=</span> <span class="fl">10</span>, exhaus <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>            cl <span class="op">=</span> <span class="fl">6</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<span>            cl <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></code></pre></div>
 <p>Note that parallel computing will only be significantly faster on
 heavy computing specimens.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="IntraSp">Intrapsecific variability<a class="anchor" aria-label="anchor" href="#IntraSp"></a>
+<h2 id="IntraSp">Intraspecific variability<a class="anchor" aria-label="anchor" href="#IntraSp"></a>
 </h2>
 <p>To account for variability within a species or group, it is possible
 to <strong>run the regionalization analysis on multiple specimens in a
-single analysis</strong>. The <code>porpoise</code> dataset contains
-data of 3 different specimens of harbor porpoise.</p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+single analysis</strong>, both for traditional morphometric and
+geometric morphometric datasets.</p>
+<div class="section level4">
+<h4 id="raw-morphometrics-pipeline-1">Raw morphometrics (<em>Pipeline 1</em>):<a class="anchor" aria-label="anchor" href="#raw-morphometrics-pipeline-1"></a>
+</h4>
+<p>The <code>porpoise</code> dataset contains linear measurements on the
+vertebrae of 3 different specimens of harbor porpoise.</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"porpoise"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -1097,37 +1291,140 @@ second has 56, and the third one has 59, but they all have 17 variables.
 In the case of differing number of elements, homologous elements
 (vertebrae) must be identified by the same number in the positional
 information column of the data.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Process measurements data</span></span>
-<span><span class="va">porpoise_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_measurements.html">process_measurements</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">porpoise1</span>, <span class="va">porpoise2</span>, <span class="va">porpoise3</span><span class="op">)</span>, pos <span class="op">=</span> <span class="st">"Vertebra"</span><span class="op">)</span></span>
+<span><span class="va">porpoise_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_measurements.html">process_measurements</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">porpoise1</span>,</span>
+<span>                                           <span class="va">porpoise2</span>,</span>
+<span>                                           <span class="va">porpoise3</span><span class="op">)</span>,</span>
+<span>                                      pos <span class="op">=</span> <span class="st">"Vertebra"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compute PCOs</span></span>
 <span><span class="va">porpoise_pco</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svdPCO.html">svdPCO</a></span><span class="op">(</span><span class="va">porpoise_data</span>, <span class="st">"gower"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Plot PCOs</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, pco_x <span class="op">=</span> <span class="fl">1</span>, pco_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, pc_x <span class="op">=</span> <span class="fl">1</span>, pc_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-37-2.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-39-1.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-39-2.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><p class="caption">
 <strong>Fig.15.</strong> PCO plots of the three specimens of harbor
 porpoise.
 </p>
 </div>
-<p>Once data of each specimen have been supplied to the
-<code>process_measurements</code> function, <strong>the process to run
-the analysis is similar to running the analysis on a single specimen at
-a time</strong>.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<p><br></p>
+</div>
+<div class="section level4">
+<h4 id="pcs-from-traditional-morphometrics-pipeline-2">PCs from traditional morphometrics (<em>Pipeline 2</em>):<a class="anchor" aria-label="anchor" href="#pcs-from-traditional-morphometrics-pipeline-2"></a>
+</h4>
+<p>Using the two first specimens from the <code>porpoise</code> dataset,
+we first need to compute a PCA and then use the PC scores as input data
+for <code><a href="../reference/process_PC.html">process_PC()</a></code>.</p>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Combine data of porpoises 1 and 2:</span></span>
+<span><span class="va">porpoise_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">porpoise1</span>, <span class="va">porpoise2</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Compute PCA on both specimens together:</span></span>
+<span><span class="va">PCA_porp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/prcomp.html" class="external-link">prcomp</a></span><span class="op">(</span><span class="va">porpoise_dat</span>, scale <span class="op">=</span> <span class="cn">T</span>, center <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Extract PC scores and eigenvalues:</span></span>
+<span><span class="va">PCscores_porp</span> <span class="op">&lt;-</span> <span class="va">PCA_porp</span><span class="op">$</span><span class="va">x</span></span>
+<span><span class="va">PCeigen_porp</span> <span class="op">&lt;-</span> <span class="va">PCA_porp</span><span class="op">$</span><span class="va">sdev</span><span class="op">^</span><span class="fl">2</span></span></code></pre></div>
+<p>In addition to the PC scores and eigenvalues, the raw data needs to
+be provided as a list where each element of the list contains the raw
+data of a specimen. The positional information of the raw data can be
+provided using the <code>pos</code> argument. Similarly, the positional
+information in the PC score dataset can be provided with the
+<code>pocPC</code> argument. The positional information for
+<code>pocPC</code> needs to be provided as a <strong>named</strong> list
+where each element of the list contains positional information for a
+specimen, and names correspond to specimen names. In such case, the list
+containing raw data must also be a <strong>named</strong> list using the
+same specimen names as in the <code>posPC</code> list. <em>Note that
+providing positional information is particularly important if different
+vertebrae have been sampled in different specimens</em>.</p>
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Create named list of raw data:</span></span>
+<span><span class="va">porpoises</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">porpoise1</span>, <span class="va">porpoise2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">porpoises</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Porpoise1'</span>, <span class="st">'Porpoise2'</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create list of positional information:</span></span>
+<span><span class="va">posPCporp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">porpoises</span>,<span class="st">'[['</span>,<span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">posPCporp</span></span>
+<span><span class="co">#&gt; $Porpoise1</span></span>
+<span><span class="co">#&gt;  [1]  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32</span></span>
+<span><span class="co">#&gt; [26] 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57</span></span>
+<span><span class="co">#&gt; [51] 58 59 60 61 62 63 64 65</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $Porpoise2</span></span>
+<span><span class="co">#&gt;  [1]  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32</span></span>
+<span><span class="co">#&gt; [26] 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57</span></span>
+<span><span class="co">#&gt; [51] 58 59 60 61 62 63</span></span>
+<span></span>
+<span><span class="co"># Input data in MorphoRegions:</span></span>
+<span><span class="va">porpoise_pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_PC.html">process_PC</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">porpoises</span>, pos <span class="op">=</span> <span class="st">'Vertebra'</span>,</span>
+<span>                           pcscores <span class="op">=</span> <span class="va">PCscores_porp</span>, eigenvals <span class="op">=</span> <span class="va">PCeigen_porp</span>,</span>
+<span>                           posPC <span class="op">=</span> <span class="va">posPCporp</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pca</span>, pc_x <span class="op">=</span> <span class="fl">1</span>, pc_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<div class="figure" style="text-align: center">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-41-1.png" class="r-plt" alt="**Fig.16.** Morphospace of two specimens of harbor porpoise." width="65%"><p class="caption">
+<strong>Fig.16.</strong> Morphospace of two specimens of harbor
+porpoise.
+</p>
+</div>
+<p><br></p>
+</div>
+<div class="section level4">
+<h4 id="pcs-from-geometric-morphometrics-pipeline-3">PCs from geometric morphometrics (<em>Pipeline 3</em>):<a class="anchor" aria-label="anchor" href="#pcs-from-geometric-morphometrics-pipeline-3"></a>
+</h4>
+<p>The <code>wolves_gmm</code> dataset contains 3D geometric
+morphometric data and PC scores of 10 subsampled vertebrae in two
+specimens of wolves. For multiple specimens, specimen names must be
+provided as a vector of equal length to the total number of vertebrae in
+the sample (and in the same order as in the landmark array and the PC
+score dataset).</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"wolves_gmm"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">wolves_gmm</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "coord_gpa" "specimens" "vertebrae" "scores"    "eigenvals"</span></span>
+<span></span>
+<span><span class="co"># Positional information:</span></span>
+<span><span class="va">wolves_gmm</span><span class="op">$</span><span class="va">vertebrae</span></span>
+<span><span class="co">#&gt;  [1]  3  5  7  8 14 17 20 21 24 27  3  5  7  8 14 17 20 21 24 27</span></span>
+<span></span>
+<span><span class="co"># Specimen information:</span></span>
+<span><span class="va">wolves_gmm</span><span class="op">$</span><span class="va">specimens</span></span>
+<span><span class="co">#&gt;  [1] "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071"</span></span>
+<span><span class="co">#&gt; [10] "MU071" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073"</span></span>
+<span><span class="co">#&gt; [19] "MU073" "MU073"</span></span></code></pre></div>
+<p>The data can then be converted to <code>regions_pco</code> object
+with the <code><a href="../reference/process_gmPC.html">process_gmPC()</a></code> function (as for a single
+specimen).</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wolf_pca</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/process_gmPC.html">process_gmPC</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">wolves_gmm</span><span class="op">$</span><span class="va">coord_gpa</span>,</span>
+<span>                         pcscores <span class="op">=</span> <span class="va">wolves_gmm</span><span class="op">$</span><span class="va">scores</span>,</span>
+<span>                         eigenvals <span class="op">=</span> <span class="va">wolves_gmm</span><span class="op">$</span><span class="va">eigenvals</span>,</span>
+<span>                         pos <span class="op">=</span> <span class="va">wolves_gmm</span><span class="op">$</span><span class="va">vertebrae</span>,</span>
+<span>                         specimens <span class="op">=</span> <span class="va">wolves_gmm</span><span class="op">$</span><span class="va">specimens</span><span class="op">)</span></span></code></pre></div>
+<p><br><br></p>
+</div>
+<div class="section level4">
+<h4 id="perform-regionalization-analysis">Perform regionalization analysis:<a class="anchor" aria-label="anchor" href="#perform-regionalization-analysis"></a>
+</h4>
+<p>Once data of each specimen have been converted to
+<code>regions_pco</code> object (either through pipeline 1, 2, or 3),
+<strong>the process to run the analysis is similar to running the
+analysis on a single specimen</strong>.</p>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate number of PCOs to use in subsequent analyses</span></span>
 <span><span class="va">PCOs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOselect.html">PCOselect</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, <span class="st">"variance"</span>, cutoff <span class="op">=</span> <span class="fl">.05</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Performance for all models across all breakpoint combos</span></span>
 <span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span>,</span>
-<span>                             noregions <span class="op">=</span> <span class="fl">3</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                             noregions <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Adding more models to existing results</span></span>
 <span><span class="va">regionresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">addregions</a></span><span class="op">(</span><span class="va">regionresults</span>, noregions <span class="op">=</span> <span class="fl">4</span><span class="op">:</span><span class="fl">5</span>,</span>
-<span>                            exhaus <span class="op">=</span> <span class="cn">FALSE</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                            exhaus <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Select best model</span></span>
 <span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">regionresults</span><span class="op">)</span></span>
@@ -1173,40 +1470,41 @@ a time</strong>.</p>
 <span><span class="co">#&gt; - Multivariate:</span></span>
 <span><span class="co">#&gt;      R² Adj. R² </span></span>
 <span><span class="co">#&gt;   0.974   0.974</span></span></code></pre></div>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot PCOs of best fit model</span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-39-1.png" class="r-plt" alt="**Fig.16.** Best fit model (based on BIC) on PCO 1 and 2 calculated on the three harbor porpoise specimens." width="60%"><p class="caption">
-<strong>Fig.16.</strong> Best fit model (based on BIC) on PCO 1 and 2
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-45-1.png" class="r-plt" alt="**Fig.18.** Best fit model (based on BIC) on PCO 1 and 2 calculated on the three harbor porpoise specimens." width="60%"><p class="caption">
+<strong>Fig.18.</strong> Best fit model (based on BIC) on PCO 1 and 2
 calculated on the three harbor porpoise specimens.
 </p>
 </div>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot vertebral map of best fit model</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, name <span class="op">=</span> <span class="st">"Porpoise"</span>, </span>
 <span>            type <span class="op">=</span> <span class="st">"percent"</span>, centraL <span class="op">=</span> <span class="st">"Lc"</span>,</span>
 <span>            reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">34</span>, <span class="fl">54</span><span class="op">)</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>            bpvar <span class="op">=</span> <span class="va">bpvar</span>, sd.col <span class="op">=</span> <span class="st">"grey20"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-40-1.png" class="r-plt" alt="**Fig.17.** Vertebral map of best fit model (including variance in breakpoint position) based on the three harbor porpoise specimens." width="672"><p class="caption">
-<strong>Fig.17.</strong> Vertebral map of best fit model (including
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-46-1.png" class="r-plt" alt="**Fig.19.** Vertebral map of best fit model (including variance in breakpoint position) based on the three harbor porpoise specimens." width="672"><p class="caption">
+<strong>Fig.19.</strong> Vertebral map of best fit model (including
 variance in breakpoint position) based on the three harbor porpoise
 specimens.
 </p>
+</div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="other-useful-options">Other useful options<a class="anchor" aria-label="anchor" href="#other-useful-options"></a>
 </h2>
 <div class="section level3">
-<h3 id="fit-a-specific-model">Fit a specific model<a class="anchor" aria-label="anchor" href="#fit-a-specific-model"></a>
+<h3 id="fitting-a-specific-model">Fitting a specific model<a class="anchor" aria-label="anchor" href="#fitting-a-specific-model"></a>
 </h3>
 <p>Instead of fitting all possible models for a given range of region
 number, <code><a href="../reference/calcmodel.html">calcmodel()</a></code> allows one to fit a single model with
 user-defined breakpoint positions.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Fit a single breakpoints model</span></span>
 <span><span class="va">regionsmodel</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcmodel.html">calcmodel</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, cont <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                          bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">19</span>, <span class="fl">24</span>, <span class="fl">27</span>, <span class="fl">32</span>, <span class="fl">35</span>, <span class="fl">38</span>, <span class="fl">41</span><span class="op">)</span><span class="op">)</span></span>
@@ -1235,8 +1533,8 @@ user-defined breakpoint positions.</p>
 <span><span class="co">#Plot model results:</span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">regionsmodel</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-41-1.png" class="r-plt" alt="**Fig.18.** Best fit segmented linear regression model on PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38, and 41." width="60%"><p class="caption">
-<strong>Fig.18.</strong> Best fit segmented linear regression model on
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-47-1.png" class="r-plt" alt="**Fig.20.** Best fit segmented linear regression model on PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38, and 41." width="60%"><p class="caption">
+<strong>Fig.20.</strong> Best fit segmented linear regression model on
 PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32,
 35, 38, and 41.
 </p>
@@ -1254,7 +1552,7 @@ to a constant number of elements for all specimens.</p>
 <p><code><a href="../reference/subsample.html">subsample()</a></code> allows one to subsample elements either by
 providing the number of elements to retain or the proportion of total
 elements to retain.</p>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Retain 33 vertebrae</span></span>
 <span><span class="va">dolphin_pco_sub.33</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/subsample.html">subsample</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, sample <span class="op">=</span> <span class="fl">33</span><span class="op">)</span></span>
 <span></span>
@@ -1264,8 +1562,8 @@ elements to retain.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco_sub.33</span>, name <span class="op">=</span> <span class="st">"Dolphin 33"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco_sub.7</span>, name <span class="op">=</span> <span class="st">"Dolphin .7"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-42-1.png" class="r-plt" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-42-2.png" class="r-plt" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><p class="caption">
-<strong>Fig.19.</strong> Vertebral map of dolphin dataset with 33
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-48-1.png" class="r-plt" alt="**Fig.21.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-48-2.png" class="r-plt" alt="**Fig.21.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><p class="caption">
+<strong>Fig.21.</strong> Vertebral map of dolphin dataset with 33
 subsampled vetrebrae <em>(top)</em> and 70% of total vertebrae
 subsampled <em>(bottom)</em>. Vertebrae dropped are in grey and
 vertebrae retained are in blue shade*.
@@ -1284,7 +1582,7 @@ satisfy some user-defined constraints such as number of elements,
 regions, PCO axes, minimum number of elements per region, variance
 around the linear fits, and difference in slope between successive
 linear segments.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simulate data </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2024</span><span class="op">)</span></span>
 <span><span class="va">sim</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simregions.html">simregions</a></span><span class="op">(</span>nvert <span class="op">=</span> <span class="fl">40</span>, nregions <span class="op">=</span> <span class="fl">5</span>, nvar <span class="op">=</span> <span class="fl">4</span>, r2 <span class="op">=</span> <span class="fl">.92</span>,</span>
@@ -1293,15 +1591,15 @@ linear segments.</p>
 <span><span class="co"># Plot:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-43-1.png" class="r-plt" alt="**Fig.20.** Plot on PCO 1 and 2 of the **simulated dataset** with 40 vertebrae and 5 regions (4 breakpoints)." width="65%"><p class="caption">
-<strong>Fig.20.</strong> Plot on PCO 1 and 2 of the <strong>simulated
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-49-1.png" class="r-plt" alt="**Fig.22.** Plot on PCO 1 and 2 of the **simulated dataset** with 40 vertebrae and 5 regions (4 breakpoints)." width="65%"><p class="caption">
+<strong>Fig.22.</strong> Plot on PCO 1 and 2 of the <strong>simulated
 dataset</strong> with 40 vertebrae and 5 regions (4 breakpoints).
 </p>
 </div>
 <p>The regionalization analysis can then be run on the simulated
 dataset.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">simresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, noregions <span class="op">=</span> <span class="fl">6</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">simresults</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/calcregions.html">calcregions</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span>, noregions <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">simmodels</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">simresults</span><span class="op">)</span></span>
 <span><span class="va">simmodels</span></span>
@@ -1335,7 +1633,8 @@ dataset.</p>
 <span><span class="co">#&gt;        1    .    .    .    .    . 239.092 104.869   25.577     0.000      0.000</span></span>
 <span><span class="co">#&gt; Region score: 3.52</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/modelperf.html">modelperf</a></span><span class="op">(</span><span class="va">sim</span>, modelsupport <span class="op">=</span> <span class="va">simsupport</span>, criterion <span class="op">=</span> <span class="st">"aic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/modelperf.html">modelperf</a></span><span class="op">(</span><span class="va">sim</span>, modelsupport <span class="op">=</span> <span class="va">simsupport</span>,</span>
+<span>          criterion <span class="op">=</span> <span class="st">"aic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Breakpoints: 15, 21, 28, 34 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; - Univariate:</span></span>
@@ -1353,8 +1652,8 @@ dataset.</p>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">simsupport</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"aic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-44-1.png" class="r-plt" alt="**Fig.21.** Plot on PCO 1 and 2 of the **recovered best fit** on regionalization analysis ran on the simulated dataset." width="65%"><p class="caption">
-<strong>Fig.21.</strong> Plot on PCO 1 and 2 of the <strong>recovered
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-50-1.png" class="r-plt" alt="**Fig.23.** Plot on PCO 1 and 2 of the **recovered best fit** on regionalization analysis ran on the simulated dataset." width="65%"><p class="caption">
+<strong>Fig.23.</strong> Plot on PCO 1 and 2 of the <strong>recovered
 best fit</strong> on regionalization analysis ran on the simulated
 dataset.
 </p>
@@ -1368,19 +1667,20 @@ second best using BIC.</p>
 28, 34. The recovered position of the first three breakpoints differ
 sightly from the simulated positions, and the recovered position of the
 fourth breakpoint matches that of the simulated data.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simulated data breakpoints:</span></span>
 <span><span class="va">sim</span><span class="op">$</span><span class="va">BPs</span></span>
 <span><span class="co">#&gt; breakpoint1 breakpoint2 breakpoint3 breakpoint4 </span></span>
 <span><span class="co">#&gt;          16          20          29          34</span></span>
 <span></span>
 <span><span class="co"># Recovered best fit breakpoints:</span></span>
-<span><span class="va">simsupport</span><span class="op">$</span><span class="va">Model_support</span><span class="op">[</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
+<span><span class="va">simsupport</span><span class="op">$</span><span class="va">Model_support</span><span class="op">[</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span></span>
 <span><span class="co">#&gt;       breakpoint1 breakpoint2 breakpoint3 breakpoint4</span></span>
 <span><span class="co">#&gt; 26746          15          21          28          34</span></span>
 <span></span>
 <span><span class="co"># Variability of recovered best fit breakpoints:</span></span>
-<span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">simresults</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>, criterion <span class="op">=</span> <span class="st">"aic"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/calcBPvar.html">calcBPvar</a></span><span class="op">(</span><span class="va">simresults</span>, noregions <span class="op">=</span> <span class="fl">5</span>, pct <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>          criterion <span class="op">=</span> <span class="st">"aic"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         BP 1   BP 2   BP 3   BP 4</span></span>
 <span><span class="co">#&gt; wMean 15.184 20.652 28.138 34.249</span></span>
 <span><span class="co">#&gt; wSD    1.618  0.788  0.511  0.710</span></span>
@@ -1391,6 +1691,12 @@ fourth breakpoint matches that of the simulated data.</p>
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-Esteban2023" class="csl-entry">
+Esteban, J. M., A. Martín-Serra, A. Pérez-Ramos, B. Mulot, K. E. Jones,
+and B. Figueirido. 2023. <span>“The Impact of the Land-to-Sea Transition
+on Evolutionary Integration and Modularity of the Pinniped
+Backbone.”</span> <em>Communications Biology</em> 6: 1141. <a href="https://doi.org/10.1038/s42003-023-05512-8" class="external-link">https://doi.org/10.1038/s42003-023-05512-8</a>.
+</div>
 <div id="ref-Gillet2022" class="csl-entry">
 Gillet, A., B. Frédérich, S. E. Pierce, and E. Parmentier. 2022.
 <span>“Iterative Habitat Transitions Are Associated with Morphological
@@ -1411,6 +1717,12 @@ Form Reveals Homoplasy in Amniote Hox Gene Function.”</span>
 Jones, K. E., K. D. Angielczyk, P. D. Polly, et al. 2018. <span>“Fossils
 Reveal the Complex Evolutionary History of the Mammalian Regionalized
 Spine.”</span> <em>Science</em> 361: 1249–52. <a href="https://doi.org/10.1126/science.aar3126" class="external-link">https://doi.org/10.1126/science.aar3126</a>.
+</div>
+<div id="ref-Schwab2025" class="csl-entry">
+Schwab, J. A., B. Figueirido, and K. E. Jones. 2025. <span>“Ecological
+Inference from Isolated Vertebrae: Evaluating Functional Signal Across
+the Carnivoran Spine.”</span> <em>Journal of Morphology</em> 287:
+e70109. <a href="https://doi.org//10.1002/jmor.70109" class="external-link">https://doi.org//10.1002/jmor.70109</a>.
 </div>
 </div>
 </div>

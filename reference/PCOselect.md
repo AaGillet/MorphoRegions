@@ -14,7 +14,7 @@ PCOselect(
   nreps = 500,
   results = NULL,
   criterion = "aic",
-  verbose = TRUE
+  verbose = interactive()
 )
 
 # S3 method for class 'regions_pco_select'
@@ -65,7 +65,7 @@ summary(object, ...)
 - verbose:
 
   when `method = "boot"`, whether to display a progress bar. Default is
-  `TRUE`.
+  `TRUE` when running interactively and `FALSE` otherwise.
 
 - x:
 
@@ -84,12 +84,12 @@ summary(object, ...)
 ## Value
 
 For `PCOselect()`, a `regions_pco_select` object, which is a numeric
-vector containing the indices of the chosen PCOs, with attributes
-containing information about the PCO scores chosen by the specified
+vector containing the indices of the chosen PCs, with attributes
+containing information about the PC scores chosen by the specified
 method. When `method = "boot"`, the bootstrap results are stored in the
 `"boot"` attribute. When `method = "max"`, the `regions_results` object
 passed to `regions` and other information about the quality of fit for
-each number of PCOs are stored in the `"pcomax"` attribute.
+each number of PCs are stored in the `"pcomax"` attribute.
 
 The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) methods
 each return a `ggplot` object that can manipulated using ggplot2 syntax.
@@ -121,31 +121,33 @@ which is the default; the data are scaled in the same way prior to
 bootstrapping. The
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method displays
 the eigenvalues of the true PCOs and boxplots summarizing the
-distribution of the bootstrapped eigenvalues for each PCO.
+distribution of the bootstrapped eigenvalues for each PCO. The `boot`
+method is unavailable for user-supplied PC scores (`regions_pco` object
+obtained from `process_PC` or `process_gmPC` functions).
 
 ### `method = "variance"`
 
 This method works by computing the ratio of each eigenvalue to the sum
 of the eigenvalues (i.e., to compute the proportion of variance
-explained by each PCO score) and select the number of scores with ratios
+explained by each PC score) and select the number of scores with ratios
 greater than the cutoff value supplied to `cutoff`.
 
 ### `method = "max"`
 
-This method works by selecting the smallest number of PCOs that gives a
+This method works by selecting the smallest number of PCs that gives a
 region score within .001 of the maximum possible region score for the
 segmented models fit in the object supplied to `results`. Which
 criterion is maximized (AIC or BIC) is determined by the value supplied
 to `criterion`. The [`summary()`](https://rdrr.io/r/base/summary.html)
 method displays the region score (estimated number of regions) for each
-PCO (`RSind`) and for PCOs cumulatively (`RScum`) selected using the
-AICc or BIC as well as the cumulative proportion of variance explained
-by the PCOs. The
-[`plot()`](https://rdrr.io/r/graphics/plot.default.html) method displays
-this information graphically, with the left y-axis displaying the region
-score for the PCOs individually (pale blue triangles) and cumulatively
-(orange circles) using each of the two criteria, and the right y-axis
-displaying the cumulative percentage of variance explained by the PCOs.
+PC (`RSind`) and for PCs cumulatively (`RScum`) selected using the AICc
+or BIC as well as the cumulative proportion of variance explained by the
+PCs. The [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method
+displays this information graphically, with the left y-axis displaying
+the region score for the PCs individually (pale blue triangles) and
+cumulatively (orange circles) using each of the two criteria, and the
+right y-axis displaying the cumulative percentage of variance explained
+by the PCs.
 
 ## Examples
 
@@ -162,22 +164,21 @@ alligator_PCO <- svdPCO(alligator_data)
 ## Manually (first 4 PCOs)
 (PCOs <- PCOselect(alligator_PCO, "manual", scores = 4))
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2, 3, 4
+#> - PC scores selected: 1, 2, 3, 4
 #> - Method: manual
 
 ## Using variance cutoff: PCOs that explain 5% or more
 ## of total PCO variance
 (PCOs <- PCOselect(alligator_PCO, "variance", cutoff = .05))
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2, 3
+#> - PC scores selected: 1, 2, 3
 #> - Method: variance (cutoff: 0.05)
 
 ## Using bootstrapping with 50 reps (more reps should
 ## be used in practice; default is fine)
 (PCOs <- PCOselect(alligator_PCO, "boot", nreps = 50))
-#> Bootstrapping...
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2
+#> - PC scores selected: 1, 2
 #> - Method: boot (50 replications)
 
 plot(PCOs) #plot true eigenvalues against bootstrapped
@@ -192,7 +193,7 @@ regionresults <- calcregions(alligator_PCO, scores = 1:21, noregions = 7,
                    results = regionresults,
                    criterion = "bic"))
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2, 3, 4
+#> - PC scores selected: 1, 2, 3, 4
 #> - Method: max (criterion: BIC)
 
 plot(PCOs)

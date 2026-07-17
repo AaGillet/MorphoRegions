@@ -37,14 +37,14 @@ a column for each PCO score requested and a row for each variable in the
 original dataset; values indicate the correlation between each variable
 and each PCO score.
 [`plot()`](https://rdrr.io/r/graphics/plot.default.html) returns a
-`ggplot` object, which can be manipulated using *ggplot2* syntax, that
+`ggplot` object, which can be manipulated using ggplot2 syntax, that
 displays the loadings visually.
 
 ## Details
 
-the loadings for a constructed variable, `vert.size`, are also computed
+The loadings for a constructed variable, `vert.size`, are also computed
 and displayed. This is computed as the mean of the features for each
-vertebra.
+vertebra. This function is not suitable for geometric morphometric data.
 
 ## See also
 
@@ -67,9 +67,9 @@ alligator_PCO <- svdPCO(alligator_data)
 # Compute PCO loadings
 loadings <- PCOload(alligator_PCO, scores = 1:4)
 loadings
-#> - PCO loadings:
+#> - PC loadings:
 #> 
-#>           PCO.1   PCO.2    PCO.3     PCO.4
+#>            PC.1    PC.2     PC.3      PC.4
 #> CL       0.9214  0.2850 -0.17096  0.000379
 #> Chpost  -0.2163 -0.5189 -0.74326  0.240596
 #> Cwpost   0.4554  0.1168  0.75907  0.175309
@@ -92,7 +92,7 @@ loadings
 #> 
 #>  - Corr w/ vertebra size:
 #> 
-#>           PCO.1  PCO.2   PCO.3  PCO.4
+#>            PC.1   PC.2    PC.3   PC.4
 #> vert.size 0.952 -0.207 -0.0441 0.0624
 
 # Plot loadings

@@ -1,4 +1,4 @@
-# Process vertebra measurements
+# Process vertebral measurements
 
 `process_measurements()` initializes the analysis workflow by processing
 a dataset of vertebra measurements into an object usable by
@@ -15,7 +15,7 @@ process_measurements(data, pos = 1L, measurements, fillNA = TRUE)
 
 - data:
 
-  a data.frame containing a column of vertebra indices and measurements
+  a data frame containing a column of vertebra indices and measurements
   for each vertebra, or a list thereof for multiple specimens.
 
 - pos:
@@ -36,7 +36,7 @@ process_measurements(data, pos = 1L, measurements, fillNA = TRUE)
 
 ## Value
 
-A `regions_data` object, which is a list of data.frames (one for each
+A `regions_data` object, which is a list of data frames (one for each
 specimen) with attributes containing metadata.
 
 ## Details

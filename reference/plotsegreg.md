@@ -47,7 +47,7 @@ plotsegreg(x, scores, ...)
 
 - scores:
 
-  `numeric`; the indices of the PCO scores for which the fitted lines
+  `numeric`; the indices of the PC scores for which the fitted lines
   should be plotted.
 
 - ...:

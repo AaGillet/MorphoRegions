@@ -28,7 +28,7 @@ models, and plotting results
 - [`modelsupport()`](https://aagillet.github.io/MorphoRegions/reference/modelsupport.md)
   : Evaluate model support
 - [`plot(`*`<regions_pco>`*`)`](https://aagillet.github.io/MorphoRegions/reference/plot.regions_pco.md)
-  : Plot PCO axes
+  : Plot PC axes
 - [`plotsegreg()`](https://aagillet.github.io/MorphoRegions/reference/plotsegreg.md)
   : Plot a segmented regression model
 - [`plotvertmap()`](https://aagillet.github.io/MorphoRegions/reference/plotvertmap.md)
@@ -36,8 +36,14 @@ models, and plotting results
 - [`simregions()`](https://aagillet.github.io/MorphoRegions/reference/simregions.md)
   [`plot(`*`<regions_sim>`*`)`](https://aagillet.github.io/MorphoRegions/reference/simregions.md)
   : Simulate regions data
+- [`process_PC()`](https://aagillet.github.io/MorphoRegions/reference/process_PC.md)
+  : Process vertebral measurements and PC scores of traditional
+  morphometric data
+- [`process_gmPC()`](https://aagillet.github.io/MorphoRegions/reference/process_gmPC.md)
+  : Process vertebral measurements and PC scores of 2D or 3D geometric
+  morphometric data
 - [`process_measurements()`](https://aagillet.github.io/MorphoRegions/reference/process_measurements.md)
-  : Process vertebra measurements
+  : Process vertebral measurements
 - [`subsample()`](https://aagillet.github.io/MorphoRegions/reference/subsample.md)
   : Subsample a dataset
 - [`svdPCO()`](https://aagillet.github.io/MorphoRegions/reference/svdPCO.md)
@@ -53,3 +59,9 @@ models, and plotting results
   Measurements from the vertebral column of a mouse
 - [`porpoise`](https://aagillet.github.io/MorphoRegions/reference/porpoise.md)
   : Measurements from the vertebral column of three porpoises
+- [`seal_gmm`](https://aagillet.github.io/MorphoRegions/reference/seal_gmm.md)
+  : Geometric morphometric data and PC scores of the vertebral column a
+  seal
+- [`wolves_gmm`](https://aagillet.github.io/MorphoRegions/reference/wolves_gmm.md)
+  : Geometric morphometric data and PC scores of the vertebral column
+  two wolves

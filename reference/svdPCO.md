@@ -44,13 +44,14 @@ dataset is stored in the `data` attribute.
 
 ## See also
 
-[`plot.regions_pco()`](https://aagillet.github.io/MorphoRegions/reference/plot.regions_pco.md)
-for plotting PCO axes
+- [`plot.regions_pco()`](https://aagillet.github.io/MorphoRegions/reference/plot.regions_pco.md)
+  for plotting PCO axes
 
-[`cluster::daisy()`](https://rdrr.io/pkg/cluster/man/daisy.html), which
-is used to compute the distance matrix used in the calculation;
-[`stats::cmdscale()`](https://rdrr.io/r/stats/cmdscale.html) for a
-spectral decomposition-based implementation
+- [`cluster::daisy()`](https://rdrr.io/pkg/cluster/man/daisy.html),
+  which is used to compute the distance matrix used in the calculation
+
+- [`stats::cmdscale()`](https://rdrr.io/r/stats/cmdscale.html) for a
+  spectral decomposition-based implementation
 
 ## Examples
 
@@ -66,6 +67,7 @@ alligator_PCO <- svdPCO(alligator_data,
 
 alligator_PCO
 #> - Scores:
+#> 
 #>    PCO.1   PCO.2    PCO.3    PCO.4    PCO.5    PCO.6    PCO.7   PCO.8    PCO.9
 #> 1 -0.334  0.2386  0.03426 -0.10271 -0.04904 -0.04760 -0.03210 -0.0341 -0.00170
 #> 2 -0.284  0.1480 -0.02979 -0.01372  0.06610 -0.03238  0.05522  0.0245  0.01972
@@ -90,6 +92,7 @@ alligator_PCO
 #> (First 6 of 22 rows displayed.)
 #> 
 #> - Eigenvalues:
+#> 
 #>  [1] 7.81e-01 3.39e-01 1.59e-01 4.17e-02 2.94e-02 2.73e-02 1.86e-02 1.32e-02
 #>  [9] 1.29e-02 1.17e-02 8.97e-03 8.39e-03 7.81e-03 6.20e-03 5.88e-03 2.85e-03
 #> [17] 2.12e-03 2.00e-03 1.38e-03 9.43e-04 3.79e-04 8.08e-17

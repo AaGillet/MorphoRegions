@@ -46,6 +46,11 @@ define the minimum number of vertebrae in each region, select the best
 model using either AICc or BIC, and fit a model to multiple specimens.
 Plotting options have also been expanded.
 
+Since version 0.2.0, *MorphoRegions* can now be applied to both
+**traditional morphometric** and **geometric morphometric** data,
+providing a unified workflow for identifying regionalization patterns in
+serially homologous structures.
+
   
 
 ## Package installation
@@ -59,22 +64,67 @@ install.packages("MorphoRegions")
 library(MorphoRegions)
 ```
 
+## Overview of *MorphoRegions* worflow
+
+Working with *MorphoRegions* requires three main steps:
+
+1.  Providing and formatting the data
+
+2.  Performing the regionalization analyses
+
+3.  Visualizing the results
+
+The workflow and functions used to input data into *MorphoRegions*
+depend on the type of data as shown in the figure below.
+
+![Overview of \*MorphoRegions\* workflow and key functions to use.
+Functions to use for data input depend on the type of data
+provided.](images/Pipeline_v.2_HD.png)
+
+Overview of *MorphoRegions* workflow and key functions to use. Functions
+to use for data input depend on the type of data provided.
+
 ## Preparing the data
 
-Data should be provided as a dataframe where each row is an element of
+*MorphoRegions* can process the following type of data:
+
+- Raw traditional morphometrics datasets (or other similar dataset where
+  each row is an observation (i.e, serial element) and each column is a
+  variable) ([Pipeline 1](#Pipe1))
+- PC scores (or other type of ordinated data) of traditional
+  morphometric datasets (or similar) ([Pipeline 2](#Pipe2))
+- PC scores of geometric morphometric datasets ([Pipeline 3](#Pipe3))
+
+The package comes with **six built-in datasets**.
+
+- `alligator`, `musm`, and `dolphin` contain measurements on the
+  vertebrae of an alligator, mouse, and dolphin
+- `porpoise` contains vertebral measurements of three specimens of
+  harbor porpoises and can be used to test fitting a single model for
+  multiple specimens together ([see Intraspecific
+  variability](#IntraSp))
+- `seal_gmm` contains Procrustes aligned 3d landmarks on the vertebrae
+  of a seal as well as PC scores
+- `wolves_gmm` contains Procrustes aligned 3d landmarks and PC scores
+  from 10 subsampled vertebrae along the backbone of two wolves and can
+  be used to test fitting a single model on multiple specimens ([see
+  Intraspecific variability](#IntraSp))
+
+*Dolphin and porpoise data are from Gillet et al.
+([2022](#ref-Gillet2022)); alligator and mouse data are from Jones et
+al. ([2018](#ref-Jones2018)); seal 3D landmark data are from Esteban et
+al. ([2023](#ref-Esteban2023)); wolf 3D landmarks are from Schwab et al.
+([2025](#ref-Schwab2025)).*
+
+### Raw morphometrics *(Pipeline 1)*
+
+#### Data input
+
+Data should be provided as a data frame where each row is an element of
 the serially-homologous structure (e.g., a vertebra). One column should
 contain positional information of each element (e.g., vertebral number)
 and other columns should contain variables that will be used to
 calculate regions (e.g., morphological measurements).
-
-The package comes with **four built-in datasets**. `alligator`, `musm`,
-and `dolphin` contain measurements on the vertebrae of an alligator,
-mouse, and dolphin. `porpoise` contains vertebral measurements of three
-specimens of harbor porpoises and can be used to test fitting a single
-model for multiple specimens together ([see below](#IntraSp)).
-*Alligator and mouse data are from Jones et al.
-([2018](#ref-Jones2018)); dolphin and porpoise data are from Gillet et
-al. ([2022](#ref-Gillet2022)).*
 
 ``` r
 
@@ -121,7 +171,7 @@ class(dolphin_data)
 #> [1] "regions_data"
 ```
 
-## Data ordination
+#### Data ordination
 
 To allow the analysis of high dimensional datasets, including a variety
 of data types, a **Principal Coordinates Analysis (PCO)**, a
@@ -149,7 +199,7 @@ position in backbone (left) or as a morphospace (right).
 plot(dolphin_pco, 1:2)
 
 # Plot morphospace of PC1 and 2:
-plot(dolphin_pco, pco_x = 1, pco_y = 2)
+plot(dolphin_pco, pc_x = 1, pc_y = 2)
 ```
 
 ![\*\*Fig.2.\*\* \*Left\*: PCO scores of each vertebra along the
@@ -168,26 +218,119 @@ PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1
 and 2, points plotted as numbers corresponding to the position of each
 vertebra along the backbone.
 
-### Data reduction
+### PCs from traditional morphometrics *(Pipeline 2)*
 
-While the regionalization analysis can be performed on all PCO axes,
-it’s likely that lower PCO axes mostly contain noise. The number of PCO
-axes to retain for analysis can be selected using
+Instead of providing raw data and performing a principal coordinates
+ordination, it is possible to directly provide PC scores that have been
+computed outside of *MorphoRegions*, for instance using the
+[`prcomp()`](https://rdrr.io/r/stats/prcomp.html) function.
+
+``` r
+
+# Load dolphin data:
+data("dolphin")
+
+# Compute PCA on correlation matrix:
+PCA <- prcomp(dolphin[-1], scale=T, center=T)
+```
+
+The function
+[`process_PC()`](https://aagillet.github.io/MorphoRegions/reference/process_PC.md)
+will then convert the PC scores into a `regions_pco` object usable for
+downstream analyses. The function requires the PC scores, the
+eigenvalues, and the original (raw) data. The positional information of
+the vertebrae in the original data and the PC data can be provided with
+the arguments `pos` and `posPC`, respectively. If these arguments are
+not provided, the function will assume that the first column of the raw
+data contains the positional information and that the order of vertebrae
+in the PC scores data matches the order in the raw data.
+
+``` r
+
+# Extract PC scores and eigenvalues:
+PCA_scores <- PCA$x
+PCA_eigenval <- PCA$sdev^2
+
+# Input data in MorphoRegions:
+dolphin_pca <- process_PC(data = dolphin, pos = 'Vertebra',
+                          pcscores = PCA_scores, eigenvals = PCA_eigenval, 
+                          posPC = dolphin[,1])
+```
+
+PC scores can then be plotted with the
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) function as
+[above](#PCO)
+
+### PCs from geometric morphometrics *(Pipeline 3)*
+
+Since v.0.2.0 of the package it also possible to run *MorphoRegions* on
+geometric morphometric datasets. As for [pipeline 2 above](#Pipe2), the
+data ordination (e.g., PCA) should be performed outside of
+*MorphoRegions*.
+
+The `seal_gmm` dataset is a list containing the 3D coordinates of 40
+Procrustes aligned landmarks from vertebrae 3 to 27 of a seal (aligned
+with `gpagen` from the `geomorph` R-package); the PC scores of each
+vertebrae (obtained using `gm.prcomp()` from `geomorph`), and the
+eigenvalue of each PC axis. The positional info of the vertebrae are
+stored as dimension names of the landmark coordinates array.
+
+``` r
+
+data("seal_gmm")
+names(seal_gmm)
+#> [1] "coord_gpa" "scores"    "eigenvals"
+
+dimnames(seal_gmm$coord_gpa)
+#> [[1]]
+#>  [1] "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12" "13" "14" "15"
+#> [16] "16" "17" "18" "19" "20" "21" "22" "23" "24" "25" "26" "27" "28" "29" "30"
+#> [31] "31" "32" "33" "34" "35" "36" "37" "38" "39" "40"
+#> 
+#> [[2]]
+#> [1] "X" "Y" "Z"
+#> 
+#> [[3]]
+#>  [1] "3"  "4"  "5"  "6"  "7"  "8"  "9"  "10" "11" "12" "13" "14" "15" "16" "17"
+#> [16] "18" "19" "20" "21" "22" "23" "24" "25" "26" "27"
+```
+
+The function
+[`process_gmPC()`](https://aagillet.github.io/MorphoRegions/reference/process_gmPC.md)
+will then convert the PC scores into a `regions_pco` object usable for
+downstream analyses. The function requires the PC scores, the
+eigenvalues, and the landmark coordinates. The positional information of
+the vertebrae can be provided as a numeric vector with the `pos`
+argument. If no positional information is provided, the function will
+extract vertebral position info form the names of the landmark
+coordinate array (default) and convert them to numeric values.
+
+``` r
+
+seal_pca <- process_gmPC(data = seal_gmm$coord_gpa,
+                         pcscores = seal_gmm$scores,
+                         eigenvals = seal_gmm$eigenvals)
+```
+
+PC scores can then be plotted with the
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html) function as
+[above](#PCO)
+
+## Data reduction
+
+While the regionalization analysis can be performed on all PC axes, it’s
+likely that lower PC axes mostly contain noise. The number of PC axes to
+retain for analysis can be selected using
 [`PCOselect()`](https://aagillet.github.io/MorphoRegions/reference/PCOselect.md).
 
-**Four different methods to select PCOs** are available and be specified
+**Four different methods to select PCs** are available and be specified
 using the `method` argument:
 
-- `"manual"`: the number of PCOs is directly defined via the `scores`
-  argument
-- `"variance"`: PCO axes with a variance (defined as the ratio between
-  the eigenvalue of the given axis and the sum of all eigenvalues)
-  higher to the `cutoff` value (expressed as a value between 0 and 1)
-  are retained
-- `"max"`: PCOs axes needed to obtain the maximum number of regions in
-  the segmented models tested which must be supplied to `results`. The
-  criterion (AICc or BIC) used to maximize the region score should be
-  defined with `criterion`
+- `"manual"`: the number of PCs is directly defined by the user
+- `"variance"`: PC axes with a variance above a given threshold are
+  retained
+- `"max"`: computes the minimum number of PCs axes needed to maximize
+  the number of regions
 - `"boot"`: PCO axes are selected through bootstrapping by comparing
   observed eigenvalues to eigenvalues from randomized data and retaining
   PCO axes with eigenvalues higher than values from randomized data.
@@ -197,38 +340,63 @@ using the `method` argument:
   have been scaled (setting `scale = TRUE` in the original call to
   [`svdPCO()`](https://aagillet.github.io/MorphoRegions/reference/svdPCO.md)).*
 
+#### Manual selection:
+
+The number of PCs is directly defined via the `scores` argument. For
+instance, selecting PC axes 1 to 5:
+
 ``` r
 
-# Manual (keeping axes 1 to 3):
 PCOs <- PCOselect(dolphin_pco, method = "manual",
-                  scores = 3)
+                  scores = 5)
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2, 3
+#> - PC scores selected: 1, 2, 3, 4, 5
 #> - Method: manual
+```
 
-# Variance (selecting axes with variance > 0.05):
-PCOs <- PCOselect(dolphin_pco, method = "variance",
+#### Variance cutoff:
+
+PC axes with a variance (defined as the ratio between the eigenvalue of
+the given axis and the sum of all eigenvalues) higher to the `cutoff`
+value (expressed as a value between 0 and 1) are retained. For instance,
+selecting PC axes with variance above 5%:
+
+``` r
+
+PCOs <- PCOselect(dolphin_pca, method = "variance",
                   cutoff = .05)
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2
+#> - PC scores selected: 1, 2, 3
 #> - Method: variance (cutoff: 0.05)
 ```
+
+#### Maximizing the number of regions:
+
+PCs axes needed to obtain the maximum number of regions will be
+retained. The segmented models (output from `calcregions`) must be
+supplied to the `results` argument. The criterion (AICc or BIC) used to
+maximize the region score should be defined with `criterion` (see the
+section [Regionalization analysis](#RegAn) below for details on running
+`calcregions` and criterion selection) For instance, maximizing the
+number of PC axes to retain for the seal geometric morphometric dataset:
 
 ``` r
 
 # Max:
-regionresults <- calcregions(dolphin_pco, scores = 1:39, noregions = 4, 
-                             minvert = 3, cont = TRUE, exhaus = TRUE,
-                             verbose = FALSE)
-PCOs <- PCOselect(dolphin_pco, method = "max",
+regionresults <- calcregions(seal_pca, scores = 1:24, noregions = 4, 
+                             minvert = 3, cont = TRUE, exhaus = TRUE)
+
+PCOs <- PCOselect(seal_pca, method = "max",
                   results = regionresults,
                   criterion = "bic")
+
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1
+#> - PC scores selected: 1
 #> - Method: max (criterion: BIC)
+
 plot(PCOs)
 ```
 
@@ -238,7 +406,7 @@ included for AICc (left graph) and BIC (right graph). Blue triangles
 correspond to region score obtained for each individual PCO axis and
 orange circle to region scores obtained with cumulative number of PCO
 axes. The cumulated variance explained by PCO axes is represented by the
-grey curve.](MorphoRegions_files/figure-html/unnamed-chunk-9-1.png)
+grey curve.](MorphoRegions_files/figure-html/unnamed-chunk-11-1.png)
 
 **Fig.3a.** Graph of region scores (left y-axis) and cumulative variance
 (right y-axis) obtained with varying number of PCO axes included for
@@ -247,41 +415,60 @@ region score obtained for each individual PCO axis and orange circle to
 region scores obtained with cumulative number of PCO axes. The cumulated
 variance explained by PCO axes is represented by the grey curve.
 
+#### Bootstrap:
+
+PC axes are selected through bootstrapping by comparing observed
+eigenvalues to eigenvalues from randomized data. PC axes with
+eigenvalues higher than values from randomized data are retained. When
+using this method, the screeplot showing observed and simulated
+eigenvalues can be plotted. Because the function needs to recompute the
+ordination based on randomized data, this option is **only available for
+PCO axes computed within *MorphoRegions*** (pipeline 1). *Note that
+bootstrapping is sensitive to unequal variances of variables and should
+only be used on data that have been scaled (setting `scale = TRUE` in
+the original call to
+[`svdPCO()`](https://aagillet.github.io/MorphoRegions/reference/svdPCO.md)).*
+
 ``` r
 
 # Bootstrap:
 PCOs <- PCOselect(dolphin_pco, method = "boot")
-#> Bootstrapping...
+
 PCOs
 #> A `regions_pco_select` object
-#> - PCO scores selected: 1, 2
+#> - PC scores selected: 1, 2
 #> - Method: boot (500 replications)
+
 plot(PCOs)
 ```
 
 ![\*\*Fig.3b.\*\* Screeplot of observed eigenvalues (line) and
 eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are
 retained for subsequent
-analyses.](MorphoRegions_files/figure-html/unnamed-chunk-10-1.png)
+analyses.](MorphoRegions_files/figure-html/unnamed-chunk-12-1.png)
 
 **Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues
 from randomized data (boxes). Here PCO axes 1 and 2 are retained for
 subsequent analyses.
 
-### Loadings
+### Variable loadings
 
 Correlations between original variables and each PCO axis are obtained
-through the `PCOload` function. The additional ‘Size’ variable
-corresponds to the mean value of the variables.
+using
+[`PCOload()`](https://aagillet.github.io/MorphoRegions/reference/PCOload.md).
+The additional ‘Size’ variable corresponds to the mean value of the
+variables. *Note that This function is not available for geometric
+morphometric datasets (pipeline 3).*
 
 ``` r
 
 loadings <- PCOload(dolphin_pco, scores = PCOs)
+
 plot(loadings)
 ```
 
 ![\*\*Fig.4.\*\* Correlations between original variables and PCO axes 1
-and 2.](MorphoRegions_files/figure-html/unnamed-chunk-11-1.png)
+and 2.](MorphoRegions_files/figure-html/unnamed-chunk-13-1.png)
 
 **Fig.4.** Correlations between original variables and PCO axes 1 and 2.
 
@@ -330,14 +517,14 @@ fitting options](#FittingOptions) section for details):
 
 regionresults <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
                              minvert = 3, cont = TRUE, 
-                             exhaus = TRUE, cl = NULL,
-                             verbose = FALSE)
+                             exhaus = TRUE, cl = NULL)
 ```
 
 The output of the function contains information on the parameters used
-to run the analysis and total number of models tested while using the
-`summary` function allows to see how many models are possible and how
-many have been tested for each given number of regions.
+to run the analysis and total number of models tested while using
+[`summary()`](https://rdrr.io/r/base/summary.html) allows one to see how
+many models are possible and how many have been tested for each given
+number of regions.
 
 ``` r
 
@@ -446,8 +633,8 @@ models with fewer regions**.
 
 ``` r
 
-regionresults <- addregions(regionresults, noregions = 6:7, exhaus = TRUE,
-                            verbose = FALSE)
+regionresults <- addregions(regionresults, noregions = 6:7, exhaus = TRUE)
+
 summary(regionresults)
 #>  Regions Possible Tested  Saved Comp. method Saving method
 #>        1        1      1      1   Exhaustive           All
@@ -511,7 +698,7 @@ AICc and BIC. Since the best model is still the most complex model,
 additional model(s) with more than seven regions should be fitted (not
 run here for computational reasons).
 
-### Model performance ($`R^2`$)
+### Model performance
 
 [`modelperf()`](https://aagillet.github.io/MorphoRegions/reference/modelperf.md)
 returns the univariate (for each PC axis individually) and multivariate
@@ -634,11 +821,11 @@ plotsegreg(dolphin_pco, scores = 1,
 ![\*\*Fig.5.\*\* Scatterplots showing PCO scores and segmented
 regressions on PC1 and PC2 for the best model \*(left)\* and on PC1 for
 a 4 regions model with breakpoints at vertebrae 15, 24, and 37
-\*(right)\*.](MorphoRegions_files/figure-html/unnamed-chunk-21-1.png)![\*\*Fig.5.\*\*
+\*(right)\*.](MorphoRegions_files/figure-html/unnamed-chunk-23-1.png)![\*\*Fig.5.\*\*
 Scatterplots showing PCO scores and segmented regressions on PC1 and PC2
 for the best model \*(left)\* and on PC1 for a 4 regions model with
 breakpoints at vertebrae 15, 24, and 37
-\*(right)\*.](MorphoRegions_files/figure-html/unnamed-chunk-21-2.png)
+\*(right)\*.](MorphoRegions_files/figure-html/unnamed-chunk-23-2.png)
 
 **Fig.5.** Scatterplots showing PCO scores and segmented regressions on
 PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model
@@ -685,15 +872,15 @@ plotvertmap(dolphin_pco, name = "Dolphin C",
 criterion \*(top)\*, the 2^nd^ best fit model using AICc criterion
 \*(middle)\*, a user-defined model with breakpoints at vertebrae 12, 17,
 20, and 30
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-22-1.png)![\*\*Fig.6.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-24-1.png)![\*\*Fig.6.\*\*
 Vertebral maps of the best fit model using BIC criterion \*(top)\*, the
 2^nd^ best fit model using AICc criterion \*(middle)\*, a user-defined
 model with breakpoints at vertebrae 12, 17, 20, and 30
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-22-2.png)![\*\*Fig.6.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-24-2.png)![\*\*Fig.6.\*\*
 Vertebral maps of the best fit model using BIC criterion \*(top)\*, the
 2^nd^ best fit model using AICc criterion \*(middle)\*, a user-defined
 model with breakpoints at vertebrae 12, 17, 20, and 30
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-22-3.png)
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-24-3.png)
 
 **Fig.6.** Vertebral maps of the best fit model using BIC criterion
 *(top)*, the 2^(nd) best fit model using AICc criterion *(middle)*, a
@@ -731,12 +918,12 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 calculated from \*calcBPvar (top)\* and with values directly supplied to
 the function \*(bottom)\*. Dots correspond to breakpoint position and
 horizontal lines correspond to the standard deviation of each breakpoint
-position.](MorphoRegions_files/figure-html/unnamed-chunk-23-1.png)![\*\*Fig.7.\*\*
+position.](MorphoRegions_files/figure-html/unnamed-chunk-25-1.png)![\*\*Fig.7.\*\*
 Vertebral maps showing breakpoint position variability calculated from
 \*calcBPvar (top)\* and with values directly supplied to the function
 \*(bottom)\*. Dots correspond to breakpoint position and horizontal
 lines correspond to the standard deviation of each breakpoint
-position.](MorphoRegions_files/figure-html/unnamed-chunk-23-2.png)
+position.](MorphoRegions_files/figure-html/unnamed-chunk-25-2.png)
 
 **Fig.7.** Vertebral maps showing breakpoint position variability
 calculated from *calcBPvar (top)* and with values directly supplied to
@@ -776,11 +963,11 @@ plotvertmap(dolphin_pco, name = "Dolphin", modelsupport = supp,
 ![\*\*Fig.8.\*\* Vertebral maps with anatomical region boundaries
 represented by vertical bars \*(top)\* and vertebral position labelled
 on corresponding rectangle
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-24-1.png)![\*\*Fig.8.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-26-1.png)![\*\*Fig.8.\*\*
 Vertebral maps with anatomical region boundaries represented by vertical
 bars \*(top)\* and vertebral position labelled on corresponding
 rectangle
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-24-2.png)
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-26-2.png)
 
 **Fig.8.** Vertebral maps with anatomical region boundaries represented
 by vertical bars *(top)* and vertebral position labelled on
@@ -824,17 +1011,17 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 total vertebral count \*(top)\*, scaled to their centrum length relative
 to total length in absolute value \*(middle)\*, and scaled to their
 centrum length in percentage
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-25-1.png)![\*\*Fig.9.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-27-1.png)![\*\*Fig.9.\*\*
 Vertebral maps plotting vertebrae as percentage of total vertebral count
 \*(top)\*, scaled to their centrum length relative to total length in
 absolute value \*(middle)\*, and scaled to their centrum length in
 percentage
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-25-2.png)![\*\*Fig.9.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-27-2.png)![\*\*Fig.9.\*\*
 Vertebral maps plotting vertebrae as percentage of total vertebral count
 \*(top)\*, scaled to their centrum length relative to total length in
 absolute value \*(middle)\*, and scaled to their centrum length in
 percentage
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-25-3.png)
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-27-3.png)
 
 **Fig.9.** Vertebral maps plotting vertebrae as percentage of total
 vertebral count *(top)*, scaled to their centrum length relative to
@@ -860,7 +1047,7 @@ two blocks with a limit at vertebra 25.
 
 # Manually color-coding each region using the viridis palette:
 library(viridisLite)
-nreg <- supp$Model_support_BIC[1,1]  # get nbr of regions
+nreg <- supp$Model_support_BIC[1, 1]  # get nbr of regions
 cols <- viridis(n = nreg)
 
 plotvertmap(dolphin_pco, name = "Dolphin",
@@ -885,10 +1072,10 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 ![\*\*Fig.10.\*\* Vertebral maps with regions colored with a
 user-defined palette using \*viridis\* \*(top)\* and custom palettes for
 different blocks
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-26-1.png)![\*\*Fig.10.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-28-1.png)![\*\*Fig.10.\*\*
 Vertebral maps with regions colored with a user-defined palette using
 \*viridis\* \*(top)\* and custom palettes for different blocks
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-26-2.png)
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-28-2.png)
 
 **Fig.10.** Vertebral maps with regions colored with a user-defined
 palette using *viridis* *(top)* and custom palettes for different blocks
@@ -909,15 +1096,21 @@ package.
 
 # Run regions analysis on alligator and mouse data:
 dat_alligator <- process_measurements(alligator, pos = 1)
+
 pco_alligator <- svdPCO(dat_alligator, "gower")
+
 regions_alligator <- calcregions(pco_alligator, scores = 1:3,
-                                 noregions = 5, verbose = FALSE)
+                                 noregions = 5)
+
 supp_alligator <- modelsupport(modelselect(regions_alligator))
 
 dat_mouse <- process_measurements(musm, pos = 1)
+
 pco_mouse <- svdPCO(dat_mouse, "gower")
+
 regions_mouse <- calcregions(pco_mouse, scores = 1:3,
-                             noregions = 5, verbose = FALSE)
+                             noregions = 5)
+
 supp_mouse <- modelsupport(modelselect(regions_mouse))
 
 # Create vertebral maps:
@@ -946,7 +1139,7 @@ wrap_plots(vertmaps) + plot_layout(ncol = 1, byrow = FALSE)
 
 ![\*\*Fig.11.\*\* Vertebral maps of alligator, mouse, and dolphin
 stacked in a single
-figure.](MorphoRegions_files/figure-html/unnamed-chunk-27-1.png)
+figure.](MorphoRegions_files/figure-html/unnamed-chunk-29-1.png)
 
 **Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a
 single figure.
@@ -988,11 +1181,11 @@ plotsegreg(dolphin_pco, scores = 1:2,
 ![\*\*Fig.12.\*\* Best fit on PCOs 1 and 2 of a 4 region models with
 breakpoints at 15, 24, and 37, using a discontinuous model (\*left\*)
 and a continuous model
-(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-28-1.png)![\*\*Fig.12.\*\*
+(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-30-1.png)![\*\*Fig.12.\*\*
 Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15,
 24, and 37, using a discontinuous model (\*left\*) and a continuous
 model
-(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-28-2.png)
+(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-30-2.png)
 
 **Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with
 breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and
@@ -1002,23 +1195,29 @@ a continuous model (*right*).
 
 By default, the minimum number of elements (vertebrae) in each region is
 set to 3. This parameter can, however, be changed with the `minvert`
-argument in the `calcregions` function. *Note that setting the minimum
-value to 2 might results in linear segments made of only two points,
-which will have a perfect fit (RSS=0 for these segments) and might
-artificially increase the goodness of fit.*
+argument in
+[`calcregions()`](https://aagillet.github.io/MorphoRegions/reference/calcregions.md).
+*Note that setting the minimum value to 2 might results in linear
+segments made of only two points, which will have a perfect fit (RSS=0
+for these segments) and might artificially increase the goodness of
+fit.*
 
 ``` r
 
 # Fitting up to 5 regions for alligator data with 2 vertebrae minimum per segment:
-reg.all.2 <- calcregions(pco_alligator, scores = 1, minvert = 2, noregions = 5,
-                         cont = FALSE, verbose = FALSE)
+reg.all.2 <- calcregions(pco_alligator, scores = 1,
+                         minvert = 2, noregions = 5,
+                         cont = FALSE)
+
 plotsegreg(pco_alligator, scores = 1,
            modelsupport = modelsupport(modelselect(reg.all.2)),
            criterion = "bic")
 
 # Fitting up to 5 regions for alligator data with 4 vertebrae minimum per segment:
-reg.all.4 <- calcregions(pco_alligator, scores = 1, minvert = 4, noregions = 5,
-                         cont = FALSE, verbose = FALSE)
+reg.all.4 <- calcregions(pco_alligator, scores = 1,
+                         minvert = 4, noregions = 5,
+                         cont = FALSE)
+
 plotsegreg(pco_alligator, scores = 1,
            modelsupport = modelsupport(modelselect(reg.all.4)),
            criterion = "bic")
@@ -1026,10 +1225,10 @@ plotsegreg(pco_alligator, scores = 1,
 
 ![\*\*Fig.13.\*\* Best fit on PCO 1 of models up to 5 regions with a
 minimum of 2 vertebrae per region (\*left\*) or 4 vertebrae per region
-(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-29-1.png)![\*\*Fig.13.\*\*
+(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-31-1.png)![\*\*Fig.13.\*\*
 Best fit on PCO 1 of models up to 5 regions with a minimum of 2
 vertebrae per region (\*left\*) or 4 vertebrae per region
-(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-29-2.png)
+(\*right\*).](MorphoRegions_files/figure-html/unnamed-chunk-31-2.png)
 
 **Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum
 of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*).
@@ -1052,15 +1251,17 @@ prevent or force breakpoint(s) at specific position(s), respectively.
 
 # Fit models for dolphin preventing any BP in the thoracic and lumbar regions:
 reg.dol.noBP <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                            omitbp = 8:25, verbose = FALSE)
+                            omitbp = 8:25)
+
 plotsegreg(dolphin_pco, scores = PCOs,
            modelsupport = modelsupport(modelselect(reg.dol.noBP)),
            criterion = "bic")
 
 # Fit models for dolphin forcing BPs at anatomical region boundaries:
 reg.dol.forceBP <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                               includebp = c(17, 25, 35), verbose = FALSE)
-plotsegreg(dolphin_pco, scores=PCOs,
+                               includebp = c(17, 25, 35))
+
+plotsegreg(dolphin_pco, scores = PCOs,
            modelsupport = modelsupport(modelselect(reg.dol.forceBP)),
            criterion = "bic")
 ```
@@ -1069,12 +1270,12 @@ plotsegreg(dolphin_pco, scores=PCOs,
 preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to
 25) \*(top)\* and forcing breakpoints at anatomical region boundaries
 (vertebrae 17, 25, 35)
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-30-1.png)![\*\*Fig.14.\*\*
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-32-1.png)![\*\*Fig.14.\*\*
 Best fit on PCO 1 and 2 of models up to 5 regions preventing any
 breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) \*(top)\*
 and forcing breakpoints at anatomical region boundaries (vertebrae 17,
 25, 35)
-\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-30-2.png)
+\*(bottom)\*.](MorphoRegions_files/figure-html/unnamed-chunk-32-2.png)
 
 **Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing
 any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*
@@ -1101,7 +1302,8 @@ models to fit.
 ``` r
 
 reg.dol.Nex <- calcregions(dolphin_pco, scores = PCOs, noregions = 5,
-                           exhaus = FALSE, verbose = FALSE)
+                           exhaus = FALSE)
+
 summary(reg.dol.Nex)
 #>  Regions Possible Tested Saved Comp. method Saving method
 #>        1        1      1     1   Exhaustive           All
@@ -1111,10 +1313,10 @@ summary(reg.dol.Nex)
 #>        5    23751  11648   424   Non-exhaus          SD/2
 ```
 
-In a non-exhaustive search, the
-[`summary()`](https://rdrr.io/r/base/summary.html) function used on
+In a non-exhaustive search, using
+[`summary()`](https://rdrr.io/r/base/summary.html) the
 [`calcregions()`](https://aagillet.github.io/MorphoRegions/reference/calcregions.md)
-returns, for each number of regions, the total number of possible
+output returns, for each number of regions, the total number of possible
 models, the number of models actually fitted, and the number of models
 saved to output in order to limit memory usage.
 
@@ -1128,9 +1330,10 @@ saved models and a warning message is returned.
 
 ``` r
 
-calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1, criterion = "bic")
-#> Warning: Number of models provided lower than percentage requested.
-#> Weighted means and SD calculated on: 1.79% of total number of models.
+calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1,
+          criterion = "bic")
+#> Warning in calcBPvar(reg.dol.Nex, noregions = 5, pct = 0.1, criterion = "bic"): Number of models provided lower than percentage requested. Weighted means and
+#> SD calculated on 1.79% of total number of models.
 #>         BP 1   BP 2   BP 3   BP 4
 #> wMean 23.154 27.354 33.985 39.722
 #> wSD    0.524  0.509  0.677  0.630
@@ -1145,7 +1348,8 @@ well.
 
 ``` r
 
-calcBPvar(regionresults, noregions = 5, pct = 0.1, criterion = "bic")
+calcBPvar(regionresults, noregions = 5, pct = 0.1,
+          criterion = "bic")
 #>         BP 1   BP 2   BP 3   BP 4
 #> wMean 23.154 27.354 33.985 39.722
 #> wSD    0.524  0.509  0.678  0.630
@@ -1167,18 +1371,23 @@ to be used (supplying a number is not available on Windows).
 
 # Exhaustive search with parallel computing using 6 cores:
 calcregions(dolphin_pco, scores = 2, noregions = 10, exhaus = TRUE,
-            cl = 6, verbose = FALSE)
+            cl = 6)
 ```
 
 Note that parallel computing will only be significantly faster on heavy
 computing specimens.
 
-## Intrapsecific variability
+## Intraspecific variability
 
 To account for variability within a species or group, it is possible to
 **run the regionalization analysis on multiple specimens in a single
-analysis**. The `porpoise` dataset contains data of 3 different
-specimens of harbor porpoise.
+analysis**, both for traditional morphometric and geometric morphometric
+datasets.
+
+#### Raw morphometrics (*Pipeline 1*):
+
+The `porpoise` dataset contains linear measurements on the vertebrae of
+3 different specimens of harbor porpoise.
 
 ``` r
 
@@ -1203,26 +1412,140 @@ information column of the data.
 ``` r
 
 # Process measurements data
-porpoise_data <- process_measurements(list(porpoise1, porpoise2, porpoise3), pos = "Vertebra")
+porpoise_data <- process_measurements(list(porpoise1,
+                                           porpoise2,
+                                           porpoise3),
+                                      pos = "Vertebra")
 
 # Compute PCOs
 porpoise_pco <- svdPCO(porpoise_data, "gower")
 
 # Plot PCOs
 plot(porpoise_pco, 1:2)
-plot(porpoise_pco, pco_x = 1, pco_y = 2)
+plot(porpoise_pco, pc_x = 1, pc_y = 2)
 ```
 
 ![\*\*Fig.15.\*\* PCO plots of the three specimens of harbor
-porpoise.](MorphoRegions_files/figure-html/unnamed-chunk-37-1.png)![\*\*Fig.15.\*\*
+porpoise.](MorphoRegions_files/figure-html/unnamed-chunk-39-1.png)![\*\*Fig.15.\*\*
 PCO plots of the three specimens of harbor
-porpoise.](MorphoRegions_files/figure-html/unnamed-chunk-37-2.png)
+porpoise.](MorphoRegions_files/figure-html/unnamed-chunk-39-2.png)
 
 **Fig.15.** PCO plots of the three specimens of harbor porpoise.
 
-Once data of each specimen have been supplied to the
-`process_measurements` function, **the process to run the analysis is
-similar to running the analysis on a single specimen at a time**.
+  
+
+#### PCs from traditional morphometrics (*Pipeline 2*):
+
+Using the two first specimens from the `porpoise` dataset, we first need
+to compute a PCA and then use the PC scores as input data for
+[`process_PC()`](https://aagillet.github.io/MorphoRegions/reference/process_PC.md).
+
+``` r
+
+# Combine data of porpoises 1 and 2:
+porpoise_dat <- rbind(porpoise1, porpoise2)
+
+# Compute PCA on both specimens together:
+PCA_porp <- prcomp(porpoise_dat, scale = T, center = T)
+
+# Extract PC scores and eigenvalues:
+PCscores_porp <- PCA_porp$x
+PCeigen_porp <- PCA_porp$sdev^2
+```
+
+In addition to the PC scores and eigenvalues, the raw data needs to be
+provided as a list where each element of the list contains the raw data
+of a specimen. The positional information of the raw data can be
+provided using the `pos` argument. Similarly, the positional information
+in the PC score dataset can be provided with the `pocPC` argument. The
+positional information for `pocPC` needs to be provided as a **named**
+list where each element of the list contains positional information for
+a specimen, and names correspond to specimen names. In such case, the
+list containing raw data must also be a **named** list using the same
+specimen names as in the `posPC` list. *Note that providing positional
+information is particularly important if different vertebrae have been
+sampled in different specimens*.
+
+``` r
+
+# Create named list of raw data:
+porpoises <- list(porpoise1, porpoise2)
+names(porpoises) <- c('Porpoise1', 'Porpoise2')
+
+# Create list of positional information:
+posPCporp <- lapply(porpoises,'[[',1)
+posPCporp
+#> $Porpoise1
+#>  [1]  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+#> [26] 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57
+#> [51] 58 59 60 61 62 63 64 65
+#> 
+#> $Porpoise2
+#>  [1]  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+#> [26] 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57
+#> [51] 58 59 60 61 62 63
+
+# Input data in MorphoRegions:
+porpoise_pca <- process_PC(data = porpoises, pos = 'Vertebra',
+                           pcscores = PCscores_porp, eigenvals = PCeigen_porp,
+                           posPC = posPCporp)
+
+plot(porpoise_pca, pc_x = 1, pc_y = 2)
+```
+
+![\*\*Fig.16.\*\* Morphospace of two specimens of harbor
+porpoise.](MorphoRegions_files/figure-html/unnamed-chunk-41-1.png)
+
+**Fig.16.** Morphospace of two specimens of harbor porpoise.
+
+  
+
+#### PCs from geometric morphometrics (*Pipeline 3*):
+
+The `wolves_gmm` dataset contains 3D geometric morphometric data and PC
+scores of 10 subsampled vertebrae in two specimens of wolves. For
+multiple specimens, specimen names must be provided as a vector of equal
+length to the total number of vertebrae in the sample (and in the same
+order as in the landmark array and the PC score dataset).
+
+``` r
+
+data("wolves_gmm")
+names(wolves_gmm)
+#> [1] "coord_gpa" "specimens" "vertebrae" "scores"    "eigenvals"
+
+# Positional information:
+wolves_gmm$vertebrae
+#>  [1]  3  5  7  8 14 17 20 21 24 27  3  5  7  8 14 17 20 21 24 27
+
+# Specimen information:
+wolves_gmm$specimens
+#>  [1] "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071" "MU071"
+#> [10] "MU071" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073" "MU073"
+#> [19] "MU073" "MU073"
+```
+
+The data can then be converted to `regions_pco` object with the
+[`process_gmPC()`](https://aagillet.github.io/MorphoRegions/reference/process_gmPC.md)
+function (as for a single specimen).
+
+``` r
+
+wolf_pca <- process_gmPC(data = wolves_gmm$coord_gpa,
+                         pcscores = wolves_gmm$scores,
+                         eigenvals = wolves_gmm$eigenvals,
+                         pos = wolves_gmm$vertebrae,
+                         specimens = wolves_gmm$specimens)
+```
+
+  
+  
+
+#### Perform regionalization analysis:
+
+Once data of each specimen have been converted to `regions_pco` object
+(either through pipeline 1, 2, or 3), **the process to run the analysis
+is similar to running the analysis on a single specimen**.
 
 ``` r
 
@@ -1231,11 +1554,11 @@ PCOs <- PCOselect(porpoise_pco, "variance", cutoff = .05)
 
 # Performance for all models across all breakpoint combos
 regionresults <- calcregions(porpoise_pco, scores = PCOs,
-                             noregions = 3, verbose = FALSE)
+                             noregions = 3)
 
 # Adding more models to existing results
 regionresults <- addregions(regionresults, noregions = 4:5,
-                            exhaus = FALSE, verbose = FALSE)
+                            exhaus = FALSE)
 
 # Select best model
 models <- modelselect(regionresults)
@@ -1290,11 +1613,11 @@ plotsegreg(porpoise_pco, scores = 1:2, modelsupport = supp,
             criterion = "bic", model = 1)
 ```
 
-![\*\*Fig.16.\*\* Best fit model (based on BIC) on PCO 1 and 2
+![\*\*Fig.18.\*\* Best fit model (based on BIC) on PCO 1 and 2
 calculated on the three harbor porpoise
-specimens.](MorphoRegions_files/figure-html/unnamed-chunk-39-1.png)
+specimens.](MorphoRegions_files/figure-html/unnamed-chunk-45-1.png)
 
-**Fig.16.** Best fit model (based on BIC) on PCO 1 and 2 calculated on
+**Fig.18.** Best fit model (based on BIC) on PCO 1 and 2 calculated on
 the three harbor porpoise specimens.
 
 ``` r
@@ -1306,16 +1629,16 @@ plotvertmap(porpoise_pco, name = "Porpoise",
             bpvar = bpvar, sd.col = "grey20")
 ```
 
-![\*\*Fig.17.\*\* Vertebral map of best fit model (including variance in
+![\*\*Fig.19.\*\* Vertebral map of best fit model (including variance in
 breakpoint position) based on the three harbor porpoise
-specimens.](MorphoRegions_files/figure-html/unnamed-chunk-40-1.png)
+specimens.](MorphoRegions_files/figure-html/unnamed-chunk-46-1.png)
 
-**Fig.17.** Vertebral map of best fit model (including variance in
+**Fig.19.** Vertebral map of best fit model (including variance in
 breakpoint position) based on the three harbor porpoise specimens.
 
 ## Other useful options
 
-### Fit a specific model
+### Fitting a specific model
 
 Instead of fitting all possible models for a given range of region
 number,
@@ -1353,11 +1676,11 @@ modelperf(regionsmodel)
 plotsegreg(regionsmodel, scores = 1:3)
 ```
 
-![\*\*Fig.18.\*\* Best fit segmented linear regression model on PCO 1-3
+![\*\*Fig.20.\*\* Best fit segmented linear regression model on PCO 1-3
 when forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38,
-and 41.](MorphoRegions_files/figure-html/unnamed-chunk-41-1.png)
+and 41.](MorphoRegions_files/figure-html/unnamed-chunk-47-1.png)
 
-**Fig.18.** Best fit segmented linear regression model on PCO 1-3 when
+**Fig.20.** Best fit segmented linear regression model on PCO 1-3 when
 forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38, and 41.
 
 ### Subsampling elements
@@ -1385,16 +1708,16 @@ plotvertmap(dolphin_pco_sub.33, name = "Dolphin 33")
 plotvertmap(dolphin_pco_sub.7, name = "Dolphin .7")
 ```
 
-![\*\*Fig.19.\*\* Vertebral map of dolphin dataset with 33 subsampled
+![\*\*Fig.21.\*\* Vertebral map of dolphin dataset with 33 subsampled
 vetrebrae \*(top)\* and 70% of total vertebrae subsampled \*(bottom)\*.
 Vertebrae dropped are in grey and vertebrae retained are in blue
-shade\*.](MorphoRegions_files/figure-html/unnamed-chunk-42-1.png)![\*\*Fig.19.\*\*
+shade\*.](MorphoRegions_files/figure-html/unnamed-chunk-48-1.png)![\*\*Fig.21.\*\*
 Vertebral map of dolphin dataset with 33 subsampled vetrebrae \*(top)\*
 and 70% of total vertebrae subsampled \*(bottom)\*. Vertebrae dropped
 are in grey and vertebrae retained are in blue
-shade\*.](MorphoRegions_files/figure-html/unnamed-chunk-42-2.png)
+shade\*.](MorphoRegions_files/figure-html/unnamed-chunk-48-2.png)
 
-**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled
+**Fig.21.** Vertebral map of dolphin dataset with 33 subsampled
 vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*.
 Vertebrae dropped are in grey and vertebrae retained are in blue
 shade\*.
@@ -1423,18 +1746,18 @@ sim <- simregions(nvert = 40, nregions = 5, nvar = 4, r2 = .92,
 plot(sim, scores = 1:2)
 ```
 
-![\*\*Fig.20.\*\* Plot on PCO 1 and 2 of the \*\*simulated dataset\*\*
+![\*\*Fig.22.\*\* Plot on PCO 1 and 2 of the \*\*simulated dataset\*\*
 with 40 vertebrae and 5 regions (4
-breakpoints).](MorphoRegions_files/figure-html/unnamed-chunk-43-1.png)
+breakpoints).](MorphoRegions_files/figure-html/unnamed-chunk-49-1.png)
 
-**Fig.20.** Plot on PCO 1 and 2 of the **simulated dataset** with 40
+**Fig.22.** Plot on PCO 1 and 2 of the **simulated dataset** with 40
 vertebrae and 5 regions (4 breakpoints).
 
 The regionalization analysis can then be run on the simulated dataset.
 
 ``` r
 
-simresults <- calcregions(sim, scores = 1:4, noregions = 6, verbose = FALSE)
+simresults <- calcregions(sim, scores = 1:4, noregions = 6)
 
 simmodels <- modelselect(simresults)
 simmodels
@@ -1468,7 +1791,8 @@ simsupport
 #>        1    .    .    .    .    . 239.092 104.869   25.577     0.000      0.000
 #> Region score: 3.52
 
-modelperf(sim, modelsupport = simsupport, criterion = "aic", model = 1)
+modelperf(sim, modelsupport = simsupport,
+          criterion = "aic", model = 1)
 #> Breakpoints: 15, 21, 28, 34 
 #> 
 #> - Univariate:
@@ -1487,11 +1811,11 @@ plotsegreg(sim, scores = 1:2, modelsupport = simsupport,
             criterion = "aic", model = 1)
 ```
 
-![\*\*Fig.21.\*\* Plot on PCO 1 and 2 of the \*\*recovered best fit\*\*
+![\*\*Fig.23.\*\* Plot on PCO 1 and 2 of the \*\*recovered best fit\*\*
 on regionalization analysis ran on the simulated
-dataset.](MorphoRegions_files/figure-html/unnamed-chunk-44-1.png)
+dataset.](MorphoRegions_files/figure-html/unnamed-chunk-50-1.png)
 
-**Fig.21.** Plot on PCO 1 and 2 of the **recovered best fit** on
+**Fig.23.** Plot on PCO 1 and 2 of the **recovered best fit** on
 regionalization analysis ran on the simulated dataset.
 
 The simulated dataset had 5 predefined regions with breakpoints at
@@ -1513,12 +1837,13 @@ sim$BPs
 #>          16          20          29          34
 
 # Recovered best fit breakpoints:
-simsupport$Model_support[1,2:5]
+simsupport$Model_support[1, 2:5]
 #>       breakpoint1 breakpoint2 breakpoint3 breakpoint4
 #> 26746          15          21          28          34
 
 # Variability of recovered best fit breakpoints:
-calcBPvar(simresults, noregions = 5, pct = 0.1, criterion = "aic")
+calcBPvar(simresults, noregions = 5, pct = 0.1,
+          criterion = "aic")
 #>         BP 1   BP 2   BP 3   BP 4
 #> wMean 15.184 20.652 28.138 34.249
 #> wSD    1.618  0.788  0.511  0.710
@@ -1526,6 +1851,12 @@ calcBPvar(simresults, noregions = 5, pct = 0.1, criterion = "aic")
 ```
 
 ## References
+
+Esteban, J. M., A. Martín-Serra, A. Pérez-Ramos, B. Mulot, K. E. Jones,
+and B. Figueirido. 2023. “The Impact of the Land-to-Sea Transition on
+Evolutionary Integration and Modularity of the Pinniped Backbone.”
+*Communications Biology* 6: 1141.
+<https://doi.org/10.1038/s42003-023-05512-8>.
 
 Gillet, A., B. Frédérich, S. E. Pierce, and E. Parmentier. 2022.
 “Iterative Habitat Transitions Are Associated with Morphological
@@ -1544,3 +1875,8 @@ Jones, K. E., K. D. Angielczyk, P. D. Polly, et al. 2018. “Fossils
 Reveal the Complex Evolutionary History of the Mammalian Regionalized
 Spine.” *Science* 361: 1249–52.
 <https://doi.org/10.1126/science.aar3126>.
+
+Schwab, J. A., B. Figueirido, and K. E. Jones. 2025. “Ecological
+Inference from Isolated Vertebrae: Evaluating Functional Signal Across
+the Carnivoran Spine.” *Journal of Morphology* 287: e70109.
+<https://doi.org//10.1002/jmor.70109>.

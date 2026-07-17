@@ -15,16 +15,17 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/aagillet/MorphoRegions/blob/v0.1.1/inst/CITATION)
+[`inst/CITATION`](https://github.com/aagillet/MorphoRegions/blob/master/inst/CITATION)
 
-Gillet A, Jones K, Greifer N, Pierce S (????). *MorphoRegions: Analysis
+Gillet A, Jones K, Greifer N, Pierce S (2026). *MorphoRegions: Analysis
 of Regionalization Patterns in Serially Homologous Structures*. R
-package version 0.1.1, <https://aagillet.github.io/MorphoRegions/>.
+package version 0.2.0, <https://aagillet.github.io/MorphoRegions/>.
 
     @Manual{,
       title = {MorphoRegions: Analysis of Regionalization Patterns in Serially Homologous Structures},
       author = {Amandine Gillet and Katrina Jones and Noah Greifer and Stephanie Pierce},
-      note = {R package version 0.1.1},
+      year = {2026},
+      note = {R package version 0.2.0},
       url = {https://aagillet.github.io/MorphoRegions/},
     }
 

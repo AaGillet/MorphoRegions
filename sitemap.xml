@@ -4,6 +4,7 @@
 <url><loc>https://aagillet.github.io/MorphoRegions/articles/index.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/authors.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/index.html</loc></url>
+<url><loc>https://aagillet.github.io/MorphoRegions/news/index.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/MorphoRegions-package.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/PCOload.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/PCOselect.html</loc></url>
@@ -21,9 +22,13 @@
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/plotsegreg.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/plotvertmap.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/porpoise.html</loc></url>
+<url><loc>https://aagillet.github.io/MorphoRegions/reference/process_PC.html</loc></url>
+<url><loc>https://aagillet.github.io/MorphoRegions/reference/process_gmPC.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/process_measurements.html</loc></url>
+<url><loc>https://aagillet.github.io/MorphoRegions/reference/seal_gmm.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/simregions.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/subsample.html</loc></url>
 <url><loc>https://aagillet.github.io/MorphoRegions/reference/svdPCO.html</loc></url>
+<url><loc>https://aagillet.github.io/MorphoRegions/reference/wolves_gmm.html</loc></url>
 </urlset>
 

@@ -21,7 +21,7 @@ calcregions(
   ncombos_file_trigger = 1e+07,
   temp_file_dir = tempdir(TRUE),
   cl = NULL,
-  verbose = TRUE
+  verbose = interactive()
 )
 
 addregions(
@@ -31,7 +31,7 @@ addregions(
   ncombos_file_trigger = 1e+07,
   temp_file_dir = tempdir(TRUE),
   cl = NULL,
-  verbose = TRUE
+  verbose = interactive()
 )
 
 # S3 method for class 'regions_results'
@@ -125,7 +125,8 @@ ncombos(pco, noregions, minvert = 3, includebp = NULL, omitbp = NULL)
 - verbose:
 
   `logical`; whether to print information about the fitting process,
-  including a progress bar. Default is `TRUE`.
+  including a progress bar. Default is `TRUE` when running interactively
+  and `FALSE` otherwise.
 
 - regions_results, object:
 
@@ -226,8 +227,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = TRUE,
-                             exhaus = FALSE,
-                             verbose = FALSE)
+                             exhaus = FALSE)
 
 regionresults
 #> A `regions_results` object
@@ -251,8 +251,7 @@ summary(regionresults)
 # exhaustive search this time
 regionresults <- addregions(regionresults,
                             noregions = 6:7,
-                            exhaus = TRUE,
-                            verbose = FALSE)
+                            exhaus = TRUE)
 
 regionresults
 #> A `regions_results` object
@@ -282,8 +281,7 @@ regionresults <- calcregions(alligator_PCO,
                              noregions = 5,
                              minvert = 3,
                              cont = FALSE,
-                             omitbp = c(10, 15),
-                             verbose = FALSE)
+                             omitbp = c(10, 15))
 
 regionresults
 #> A `regions_results` object
