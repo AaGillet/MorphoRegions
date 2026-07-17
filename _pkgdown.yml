@@ -10,7 +10,7 @@ reference:
   - starts_with("calc")
   - starts_with("model")
   - starts_with("plot")
-  - process_measurements
+  - starts_with("process")
   - simregions
   - subsample
   - svdPCO
