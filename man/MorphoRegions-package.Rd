@@ -23,7 +23,7 @@ Useful links:
 Authors:
 \itemize{
   \item Amandine Gillet \email{gillet.aman@gmail.com} (\href{https://orcid.org/0000-0001-9763-6061}{ORCID})
-  \item Katrina Jones \email{katrina.jones@manchester.ac.uk} (\href{https://orcid.org/0000-0003-1088-0497}{ORCID})
+  \item Katrina Jones \email{katrina.jones@bristol.ac.uk} (\href{https://orcid.org/0000-0003-1088-0497}{ORCID})
   \item Noah Greifer \email{ngreifer@iq.harvard.edu} (\href{https://orcid.org/0000-0003-3067-7154}{ORCID})
   \item Stephanie Pierce \email{spierce@oeb.harvard.edu} (\href{https://orcid.org/0000-0003-0717-1841}{ORCID})
 }
