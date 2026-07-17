@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>MorphoRegions • MorphoRegions</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="MorphoRegions">
 </head>
@@ -53,7 +53,7 @@
       <h1>MorphoRegions</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/aagillet/MorphoRegions/blob/master/vignettes/MorphoRegions.Rmd" class="external-link"><code>vignettes/MorphoRegions.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/aagillet/MorphoRegions/blob/v0.1.1/vignettes/MorphoRegions.Rmd" class="external-link"><code>vignettes/MorphoRegions.Rmd</code></a></small>
       <div class="d-none name"><code>MorphoRegions.Rmd</code></div>
     </div>
 
@@ -85,10 +85,9 @@ priori</em> assumptions. The algorithm fits increasingly complex models
 (increasing number of regions). For each given number of regions, all
 possible combinations of breakpoint positions will be iteratively
 fitted. Maximum-likelihood methods are then used to identify the best
-model, as described in <span class="citation">Gillet, Jones, and Pierce
-(<a href="#ref-Gillet2024">2024</a>)</span>.</p>
+model, as described in <span class="citation">Gillet et al. (<a href="#ref-Gillet2024">2024</a>)</span>.</p>
 <div class="figure" style="text-align: center">
-<img src="images%2FRegions_image2.jpg" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><img src="images%2FGif_segreg_1bp_25delay.gif" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><img src="images%2FGif_segreg_50delay.gif" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><p class="caption">
+<img src="images/Regions_image2.jpg" class="r-plt" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><img src="images/Gif_segreg_1bp_25delay.gif" class="r-plt" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><img src="images/Gif_segreg_50delay.gif" class="r-plt" alt="**Fig.1.** *MorphoRegions* identifies regions in serially-homologous structures by fitting all possible breakpoint positions for a given number of region and then repeating the method on increasingly complex models." width="30%"><p class="caption">
 <strong>Fig.1.</strong> <em>MorphoRegions</em> identifies regions in
 serially-homologous structures by fitting all possible breakpoint
 positions for a given number of region and then repeating the method on
@@ -195,7 +194,7 @@ position in backbone (left) or as a morphospace (right).</p>
 <span><span class="co"># Plot morphospace of PC1 and 2:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, pco_x <span class="op">=</span> <span class="fl">1</span>, pco_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-7-1.png" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-7-2.png" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-7-2.png" class="r-plt" alt="**Fig.2.** *Left*: PCO scores of each vertebra along the backbone for PCO1 *(top)* and PCO2 *(bottom)*. *Right*: morphospace defined by PCO1 and 2, points plotted as numbers corresponding to the position of each vertebra along the backbone." width="48%"><p class="caption">
 <strong>Fig.2.</strong> <em>Left</em>: PCO scores of each vertebra along
 the backbone for PCO1 <em>(top)</em> and PCO2 <em>(bottom)</em>.
 <em>Right</em>: morphospace defined by PCO1 and 2, points plotted as
@@ -268,7 +267,7 @@ original call to <code><a href="../reference/svdPCO.html">svdPCO()</a></code>).<
 <span><span class="co">#&gt; - Method: max (criterion: BIC)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">PCOs</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-9-1.png" alt="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="**Fig.3a.** Graph of region scores (left y-axis) and cumulative variance (right y-axis) obtained with varying number of PCO axes included for AICc (left graph) and BIC (right graph). Blue triangles correspond to region score obtained for each individual PCO axis and orange circle to region scores obtained with cumulative number of PCO axes. The cumulated variance explained by PCO axes is represented by the grey curve." width="60%"><p class="caption">
 <strong>Fig.3a.</strong> Graph of region scores (left y-axis) and
 cumulative variance (right y-axis) obtained with varying number of PCO
 axes included for AICc (left graph) and BIC (right graph). Blue
@@ -288,7 +287,7 @@ by the grey curve.
 <span><span class="co">#&gt; - Method: boot (500 replications)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">PCOs</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-10-1.png" alt="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="**Fig.3b.** Screeplot of observed eigenvalues (line) and eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are retained for subsequent analyses." width="60%"><p class="caption">
 <strong>Fig.3b.</strong> Screeplot of observed eigenvalues (line) and
 eigenvalues from randomized data (boxes). Here PCO axes 1 and 2 are
 retained for subsequent analyses.
@@ -305,7 +304,7 @@ obtained through the <code>PCOload</code> function. The additional
 <code class="sourceCode R"><span><span class="va">loadings</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PCOload.html">PCOload</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, scores <span class="op">=</span> <span class="va">PCOs</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">loadings</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-11-1.png" alt="**Fig.4.** Correlations between original variables and PCO axes 1 and 2." width="70%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="**Fig.4.** Correlations between original variables and PCO axes 1 and 2." width="70%"><p class="caption">
 <strong>Fig.4.</strong> Correlations between original variables and PCO
 axes 1 and 2.
 </p>
@@ -419,7 +418,7 @@ vertebrae 30 to 47 (last vertebra in the dataset).</p>
 the models returned by <code><a href="../reference/modelselect.html">modelselect()</a></code>. The best model is
 <strong>calculated using AICc or BIC</strong> which allows the selection
 of the best fit model while penalizing for models that are too complex.
-<em>See <span class="citation">Jones et al. (<a href="#ref-Jones2018">2018</a>)</span> for AICc calculations and <span class="citation">Gillet, Jones, and Pierce (<a href="#ref-Gillet2024">2024</a>)</span> for BIC calculations.</em></p>
+<em>See <span class="citation">Jones et al. (<a href="#ref-Jones2018">2018</a>)</span> for AICc calculations and <span class="citation">Gillet et al. (<a href="#ref-Gillet2024">2024</a>)</span> for BIC calculations.</em></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">supp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
 <span><span class="va">supp</span></span>
@@ -631,7 +630,7 @@ position of the breakpoints (<code>bps</code> argument).</p>
 <span>           bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>,</span>
 <span>           cont <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-21-1.png" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-21-2.png" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-21-2.png" class="r-plt" alt="**Fig.5.** Scatterplots showing PCO scores and segmented regressions on PC1 and PC2 for the best model *(left)* and on PC1 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37 *(right)*." width="48%"><p class="caption">
 <strong>Fig.5.</strong> Scatterplots showing PCO scores and segmented
 regressions on PC1 and PC2 for the best model <em>(left)</em> and on PC1
 for a 4 regions model with breakpoints at vertebrae 15, 24, and 37
@@ -669,7 +668,7 @@ breakpoints of a model.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin C"</span>,</span>
 <span>            bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">17</span>, <span class="fl">20</span>, <span class="fl">30</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-22-1.png" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-2.png" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-3.png" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-22-1.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-2.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-22-3.png" class="r-plt" alt="**Fig.6.** Vertebral maps of the best fit model using BIC criterion *(top)*, the 2^nd^ best fit model using AICc criterion *(middle)*, a user-defined model with breakpoints at vertebrae 12, 17, 20, and 30 *(bottom)*." width="672"><p class="caption">
 <strong>Fig.6.</strong> Vertebral maps of the best fit model using BIC
 criterion <em>(top)</em>, the 2<sup>nd</sup> best fit model using AICc
 criterion <em>(middle)</em>, a user-defined model with breakpoints at
@@ -698,7 +697,7 @@ breakpoints corresponds to the weighted mean position computed by
 <span>            bp.sd <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.2</span>, <span class="fl">1.4</span>, <span class="fl">2.5</span>, <span class="fl">1.5</span>, <span class="fl">2.1</span>, <span class="fl">0.8</span><span class="op">)</span>,</span>
 <span>            sd.col<span class="op">=</span><span class="st">"#636363"</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-23-1.png" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-23-2.png" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-23-2.png" class="r-plt" alt="**Fig.7.** Vertebral maps showing breakpoint position variability calculated from *calcBPvar (top)* and with values directly supplied to the function *(bottom)*. Dots correspond to breakpoint position and horizontal lines correspond to the standard deviation of each breakpoint position." width="672"><p class="caption">
 <strong>Fig.7.</strong> Vertebral maps showing breakpoint position
 variability calculated from <em>calcBPvar (top)</em> and with values
 directly supplied to the function <em>(bottom)</em>. Dots correspond to
@@ -730,7 +729,7 @@ each element (vertebra) as a number on the corresponding rectangle.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco</span>, name <span class="op">=</span> <span class="st">"Dolphin"</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span>, text <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-24-1.png" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-24-2.png" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-24-2.png" class="r-plt" alt="**Fig.8.** Vertebral maps with anatomical region boundaries represented by vertical bars *(top)* and vertebral position labelled on corresponding rectangle *(bottom)*." width="672"><p class="caption">
 <strong>Fig.8.</strong> Vertebral maps with anatomical region boundaries
 represented by vertical bars <em>(top)</em> and vertebral position
 labelled on corresponding rectangle <em>(bottom)</em>.
@@ -767,7 +766,7 @@ original dataset).</p>
 <span>            dropNA <span class="op">=</span> <span class="cn">TRUE</span>, reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span>,</span>
 <span>            lim.col <span class="op">=</span> <span class="st">"grey"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-25-1.png" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-2.png" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-3.png" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-2.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-25-3.png" class="r-plt" alt="**Fig.9.** Vertebral maps plotting vertebrae as percentage of total vertebral count *(top)*, scaled to their centrum length relative to total length in absolute value *(middle)*, and scaled to their centrum length in percentage *(bottom)*." width="672"><p class="caption">
 <strong>Fig.9.</strong> Vertebral maps plotting vertebrae as percentage
 of total vertebral count <em>(top)</em>, scaled to their centrum length
 relative to total length in absolute value <em>(middle)</em>, and scaled
@@ -812,7 +811,7 @@ blue. Since the lumbo-caudal transition falls between vertebrae 25 and
 <span>            reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">17</span>, <span class="fl">25</span>, <span class="fl">35</span><span class="op">)</span>,</span>
 <span>            block.cols <span class="op">=</span> <span class="va">blockcols</span>, block.lim <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-26-1.png" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-26-2.png" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-26-2.png" class="r-plt" alt="**Fig.10.** Vertebral maps with regions colored with a user-defined palette using *viridis* *(top)* and custom palettes for different blocks *(bottom)*." width="672"><p class="caption">
 <strong>Fig.10.</strong> Vertebral maps with regions colored with a
 user-defined palette using <em>viridis</em> <em>(top)</em> and custom
 palettes for different blocks <em>(bottom)</em>.
@@ -865,7 +864,7 @@ the <em>patchwork</em> package.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://patchwork.data-imaginist.com/reference/wrap_plots.html" class="external-link">wrap_plots</a></span><span class="op">(</span><span class="va">vertmaps</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://patchwork.data-imaginist.com/reference/plot_layout.html" class="external-link">plot_layout</a></span><span class="op">(</span>ncol <span class="op">=</span> <span class="fl">1</span>, byrow <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-27-1.png" alt="**Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a single figure." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-27-1.png" class="r-plt" alt="**Fig.11.** Vertebral maps of alligator, mouse, and dolphin stacked in a single figure." width="672"><p class="caption">
 <strong>Fig.11.</strong> Vertebral maps of alligator, mouse, and dolphin
 stacked in a single figure.
 </p>
@@ -903,7 +902,7 @@ scores that will be implemented in the analysis (as in <a href="#PCO">Fig.2</a>)
 <span>           bps <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">24</span>, <span class="fl">37</span><span class="op">)</span>,</span>
 <span>           cont <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-28-1.png" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-28-2.png" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-28-1.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-28-2.png" class="r-plt" alt="**Fig.12.** Best fit on PCOs 1 and 2 of a 4 region models with breakpoints at 15, 24, and 37, using a discontinuous model (*left*) and a continuous model (*right*)." width="48%"><p class="caption">
 <strong>Fig.12.</strong> Best fit on PCOs 1 and 2 of a 4 region models
 with breakpoints at 15, 24, and 37, using a discontinuous model
 (<em>left</em>) and a continuous model (<em>right</em>).
@@ -935,7 +934,7 @@ fit.</em></p>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.all.4</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-29-1.png" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-29-2.png" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-29-1.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-29-2.png" class="r-plt" alt="**Fig.13.** Best fit on PCO 1 of models up to 5 regions with a minimum of 2 vertebrae per region (*left*) or 4 vertebrae per region (*right*)." width="48%"><p class="caption">
 <strong>Fig.13.</strong> Best fit on PCO 1 of models up to 5 regions
 with a minimum of 2 vertebrae per region (<em>left</em>) or 4 vertebrae
 per region (<em>right</em>).
@@ -971,7 +970,7 @@ specific position(s), respectively.</p>
 <span>           modelsupport <span class="op">=</span> <span class="fu"><a href="../reference/modelsupport.html">modelsupport</a></span><span class="op">(</span><span class="fu"><a href="../reference/modelselect.html">modelselect</a></span><span class="op">(</span><span class="va">reg.dol.forceBP</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>           criterion <span class="op">=</span> <span class="st">"bic"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-30-1.png" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-30-2.png" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-30-1.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-30-2.png" class="r-plt" alt="**Fig.14.** Best fit on PCO 1 and 2 of models up to 5 regions preventing any breakpoint in the thoraco-lumbar region (vertebrae 8 to 25) *(top)*  and forcing breakpoints at anatomical region boundaries (vertebrae 17, 25, 35) *(bottom)*." width="48%"><p class="caption">
 <strong>Fig.14.</strong> Best fit on PCO 1 and 2 of models up to 5
 regions preventing any breakpoint in the thoraco-lumbar region
 (vertebrae 8 to 25) <em>(top)</em> and forcing breakpoints at anatomical
@@ -1046,7 +1045,7 @@ well.</p>
 and for which computing non-exhaustive searches are still time
 consuming, the <code>cl</code> argument in <code><a href="../reference/calcregions.html">calcregions()</a></code>
 allows one to implement parallel computing. See the <code>cl</code>
-argument to <code><a href="https://rdrr.io/pkg/pbapply/man/pbapply.html" class="external-link">pbapply::pblapply()</a></code> for more details on how it
+argument to <code><a href="https://peter.solymos.org/pbapply/reference/pbapply.html" class="external-link">pbapply::pblapply()</a></code> for more details on how it
 can be specified. Below, we request 6 cores to be used (supplying a
 number is not available on Windows).</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
@@ -1109,7 +1108,7 @@ information column of the data.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, pco_x <span class="op">=</span> <span class="fl">1</span>, pco_y <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-37-1.png" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-37-2.png" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-37-1.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><img src="MorphoRegions_files/figure-html/unnamed-chunk-37-2.png" class="r-plt" alt="**Fig.15.** PCO plots of the three specimens of harbor porpoise." width="65%"><p class="caption">
 <strong>Fig.15.</strong> PCO plots of the three specimens of harbor
 porpoise.
 </p>
@@ -1179,7 +1178,7 @@ a time</strong>.</p>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">porpoise_pco</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">supp</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"bic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-39-1.png" alt="**Fig.16.** Best fit model (based on BIC) on PCO 1 and 2 calculated on the three harbor porpoise specimens." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-39-1.png" class="r-plt" alt="**Fig.16.** Best fit model (based on BIC) on PCO 1 and 2 calculated on the three harbor porpoise specimens." width="60%"><p class="caption">
 <strong>Fig.16.</strong> Best fit model (based on BIC) on PCO 1 and 2
 calculated on the three harbor porpoise specimens.
 </p>
@@ -1191,7 +1190,7 @@ calculated on the three harbor porpoise specimens.
 <span>            reg.lim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">34</span>, <span class="fl">54</span><span class="op">)</span>, dropNA <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>            bpvar <span class="op">=</span> <span class="va">bpvar</span>, sd.col <span class="op">=</span> <span class="st">"grey20"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-40-1.png" alt="**Fig.17.** Vertebral map of best fit model (including variance in breakpoint position) based on the three harbor porpoise specimens." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-40-1.png" class="r-plt" alt="**Fig.17.** Vertebral map of best fit model (including variance in breakpoint position) based on the three harbor porpoise specimens." width="672"><p class="caption">
 <strong>Fig.17.</strong> Vertebral map of best fit model (including
 variance in breakpoint position) based on the three harbor porpoise
 specimens.
@@ -1236,7 +1235,7 @@ user-defined breakpoint positions.</p>
 <span><span class="co">#Plot model results:</span></span>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">regionsmodel</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-41-1.png" alt="**Fig.18.** Best fit segmented linear regression model on PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38, and 41." width="60%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-41-1.png" class="r-plt" alt="**Fig.18.** Best fit segmented linear regression model on PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32, 35, 38, and 41." width="60%"><p class="caption">
 <strong>Fig.18.</strong> Best fit segmented linear regression model on
 PCO 1-3 when forcing breakpoint position at vertebrae 19, 24, 27, 32,
 35, 38, and 41.
@@ -1265,7 +1264,7 @@ elements to retain.</p>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco_sub.33</span>, name <span class="op">=</span> <span class="st">"Dolphin 33"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plotvertmap.html">plotvertmap</a></span><span class="op">(</span><span class="va">dolphin_pco_sub.7</span>, name <span class="op">=</span> <span class="st">"Dolphin .7"</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-42-1.png" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-42-2.png" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-42-1.png" class="r-plt" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><img src="MorphoRegions_files/figure-html/unnamed-chunk-42-2.png" class="r-plt" alt="**Fig.19.** Vertebral map of dolphin dataset with 33 subsampled vetrebrae *(top)* and 70% of total vertebrae subsampled *(bottom)*. Vertebrae dropped are in grey and vertebrae retained are in blue shade*." width="672"><p class="caption">
 <strong>Fig.19.</strong> Vertebral map of dolphin dataset with 33
 subsampled vetrebrae <em>(top)</em> and 70% of total vertebrae
 subsampled <em>(bottom)</em>. Vertebrae dropped are in grey and
@@ -1294,7 +1293,7 @@ linear segments.</p>
 <span><span class="co"># Plot:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-43-1.png" alt="**Fig.20.** Plot on PCO 1 and 2 of the **simulated dataset** with 40 vertebrae and 5 regions (4 breakpoints)." width="65%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-43-1.png" class="r-plt" alt="**Fig.20.** Plot on PCO 1 and 2 of the **simulated dataset** with 40 vertebrae and 5 regions (4 breakpoints)." width="65%"><p class="caption">
 <strong>Fig.20.</strong> Plot on PCO 1 and 2 of the <strong>simulated
 dataset</strong> with 40 vertebrae and 5 regions (4 breakpoints).
 </p>
@@ -1354,7 +1353,7 @@ dataset.</p>
 <span><span class="fu"><a href="../reference/plotsegreg.html">plotsegreg</a></span><span class="op">(</span><span class="va">sim</span>, scores <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, modelsupport <span class="op">=</span> <span class="va">simsupport</span>,</span>
 <span>            criterion <span class="op">=</span> <span class="st">"aic"</span>, model <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
-<img src="MorphoRegions_files/figure-html/unnamed-chunk-44-1.png" alt="**Fig.21.** Plot on PCO 1 and 2 of the **recovered best fit** on regionalization analysis ran on the simulated dataset." width="65%"><p class="caption">
+<img src="MorphoRegions_files/figure-html/unnamed-chunk-44-1.png" class="r-plt" alt="**Fig.21.** Plot on PCO 1 and 2 of the **recovered best fit** on regionalization analysis ran on the simulated dataset." width="65%"><p class="caption">
 <strong>Fig.21.</strong> Plot on PCO 1 and 2 of the <strong>recovered
 best fit</strong> on regionalization analysis ran on the simulated
 dataset.
@@ -1391,7 +1390,7 @@ fourth breakpoint matches that of the simulated data.</p>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-Gillet2022" class="csl-entry">
 Gillet, A., B. Frédérich, S. E. Pierce, and E. Parmentier. 2022.
 <span>“Iterative Habitat Transitions Are Associated with Morphological
@@ -1409,9 +1408,8 @@ Form Reveals Homoplasy in Amniote Hox Gene Function.”</span>
 <em>Nature</em> 520: 86–89. <a href="https://doi.org/10.1038/nature14042" class="external-link">https://doi.org/10.1038/nature14042</a>.
 </div>
 <div id="ref-Jones2018" class="csl-entry">
-Jones, K. E., K. D. Angielczyk, P. D. Polly, J. J. Head, V. Fernandez,
-J. K. Lungmus, S. Tulga, and S. E. Pierce. 2018. <span>“Fossils Reveal
-the Complex Evolutionary History of the Mammalian Regionalized
+Jones, K. E., K. D. Angielczyk, P. D. Polly, et al. 2018. <span>“Fossils
+Reveal the Complex Evolutionary History of the Mammalian Regionalized
 Spine.”</span> <em>Science</em> 361: 1249–52. <a href="https://doi.org/10.1126/science.aar3126" class="external-link">https://doi.org/10.1126/science.aar3126</a>.
 </div>
 </div>
@@ -1427,7 +1425,7 @@ Spine.”</span> <em>Science</em> 361: 1249–52. <a href="https://doi.org/10.11
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
