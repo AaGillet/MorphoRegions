@@ -164,7 +164,12 @@ plotvertmap(dolphin_pco, name = "Dolphin",
 
 ## Citation
 
-To cite *MorphoRegions*, please use: 
+To cite *MorphoRegions*, please include **both** the package and the associated publication:
+
+- Gillet, A., Jones K. E., Pierce S. E. (2024) Repatterning of Mammalian Backbone Regionalization in Cetaceans. *Nature Communications* 15: 7587, https://doi.org/10.1038/s41467-024-51963-w.
+- Gillet A., Jones K. E., Greifer N., Pierce S. E. (2026) MorphoRegions: Analysis of Regionalization Patterns in Serially Homologous Structures. *R package version 0.2.0*, https://doi.org/10.32614/CRAN.package.MorphoRegions.
+
+Or use: 
 ```{r citation, eval=F}
 citation("MorphoRegions")
 ```
