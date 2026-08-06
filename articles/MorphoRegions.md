@@ -1850,6 +1850,26 @@ calcBPvar(simresults, noregions = 5, pct = 0.1,
 #> - Computed using top 10% of models
 ```
 
+## Citation
+
+To cite *MorphoRegions*, please include **both** the package and the
+associated publication:
+
+- Gillet, A., Jones K. E., Pierce S. E. (2024) Repatterning of Mammalian
+  Backbone Regionalization in Cetaceans. *Nature Communications* 15:
+  7587, <https://doi.org/10.1038/s41467-024-51963-w>.
+- Gillet A., Jones K. E., Greifer N., Pierce S. E. (2026) MorphoRegions:
+  Analysis of Regionalization Patterns in Serially Homologous
+  Structures. *R package version 0.2.0*,
+  <https://doi.org/10.32614/CRAN.package.MorphoRegions>.
+
+Or use:
+
+``` r
+
+citation("MorphoRegions")
+```
+
 ## References
 
 Esteban, J. M., A. Martín-Serra, A. Pérez-Ramos, B. Mulot, K. E. Jones,
