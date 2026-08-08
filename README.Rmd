@@ -179,5 +179,9 @@ citation("MorphoRegions")
 
 <div style="font-size: 0.9em; color: #666;">
 
+<<<<<<< HEAD
 *MorphoRegions* was developed with support from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie Grant Agreement No. 101023931 (Back2Sea)
+=======
+*MorphoRegions* was developed with support from the European Union’s Horizon 2020 research and innovation programme under the Marie Sklodowska-Curie Grant Agreement No. 101023931 (Back2Sea).
+>>>>>>> a377a87b20dcda44be734bd8c36d502484e2414f
 </div>
