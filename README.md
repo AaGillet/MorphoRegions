@@ -286,3 +286,13 @@ Or use:
 ``` r
 citation("MorphoRegions")
 ```
+
+------------------------------------------------------------------------
+
+<div style="font-size: 0.9em; color: #666;">
+
+*MorphoRegions* was developed with support from the European Union’s
+Horizon 2020 research and innovation programme under the Marie
+Sklodowska-Curie Grant Agreement No. 101023931 (Back2Sea).
+
+</div>
