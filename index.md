@@ -305,3 +305,9 @@ Or use:
 
 citation("MorphoRegions")
 ```
+
+------------------------------------------------------------------------
+
+*MorphoRegions* was developed with support from the European Union’s
+Horizon 2020 research and innovation programme under the Marie
+Sklodowska-Curie grant agreement No 101023931 (Back2Sea).
